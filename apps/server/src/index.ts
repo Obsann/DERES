@@ -2,16 +2,31 @@ import type { Server } from 'node:http';
 import { createApp } from './app.js';
 import { config } from './common/config.js';
 import { logger } from './common/logger.js';
+import { connectDatabase, disconnectDatabase } from './database/connection.js';
 
-function start(): Server {
+let server: Server | undefined;
+
+async function start(): Promise<void> {
+  if (config.mongoUri) {
+    try {
+      await connectDatabase(config.mongoUri);
+    } catch (error) {
+      logger.error('database connection failed', {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      process.exit(1);
+    }
+  } else {
+    logger.warn('MONGODB_URI not set; persistence is disabled');
+  }
+
   const app = createApp();
 
-  const server = app.listen(config.port, () => {
+  server = app.listen(config.port, () => {
     logger.info('server listening', {
       port: config.port,
       nodeEnv: config.nodeEnv,
       clientUrl: config.clientUrl,
-      // Reported so it is obvious which integrations are not configured yet.
       database: config.mongoUri === null ? 'not configured' : 'configured',
       llm: config.llmApiKey === null ? 'not configured' : 'configured',
       voice: config.voxideApiKey === null ? 'not configured' : 'configured',
@@ -26,11 +41,9 @@ function start(): Server {
     }
     process.exit(1);
   });
-
-  return server;
 }
 
-const server = start();
+void start();
 
 /**
  * Stops accepting connections and lets in-flight requests finish.
@@ -47,13 +60,30 @@ function shutdown(signal: string): void {
   }, 10_000);
   forceExit.unref();
 
+  const finish = (error?: Error): void => {
+    void disconnectDatabase()
+      .catch((disconnectError: unknown) => {
+        logger.error('error while closing database', {
+          message: disconnectError instanceof Error ? disconnectError.message : String(disconnectError),
+        });
+      })
+      .finally(() => {
+        if (error) {
+          logger.error('error while closing server', { message: error.message });
+          process.exit(1);
+        }
+        logger.info('shutdown complete');
+        process.exit(0);
+      });
+  };
+
+  if (!server) {
+    finish();
+    return;
+  }
+
   server.close((error) => {
-    if (error) {
-      logger.error('error while closing server', { message: error.message });
-      process.exit(1);
-    }
-    logger.info('shutdown complete');
-    process.exit(0);
+    finish(error ?? undefined);
   });
 }
 

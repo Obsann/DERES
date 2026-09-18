@@ -32,9 +32,9 @@ the server consumes the compiled `dist/`.
 4. **Timestamps are ISO-8601 strings**, not `Date`, so a value is identical in
    MongoDB, in JSON and in the browser.
 
-## Open points for review
+## Locked contract decisions
 
-These were decided while drafting the contracts and are worth a second opinion:
+Platform owner sign-off (Task 3). Do not silently reverse these.
 
 - `EmergencyState.actions` is one list of `ActionRecord` carrying an
   `ActionStatus`, rather than the separate `actionsGiven` / `actionsConfirmed`
@@ -45,4 +45,5 @@ These were decided while drafting the contracts and are worth a second opinion:
   Phase 3 lists separately.
 - `EmergencyType` currently lists all seven candidate scenarios from
   specification section 10. The MVP only supports whichever ones get an
-  approved protocol in Task 6.
+  approved protocol in Task 6. Unapproved values may exist on the type; a
+  protocol must still be published before the engine will use them.
