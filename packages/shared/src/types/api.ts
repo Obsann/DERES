@@ -4,12 +4,14 @@ import type {
   IncidentStatus,
   Language,
   MessageRole,
+  VoiceSessionPhase,
 } from '../enums/index.js';
 import type { Id } from './common.js';
 import type { Handoff } from './handoff.js';
 import type { ActionRecord, Incident, IncidentEvent } from './incident.js';
 import type { ConversationMessage } from './conversation.js';
 import type { Protocol } from './protocol.js';
+import type { AuthUser, Session } from './auth.js';
 
 /**
  * Machine-readable failure reasons.
@@ -85,9 +87,10 @@ export interface Paginated<T> {
 }
 
 /* -------------------------------------------------------------------------
- * Request and response bodies for the endpoints listed in task.md Phase 8.
- * Implemented in Task 10; declared here so the frontend API client (Task 19)
- * is not blocked on the backend.
+ * Request and response bodies.
+ *
+ * Covers task.md Phase 8 and the DERES specification section 15 endpoints.
+ * Declared here so Melkamu Task 19 is not blocked on Obsan Task 10.
  * ---------------------------------------------------------------------- */
 
 /** `POST /api/incidents` */
@@ -110,12 +113,33 @@ export interface UpdateIncidentRequest {
   };
 }
 
-/** `POST /api/incidents/:id/messages` */
+/** `POST /api/incidents/:id/messages` (also covers DERES `.../message`) */
 export interface AddMessageRequest {
   role: MessageRole;
   transcript: string;
   language: Language;
   recognitionConfidence?: number | null;
+}
+
+/**
+ * `POST /api/incidents/:id/voice`
+ *
+ * Starts or continues a Voxide-backed voice turn. Exact provider fields may
+ * grow in Task 9; this is the contract Melkamu and Obsan agree on for MVP.
+ */
+export interface VoiceTurnRequest {
+  /** Optional client-generated turn id for idempotency / reconnect. */
+  clientTurnId?: Id;
+  /** Language for this utterance; defaults to the incident language. */
+  language?: Language;
+}
+
+export interface VoiceTurnResponse {
+  incidentId: Id;
+  /** Provider session token or handle, opaque to the UI. */
+  voiceSessionId: string;
+  /** What the UI should show while this turn is live. */
+  phase: VoiceSessionPhase;
 }
 
 /** `POST /api/incidents/:id/actions` */
@@ -125,7 +149,7 @@ export interface RecordActionRequest {
   note?: string | null;
 }
 
-/** `GET /api/incidents` (responder dashboard list) */
+/** `GET /api/incidents` and `GET /api/responder/incidents` */
 export interface ListIncidentsQuery {
   status?: IncidentStatus;
   emergencyType?: EmergencyType;
@@ -141,7 +165,17 @@ export type RecordActionResponse = ActionRecord;
 export type GetTimelineResponse = IncidentEvent[];
 export type GetHandoffResponse = Handoff;
 export type ListProtocolsResponse = Protocol[];
+export type GetProtocolResponse = Protocol;
 export type ListIncidentsResponse = Paginated<Incident>;
+export type GetResponderIncidentResponse = Incident;
+
+/** `POST /api/sessions` — anonymous bystander session (Task 12). */
+export interface CreateSessionRequest {
+  language: Language;
+}
+
+export type CreateSessionResponse = Session;
+export type GetAuthUserResponse = AuthUser;
 
 /** `GET /api/health` */
 export interface HealthResponse {

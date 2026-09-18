@@ -195,3 +195,43 @@ export const WarningSeverity = {
   CRITICAL: 'critical',
 } as const;
 export type WarningSeverity = (typeof WarningSeverity)[keyof typeof WarningSeverity];
+
+/**
+ * Network / socket connection from the client's point of view.
+ * Used by Melkamu Tasks 19, 24 and 26 so UI states stay consistent.
+ */
+export const ConnectionStatus = {
+  IDLE: 'idle',
+  CONNECTING: 'connecting',
+  CONNECTED: 'connected',
+  DISCONNECTED: 'disconnected',
+  RECONNECTING: 'reconnecting',
+} as const;
+export type ConnectionStatus =
+  (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
+
+/**
+ * Generic async request lifecycle for the typed API client (Task 19).
+ * Prefer this over ad-hoc booleans like `isLoading` / `hasError`.
+ */
+export const AsyncStatus = {
+  IDLE: 'idle',
+  LOADING: 'loading',
+  SUCCESS: 'success',
+  ERROR: 'error',
+} as const;
+export type AsyncStatus = (typeof AsyncStatus)[keyof typeof AsyncStatus];
+
+/**
+ * What the emergency voice UI should show for the current turn (Tasks 20–21).
+ */
+export const VoiceSessionPhase = {
+  IDLE: 'idle',
+  LISTENING: 'listening',
+  PROCESSING: 'processing',
+  SPEAKING: 'speaking',
+  AWAITING_CONFIRMATION: 'awaiting_confirmation',
+  ERROR: 'error',
+} as const;
+export type VoiceSessionPhase =
+  (typeof VoiceSessionPhase)[keyof typeof VoiceSessionPhase];
