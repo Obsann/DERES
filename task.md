@@ -1,7 +1,7 @@
-# TEAM COD1 — VoiceSOS
+# TEAM COD1 — ድረስ (DERES)
 ## Task Management & Implementation Plan
 
-**Project:** VoiceSOS — AI First Responder  
+**Project:** ድረስ (DERES) — AI First Responder  
 **Hackathon:** STARK Hackathon 2026  
 **Version:** 1.0  
 **Status:** Active Engineering Plan
@@ -10,9 +10,9 @@
 
 ## 1. Purpose
 
-This is the master implementation checklist for VoiceSOS.
+This is the master implementation checklist for ድረስ (DERES).
 
-VoiceSOS is a multilingual, voice-first AI first-responder system designed to help an untrained bystander navigate the first critical minutes of an emergency while creating a structured incident record for professional handoff.
+ድረስ (DERES) is a multilingual, voice-first AI first-responder system designed to help an untrained bystander navigate the first critical minutes of an emergency while creating a structured incident record for professional handoff.
 
 **Not:** an ambulance-management system, AI doctor, or unrestricted medical chatbot.
 
@@ -47,7 +47,7 @@ Priority: **P0** critical MVP/demo; **P1** high; **P2** medium; **P3** future.
 Recommended structure:
 
 ```text
-voicesos/
+deres/
 ├── apps/
 │   ├── web/
 │   └── server/
@@ -77,7 +77,7 @@ voicesos/
 - [ ] **P0** Document why voice matters during emergencies.
 - [ ] **P1** Document relevant existing emergency-response systems.
 - [ ] **P1** Define target users and emergency contexts.
-- [ ] **P1** Document the exact product gap VoiceSOS addresses.
+- [ ] **P1** Document the exact product gap ድረስ (DERES) addresses.
 
 ## Competitive research
 
@@ -86,7 +86,7 @@ voicesos/
 - [ ] **P1** Research first-aid/first-responder applications.
 - [ ] **P1** Research multilingual emergency voice systems.
 - [ ] **P1** Record competitors in `docs/research/competitive-analysis.md`.
-- [ ] **P1** Record features explicitly excluded from VoiceSOS.
+- [ ] **P1** Record features explicitly excluded from ድረስ (DERES).
 
 ## Scholarxiv
 
@@ -115,7 +115,7 @@ voicesos/
 ```text
 Emergency occurs
       ↓
-User starts VoiceSOS
+User starts ድረስ (DERES)
       ↓
 Voice interaction
       ↓
@@ -183,7 +183,7 @@ Protocol
 
 # 7. Phase 4 — Emergency State Engine
 
-The state engine prevents VoiceSOS from behaving like a generic chatbot.
+The state engine prevents ድረስ (DERES) from behaving like a generic chatbot.
 
 Track at minimum:
 

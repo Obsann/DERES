@@ -1,4 +1,4 @@
-# VOICESOS — Individual Assignments
+# ድረስ (DERES) — Individual Assignments
 
 **Compressed 3-week schedule.** All original week labels have been rescaled to fit a 3-week
 build (Week 1 = foundation/design, Week 2 = core build/integration, Week 3 = testing,
@@ -23,7 +23,7 @@ from stable interfaces.
 ### Task 1 — Backend platform scaffold (Week 1)
 **Depends on:** nothing.
 
-> Set up the Node.js + Express backend. Create module folders matching the VoiceSOS
+> Set up the Node.js + Express backend. Create module folders matching the ድረስ (DERES)
 > architecture: `incidents`, `protocols`, `ai`, `voice`, `handoff`, `security`,
 > plus `common/` and `database/`. Keep module boundaries explicit. Add configuration,
 > environment loading, error handling, and a health-check route.
@@ -110,7 +110,7 @@ reaches the user.
 ### Task 9 — Voxide integration (Week 2)
 **Depends on:** Task 7.
 
-> Integrate Voxide into the VoiceSOS conversation flow. Support voice input,
+> Integrate Voxide into the ድረስ (DERES) conversation flow. Support voice input,
 > response generation, supported language handling, interruptions/repeats where
 > practical, and failure states.
 
@@ -419,7 +419,7 @@ engineering decision, or a clearly labeled hypothesis.
 **Shared with:** whole team.
 
 > Document existing emergency-response, dispatch, first-aid, voice-AI, and Ethiopian
-> systems. Identify what VoiceSOS does and does not attempt to replace.
+> systems. Identify what ድረስ (DERES) does and does not attempt to replace.
 
 **Verify:** the team can explain the product's differentiation without claiming that
 existing platforms do not exist.
@@ -439,7 +439,7 @@ existing platforms do not exist.
 > Review unsafe prompts, unsupported emergencies, ambiguous answers, contradictory
 > information, network failure, AI failure, voice failure, and misleading UI states.
 
-**Verify:** the team can demonstrate what VoiceSOS does when it does not know enough
+**Verify:** the team can demonstrate what ድረስ (DERES) does when it does not know enough
 > rather than only demonstrating the happy path.
 
 ### Task 42 — UAT & demo rehearsal (Week 3)

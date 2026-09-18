@@ -1,7 +1,7 @@
-# TEAM COD1 — VoiceSOS
+# TEAM COD1 — ድረስ (DERES)
 ## Git Workflow & Collaboration Standard
 
-**Project:** VoiceSOS — AI First Responder  
+**Project:** ድረስ (DERES) — AI First Responder  
 **Team:** COD1  
 **Version:** 1.0
 
