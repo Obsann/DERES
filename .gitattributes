@@ -1,0 +1,8 @@
+# Normalize line endings so Windows and Unix contributors do not produce
+# whole-file diffs. Text files are stored LF in the repository.
+* text=auto eol=lf
+
+*.docx binary
+*.png binary
+*.jpg binary
+*.ico binary

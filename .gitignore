@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment (git-workflow.md section 19 - never commit real secrets)
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tsbuildinfo
