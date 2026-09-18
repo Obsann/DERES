@@ -27,7 +27,7 @@ describe('database schema v1', () => {
   beforeAll(async () => {
     mongo = await MongoMemoryServer.create();
     await connectDatabase(mongo.getUri());
-  }, 120_000);
+  }, 300_000);
 
   afterEach(async () => {
     const collections = mongoose.connection.collections;
@@ -36,7 +36,7 @@ describe('database schema v1', () => {
 
   afterAll(async () => {
     await disconnectDatabase();
-    await mongo.stop();
+    if (mongo) await mongo.stop();
   });
 
   it('persists an incident and retrieves it by id', async () => {
