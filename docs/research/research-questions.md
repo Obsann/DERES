@@ -18,6 +18,6 @@ From `task.md` Phase 1. Each question must have a status and a pointer into the 
 
 - [ ] Confirm Voxide language matrix (Obsan Task 9) → update A10
 - [ ] Encode MVP protocol with authoritative citation (Obsan Task 6) → update A17
-- [ ] Complete Task 39 competitive matrix file
+- [x] Complete Task 39 competitive matrix file (`competitive-analysis.md`)
 - [ ] Paste Scholarxiv workspace URL into `scholarxiv.md` once created
 - [ ] Samuel UX stress review → promote or demote voice Hypothesis A5

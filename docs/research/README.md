@@ -12,7 +12,8 @@
 | [voice-interaction.md](./voice-interaction.md) | Why voice matters under emergency cognitive load |
 | [safe-ai-protocol-architecture.md](./safe-ai-protocol-architecture.md) | Protocol-first / safe LLM architecture rationale |
 | [multilingual-emergency.md](./multilingual-emergency.md) | Multilingual emergency communication notes |
-| [competitive-context.md](./competitive-context.md) | Relevant competitive context (full analysis → Task 39) |
+| [competitive-context.md](./competitive-context.md) | Short differentiation reminder (Task 38) |
+| [competitive-analysis.md](./competitive-analysis.md) | Full competitor matrix + exclusions (Task 39) |
 | [assumptions-traceability.md](./assumptions-traceability.md) | Assumption → evidence / decision / hypothesis map |
 | [research-questions.md](./research-questions.md) | Status of Phase 1 research questions |
 | [scholarxiv.md](./scholarxiv.md) | Scholarxiv ideation space + paper list |
