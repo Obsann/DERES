@@ -1,23 +1,24 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { ConnectionStatus } from '@voicesos/shared';
 
 /**
  * Responder dashboard UI boundary.
  *
  * Selected incident and connection status only. Live Socket.IO sync is Task 24.
+ * Connection values come from `@voicesos/shared` so they match the Task 3 contract.
  */
 export interface ResponderUiState {
   selectedIncidentId: string | null;
-  connection: 'idle' | 'connecting' | 'connected' | 'disconnected';
+  connection: ConnectionStatus;
   setSelectedIncidentId: (incidentId: string | null) => void;
-  setConnection: (connection: ResponderUiState['connection']) => void;
+  setConnection: (connection: ConnectionStatus) => void;
 }
 
 const ResponderUiContext = createContext<ResponderUiState | null>(null);
 
 export function ResponderUiProvider({ children }: { children: ReactNode }) {
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
-  const [connection, setConnection] =
-    useState<ResponderUiState['connection']>('idle');
+  const [connection, setConnection] = useState<ConnectionStatus>(ConnectionStatus.IDLE);
 
   const value = useMemo<ResponderUiState>(
     () => ({
