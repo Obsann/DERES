@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { AppQueryProvider } from './providers/AppQueryProvider';
 import { EmergencySessionProvider, ResponderUiProvider } from './state';
 import './index.css';
 
@@ -11,10 +12,12 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <EmergencySessionProvider>
-      <ResponderUiProvider>
-        <App />
-      </ResponderUiProvider>
-    </EmergencySessionProvider>
+    <AppQueryProvider>
+      <EmergencySessionProvider>
+        <ResponderUiProvider>
+          <App />
+        </ResponderUiProvider>
+      </EmergencySessionProvider>
+    </AppQueryProvider>
   </StrictMode>,
 );
