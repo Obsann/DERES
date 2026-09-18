@@ -24,7 +24,7 @@
 1. Before claiming a product capability in a demo or README, check **assumptions-traceability.md**.
 2. New findings go into the matching topic file **and** get a row in the assumptions table.
 3. Label every claim as **Research**, **Decision**, or **Hypothesis** — never mix them silently.
-4. Full competitor write-up belongs in Task 39 (`competitive-analysis.md` when created). This folder only keeps the differentiation context Task 38 requires.
+4. For demos and judge Q&A, use **competitive-analysis.md** so we never claim competitors do not exist.
 
 ## Related project docs
 
