@@ -12,7 +12,8 @@
 | [voice-interaction.md](./voice-interaction.md) | Why voice matters under emergency cognitive load |
 | [safe-ai-protocol-architecture.md](./safe-ai-protocol-architecture.md) | Protocol-first / safe LLM architecture rationale |
 | [multilingual-emergency.md](./multilingual-emergency.md) | Multilingual emergency communication notes |
-| [competitive-context.md](./competitive-context.md) | Relevant competitive context (full analysis → Task 39) |
+| [competitive-context.md](./competitive-context.md) | Short differentiation reminder (Task 38) |
+| [competitive-analysis.md](./competitive-analysis.md) | Full competitor matrix + exclusions (Task 39) |
 | [assumptions-traceability.md](./assumptions-traceability.md) | Assumption → evidence / decision / hypothesis map |
 | [research-questions.md](./research-questions.md) | Status of Phase 1 research questions |
 | [scholarxiv.md](./scholarxiv.md) | Scholarxiv ideation space + paper list |
@@ -23,7 +24,7 @@
 1. Before claiming a product capability in a demo or README, check **assumptions-traceability.md**.
 2. New findings go into the matching topic file **and** get a row in the assumptions table.
 3. Label every claim as **Research**, **Decision**, or **Hypothesis** — never mix them silently.
-4. Full competitor write-up belongs in Task 39 (`competitive-analysis.md` when created). This folder only keeps the differentiation context Task 38 requires.
+4. For demos and judge Q&A, use **competitive-analysis.md** so we never claim competitors do not exist.
 
 ## Related project docs
 
