@@ -40,6 +40,7 @@ export function createApp(): Express {
   //   incidents  Task 10    protocols  Task 5
   //   ai         Task 7     voice      Task 9
   //   handoff    Task 11    security   Task 12
+  // Persistence lives in database/ (Task 2); routes come later.
   app.use('/api', api);
 
   app.use(notFoundHandler);

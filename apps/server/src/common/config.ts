@@ -24,7 +24,7 @@ export interface AppConfig {
   port: number;
   /** Allowed browser origin for CORS. */
   clientUrl: string;
-  /** Null until Task 2 wires up persistence; required in production. */
+  /** MongoDB connection string; required in production. */
   mongoUri: string | null;
   /** Null until an LLM provider is chosen (task.md section 46). */
   llmApiKey: string | null;

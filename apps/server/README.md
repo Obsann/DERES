@@ -12,10 +12,10 @@ npm run dev --workspace @voicesos/server
 curl http://localhost:4000/api/health
 ```
 
-The server starts without a database, LLM key or Voxide key so the scaffold is
-usable before those integrations exist. Startup logs which ones are missing.
-In production all of them are required and the process refuses to start
-without them.
+The server starts without an LLM key or Voxide key so those integrations can
+land later. Persistence is live when `MONGODB_URI` is set; without it the
+process still boots and `/api/health` reports `database: "unknown"`.
+In production the database, LLM and Voxide keys are all required.
 
 | Script | Purpose |
 |---|---|
