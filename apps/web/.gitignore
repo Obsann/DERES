@@ -1,0 +1,11 @@
+## Vite / editor
+.DS_Store
+dist
+dist-ssr
+*.local
+*.tsbuildinfo
+
+## Environment
+.env
+.env.*
+!.env.example

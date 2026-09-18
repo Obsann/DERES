@@ -12,6 +12,8 @@
   },
   "scripts": {
     "dev": "npm run dev --workspace @voicesos/server",
+    "dev:web": "npm run dev --workspace @voicesos/web",
+    "dev:server": "npm run dev --workspace @voicesos/server",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
