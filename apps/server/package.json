@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@voicesos/protocols": "*",
     "@voicesos/shared": "*",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

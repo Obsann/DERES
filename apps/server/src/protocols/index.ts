@@ -1,3 +1,4 @@
+export { publishedProtocols, unconsciousAdultProtocol } from './catalog.js';
 export { conditionsHold, evaluateCondition, readStateField } from './conditions.js';
 export {
   assertActionPermitted,
