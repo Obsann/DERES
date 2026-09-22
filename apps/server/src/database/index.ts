@@ -16,4 +16,5 @@ export {
   insertUser,
   listConversationMessages,
   listIncidentEvents,
+  saveIncidentSnapshot,
 } from './persist.js';

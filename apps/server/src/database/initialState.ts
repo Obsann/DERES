@@ -15,8 +15,8 @@ import {
 /**
  * Empty emergency state for a newly opened incident.
  *
- * Everything starts UNKNOWN / empty. The state engine (Task 4) is what is
- * allowed to change these fields; persistence only stores them.
+ * Everything starts UNKNOWN / empty. `incidents/stateEngine` is the only
+ * path allowed to change these fields; persistence only stores them.
  */
 export function initialEmergencyState(at: IsoDateTime): EmergencyState {
   return {

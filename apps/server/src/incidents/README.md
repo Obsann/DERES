@@ -12,6 +12,22 @@ transitions rather than letting a bad update through, and it never edits or
 deletes a timeline event, so an incident can always be replayed from its events
 in `sequence` order.
 
+All mutations go through `applyCommand` / `applyIncidentCommand`. A caller
+proposes an `IncidentCommand`; the engine accepts it or throws
+`InvalidStateTransitionError` / `ValidationError`.
+
+**Tracked state**
+
+```text
+known / unknown facts
+uncertainty notes
+emergency type and confidence
+current protocol and step
+actions given / confirmed / unable / skipped
+escalation status
+append-only timeline events
+```
+
 **Endpoints (Task 10)**
 
 ```text
