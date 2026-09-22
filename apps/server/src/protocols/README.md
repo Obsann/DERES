@@ -22,7 +22,8 @@ instructions throw `ProtocolViolationError`. Uncertain answers follow the
 step's `onUncertain` path instead of guessing.
 
 The Task 5 fixture in `fixtures/foundationProtocol.ts` only proves the engine.
-Approved clinical content lands in Task 6.
+The published MVP protocol lives in `@voicesos/protocols`: unresponsive adult
+Basic Life Support, sourced from ERC Guidelines 2021.
 
 Anything merged here needs code review, tests, an authoritative source, and
 explicit acceptance criteria (git-workflow.md section 33).
