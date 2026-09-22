@@ -96,6 +96,27 @@ export async function getIncidentById(id: Id): Promise<Incident> {
   return toIncident(requireLean(doc, 'Incident'));
 }
 
+/** Writes status and emergency state. Does not rewrite timeline events. */
+export async function saveIncidentSnapshot(incident: Incident): Promise<Incident> {
+  const updated = await IncidentModel.findOneAndUpdate(
+    { _id: incident.id },
+    {
+      $set: {
+        status: incident.status,
+        state: incident.state,
+        closedAt: incident.closedAt,
+        updatedAt: incident.updatedAt,
+      },
+    },
+    { new: true },
+  )
+    .lean<IncidentDocument>()
+    .exec();
+
+  if (!updated) throw new NotFoundError('Incident');
+  return toIncident(updated);
+}
+
 export async function appendIncidentEvent(
   incidentId: Id,
   input: Omit<IncidentEvent, 'id' | 'incidentId' | 'sequence'>,
