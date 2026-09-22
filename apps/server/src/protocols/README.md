@@ -10,7 +10,19 @@ determines what guidance is allowed. The model may rephrase an approved
 instruction; it may never originate one, extend one, or route around a
 contraindication.
 
+Execution is data-driven:
+
+```text
+entry conditions → current step → accepted answer or confirmation
+        → first matching transition → next step
+```
+
+Unsupported transitions, unpublished protocols, and contraindicated
+instructions throw `ProtocolViolationError`. Uncertain answers follow the
+step's `onUncertain` path instead of guessing.
+
+The Task 5 fixture in `fixtures/foundationProtocol.ts` only proves the engine.
+Approved clinical content lands in Task 6.
+
 Anything merged here needs code review, tests, an authoritative source, and
 explicit acceptance criteria (git-workflow.md section 33).
-
-Protocol content itself lives in `packages/protocols`; this module executes it.
