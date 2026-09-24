@@ -3,11 +3,14 @@ import {
   IncidentEventType,
   type AuthUser,
   type ConversationMessage,
+  type EmergencyType,
   type Handoff,
   type Id,
   type Incident,
   type IncidentEvent,
+  type IncidentStatus,
   type Language,
+  type Paginated,
   type Protocol,
   type Session,
 } from '@voicesos/shared';
@@ -258,4 +261,27 @@ export async function insertUser(user: AuthUser): Promise<AuthUser> {
 export async function getUserById(id: Id): Promise<AuthUser> {
   const doc = await UserModel.findById(id).lean().exec();
   return toAuthUser(requireLean(doc, 'User'));
+}
+
+export async function findUserByEmail(email: string): Promise<AuthUser | null> {
+  const doc = await UserModel.findOne({ email }).lean().exec();
+  return doc ? toAuthUser(doc) : null;
+}
+
+export async function listIncidents(query: {
+  status?: IncidentStatus;
+  emergencyType?: EmergencyType;
+  limit?: number;
+  offset?: number;
+}): Promise<Paginated<Incident>> {
+  const filter: Record<string, unknown> = {};
+  if (query.status) filter.status = query.status;
+  if (query.emergencyType) filter['state.emergencyType'] = query.emergencyType;
+  const limit = Math.min(query.limit ?? 20, 100);
+  const offset = Math.max(query.offset ?? 0, 0);
+  const [docs, total] = await Promise.all([
+    IncidentModel.find(filter).sort({ updatedAt: -1 }).skip(offset).limit(limit).lean<IncidentDocument[]>().exec(),
+    IncidentModel.countDocuments(filter).exec(),
+  ]);
+  return { items: docs.map(toIncident), total, limit, offset };
 }

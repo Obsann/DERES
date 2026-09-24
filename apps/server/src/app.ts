@@ -8,6 +8,9 @@ import { requestId } from './common/middleware/requestId.js';
 import { requestLogger } from './common/middleware/requestLogger.js';
 import { errorHandler, notFoundHandler } from './common/middleware/errorHandler.js';
 import { createIncidentRouter } from './incidents/routes.js';
+import { attachPrincipal } from './security/middleware.js';
+import { createAuthRouter } from './security/routes.js';
+import { createResponderRouter } from './security/responder.routes.js';
 import { createVoiceRouter } from './voice/routes.js';
 import type { VoxideProvider } from './voice/provider.js';
 
@@ -45,10 +48,11 @@ export function createApp(options: CreateAppOptions = {}): Express {
 
   const api = Router();
   api.use(healthRouter);
+  api.use(attachPrincipal);
+  api.use(createAuthRouter());
   api.use(createIncidentRouter({ llmProvider: options.llmProvider }));
   api.use(createVoiceRouter({ llmProvider: options.llmProvider, voxideProvider: options.voxideProvider }));
-  // Feature routers still to mount:
-  //   protocols  Task 5 public list    security   Task 12
+  api.use(createResponderRouter());
   app.use('/api', api);
 
   app.use(notFoundHandler);
