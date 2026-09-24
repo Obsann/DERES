@@ -35,7 +35,8 @@ const REDACTED_KEYS = new Set([
 
 const REDACTED = '[redacted]';
 
-function redact(value: unknown, depth = 0): unknown {
+/** Exported for tests. Application code should log through `logger`. */
+export function redact(value: unknown, depth = 0): unknown {
   if (depth > 6 || value === null || typeof value !== 'object') return value;
   if (Array.isArray(value)) return value.map((item) => redact(item, depth + 1));
   if (value instanceof Error) return { name: value.name, message: value.message };

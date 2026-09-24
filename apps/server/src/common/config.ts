@@ -36,6 +36,10 @@ export interface AppConfig {
   voxideApiKey: string | null;
   /** Voxide or compatible speech endpoint. */
   voxideBaseUrl: string;
+  /** HMAC secret for responder tokens. */
+  sessionSecret: string;
+  /** Shared invite used to mint a responder token. Never returned. */
+  responderInvite: string | null;
 }
 
 class ConfigError extends Error {}
@@ -90,6 +94,8 @@ export function loadConfig(): AppConfig {
     llmModel: readOptional('LLM_MODEL') ?? 'gpt-4o-mini',
     voxideApiKey: readOptional('VOXIDE_API_KEY'),
     voxideBaseUrl: readOptional('VOXIDE_BASE_URL') ?? 'https://api.voxide.app/v1',
+    sessionSecret: readOptional('SESSION_SECRET') ?? (isProduction ? '' : 'dev-only-session-secret'),
+    responderInvite: readOptional('RESPONDER_INVITE'),
   };
 
   if (isProduction) {
@@ -101,6 +107,12 @@ export function loadConfig(): AppConfig {
     }
     if (readOptional('CLIENT_URL') === null) {
       throw new ConfigError('CLIENT_URL must be set in production so CORS is not left open to localhost');
+    }
+    if (!config.sessionSecret) {
+      throw new ConfigError('SESSION_SECRET must be set in production');
+    }
+    if (config.responderInvite === null) {
+      throw new ConfigError('RESPONDER_INVITE must be set in production');
     }
   }
 

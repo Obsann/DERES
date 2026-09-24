@@ -81,3 +81,5 @@ See `.env.example` at the repository root.
 | `LLM_MODEL` | `gpt-4o-mini` | no |
 | `VOXIDE_API_KEY` | — | yes |
 | `VOXIDE_BASE_URL` | `https://api.voxide.app/v1` | no |
+| `SESSION_SECRET` | `dev-only-session-secret` | yes |
+| `RESPONDER_INVITE` | — | yes |

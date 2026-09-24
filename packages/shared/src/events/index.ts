@@ -7,9 +7,9 @@ import type { IncidentStatus } from '../enums/index.js';
 /**
  * Real-time event names (task.md Phase 10, git-workflow.md section 32).
  *
- * These strings are a contract between the server and the dashboard. Renaming
- * one silently breaks the other side, so treat a change here the same way as
- * an API change.
+ * The server emits these from persisted incident writes (Task 13). The
+ * dashboard subscribes in Task 24. Renaming one silently breaks the other
+ * side, so treat a change here the same way as an API change.
  */
 export const IncidentSocketEvent = {
   CREATED: 'incident.created',

@@ -3,15 +3,19 @@ import {
   IncidentEventType,
   type AuthUser,
   type ConversationMessage,
+  type EmergencyType,
   type Handoff,
   type Id,
   type Incident,
   type IncidentEvent,
+  type IncidentStatus,
   type Language,
+  type Paginated,
   type Protocol,
   type Session,
 } from '@voicesos/shared';
 import { ConflictError, NotFoundError } from '../common/errors.js';
+import { publishCreated, publishHandoff, publishMessage, publishSnapshot, publishTimelineEvent } from '../realtime/emit.js';
 import { createId, nowIso } from './ids.js';
 import { initialIncident } from './initialState.js';
 import {
@@ -88,6 +92,7 @@ export async function createIncident(input: {
     occurredAt: createdEvent.occurredAt,
   } satisfies IncidentEventDocument);
 
+  publishCreated(incident);
   return { incident, createdEvent };
 }
 
@@ -114,7 +119,9 @@ export async function saveIncidentSnapshot(incident: Incident): Promise<Incident
     .exec();
 
   if (!updated) throw new NotFoundError('Incident');
-  return toIncident(updated);
+  const saved = toIncident(updated);
+  publishSnapshot(saved);
+  return saved;
 }
 
 export async function appendIncidentEvent(
@@ -161,6 +168,7 @@ export async function appendIncidentEvent(
     throw error;
   }
 
+  publishTimelineEvent(toIncident(updated), event);
   return event;
 }
 
@@ -194,6 +202,7 @@ export async function insertConversationMessage(
     recognitionConfidence: record.recognitionConfidence,
     createdAt: record.createdAt,
   });
+  publishMessage(record);
   return record;
 }
 
@@ -231,6 +240,7 @@ export async function getSessionById(id: Id): Promise<Session> {
 
 export async function insertHandoff(handoff: Handoff): Promise<Handoff> {
   await HandoffModel.create({ ...handoff, _id: handoff.id });
+  publishHandoff(handoff);
   return handoff;
 }
 
@@ -258,4 +268,27 @@ export async function insertUser(user: AuthUser): Promise<AuthUser> {
 export async function getUserById(id: Id): Promise<AuthUser> {
   const doc = await UserModel.findById(id).lean().exec();
   return toAuthUser(requireLean(doc, 'User'));
+}
+
+export async function findUserByEmail(email: string): Promise<AuthUser | null> {
+  const doc = await UserModel.findOne({ email }).lean().exec();
+  return doc ? toAuthUser(doc) : null;
+}
+
+export async function listIncidents(query: {
+  status?: IncidentStatus;
+  emergencyType?: EmergencyType;
+  limit?: number;
+  offset?: number;
+}): Promise<Paginated<Incident>> {
+  const filter: Record<string, unknown> = {};
+  if (query.status) filter.status = query.status;
+  if (query.emergencyType) filter['state.emergencyType'] = query.emergencyType;
+  const limit = Math.min(query.limit ?? 20, 100);
+  const offset = Math.max(query.offset ?? 0, 0);
+  const [docs, total] = await Promise.all([
+    IncidentModel.find(filter).sort({ updatedAt: -1 }).skip(offset).limit(limit).lean<IncidentDocument[]>().exec(),
+    IncidentModel.countDocuments(filter).exec(),
+  ]);
+  return { items: docs.map(toIncident), total, limit, offset };
 }
