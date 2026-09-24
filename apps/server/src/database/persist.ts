@@ -15,6 +15,7 @@ import {
   type Session,
 } from '@voicesos/shared';
 import { ConflictError, NotFoundError } from '../common/errors.js';
+import { publishCreated, publishHandoff, publishMessage, publishSnapshot, publishTimelineEvent } from '../realtime/emit.js';
 import { createId, nowIso } from './ids.js';
 import { initialIncident } from './initialState.js';
 import {
@@ -91,6 +92,7 @@ export async function createIncident(input: {
     occurredAt: createdEvent.occurredAt,
   } satisfies IncidentEventDocument);
 
+  publishCreated(incident);
   return { incident, createdEvent };
 }
 
@@ -117,7 +119,9 @@ export async function saveIncidentSnapshot(incident: Incident): Promise<Incident
     .exec();
 
   if (!updated) throw new NotFoundError('Incident');
-  return toIncident(updated);
+  const saved = toIncident(updated);
+  publishSnapshot(saved);
+  return saved;
 }
 
 export async function appendIncidentEvent(
@@ -164,6 +168,7 @@ export async function appendIncidentEvent(
     throw error;
   }
 
+  publishTimelineEvent(toIncident(updated), event);
   return event;
 }
 
@@ -197,6 +202,7 @@ export async function insertConversationMessage(
     recognitionConfidence: record.recognitionConfidence,
     createdAt: record.createdAt,
   });
+  publishMessage(record);
   return record;
 }
 
@@ -234,6 +240,7 @@ export async function getSessionById(id: Id): Promise<Session> {
 
 export async function insertHandoff(handoff: Handoff): Promise<Handoff> {
   await HandoffModel.create({ ...handoff, _id: handoff.id });
+  publishHandoff(handoff);
   return handoff;
 }
 

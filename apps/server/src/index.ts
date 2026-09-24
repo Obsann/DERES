@@ -1,10 +1,12 @@
-import type { Server } from 'node:http';
+import { createServer, type Server } from 'node:http';
 import { createApp } from './app.js';
 import { config } from './common/config.js';
 import { logger } from './common/logger.js';
 import { connectDatabase, disconnectDatabase } from './database/connection.js';
+import { attachRealtime, closeRealtime, type IncidentIo } from './realtime/index.js';
 
 let server: Server | undefined;
+let io: IncidentIo | undefined;
 
 async function start(): Promise<void> {
   if (config.mongoUri) {
@@ -21,8 +23,10 @@ async function start(): Promise<void> {
   }
 
   const app = createApp();
+  const httpServer = createServer(app);
+  io = attachRealtime(httpServer);
 
-  server = app.listen(config.port, () => {
+  server = httpServer.listen(config.port, () => {
     logger.info('server listening', {
       port: config.port,
       nodeEnv: config.nodeEnv,
@@ -30,6 +34,7 @@ async function start(): Promise<void> {
       database: config.mongoUri === null ? 'not configured' : 'configured',
       llm: config.llmApiKey === null ? 'not configured' : 'configured',
       voice: config.voxideApiKey === null ? 'not configured' : 'configured',
+      realtime: 'socket.io',
     });
   });
 
@@ -76,6 +81,27 @@ function shutdown(signal: string): void {
         process.exit(0);
       });
   };
+
+  if (io) {
+    void closeRealtime(io)
+      .then(() => {
+        io = undefined;
+        server = undefined;
+        finish();
+      })
+      .catch((error: unknown) => {
+        logger.error('error while closing realtime', {
+          message: error instanceof Error ? error.message : String(error),
+        });
+        io = undefined;
+        if (server) {
+          server.close((closeError) => finish(closeError ?? undefined));
+          return;
+        }
+        finish(error instanceof Error ? error : undefined);
+      });
+    return;
+  }
 
   if (!server) {
     finish();
