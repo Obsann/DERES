@@ -24,8 +24,8 @@ import {
 import { SAFE_PHRASES } from './phrases.js';
 import { buildSystemPrompt, buildUserPrompt } from './prompt.js';
 import type { LlmProvider } from './provider.js';
+import { runSafetyPipeline } from './pipeline.js';
 import { LlmIntent, type LlmExtraction } from './schema.js';
-import { validateExtraction } from './validate.js';
 
 export interface InterpretTurnInput {
   incident: Incident;
@@ -256,7 +256,10 @@ export async function interpretTurn(input: InterpretTurnInput): Promise<Interpre
     system: buildSystemPrompt(input.incident, protocolForPrompt),
     user: buildUserPrompt(input.transcript),
   });
-  const extraction = validateExtraction(raw);
+  const extraction = runSafetyPipeline(raw, {
+    incident: input.incident,
+    protocol: protocolForPrompt,
+  });
 
   if (extraction.intent === LlmIntent.REPEAT) {
     const spoken = spokenReply(input.incident, protocolForPrompt, false);

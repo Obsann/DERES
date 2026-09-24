@@ -17,13 +17,16 @@ phrase. The model has no `reply` / `instruction` field.
 utterance
    -> LLM extraction (JSON)
    -> schema validation
-   -> state commands
-   -> protocol engine
+   -> state validation
+   -> protocol validation
+   -> safety rules
+   -> state commands / protocol engine
    -> protocol prompt or safe phrase
 ```
 
-A failure at schema validation rejects the whole turn. It never partially
-applies.
+A failure at any validation stage rejects the whole turn. It never
+partially applies. Uncertainty is kept; it is never collapsed into a
+known fact.
 
 **Provider.** OpenAI-compatible Chat Completions via `LLM_API_KEY`,
 `LLM_BASE_URL`, and `LLM_MODEL`. Tests inject `ScriptedLlmProvider`.

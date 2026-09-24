@@ -1,3 +1,5 @@
+export { runSafetyPipeline } from './pipeline.js';
+export type { PipelineContext, PipelineStage } from './pipeline.js';
 export { interpretTurn } from './orchestrate.js';
 export type { InterpretTurnInput, InterpretTurnResult } from './orchestrate.js';
 export { SAFE_PHRASES } from './phrases.js';
