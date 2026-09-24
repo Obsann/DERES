@@ -16,19 +16,7 @@ All mutations go through `applyCommand` / `applyIncidentCommand`. A caller
 proposes an `IncidentCommand`; the engine accepts it or throws
 `InvalidStateTransitionError` / `ValidationError`.
 
-**Tracked state**
-
-```text
-known / unknown facts
-uncertainty notes
-emergency type and confidence
-current protocol and step
-actions given / confirmed / unable / skipped
-escalation status
-append-only timeline events
-```
-
-**Endpoints (Task 10)**
+These routes are this server's HTTP API. They are not a third-party service.
 
 ```text
 POST   /api/incidents
@@ -38,3 +26,7 @@ POST   /api/incidents/:id/messages
 POST   /api/incidents/:id/actions
 GET    /api/incidents/:id/timeline
 ```
+
+`POST .../messages` stores the transcript and, when an LLM provider is
+configured, runs one interpretation turn. A failed model call does not
+delete the incident or the user message.
