@@ -26,8 +26,12 @@ export interface AppConfig {
   clientUrl: string;
   /** MongoDB connection string; required in production. */
   mongoUri: string | null;
-  /** Null until an LLM provider is chosen (task.md section 46). */
+  /** Null until an LLM provider is chosen (task.md Phase 6). */
   llmApiKey: string | null;
+  /** OpenAI-compatible Chat Completions base URL. */
+  llmBaseUrl: string;
+  /** Model id for the configured provider. */
+  llmModel: string;
   /** Null until Voxide credentials are issued. */
   voxideApiKey: string | null;
 }
@@ -80,6 +84,8 @@ export function loadConfig(): AppConfig {
     clientUrl: readOptional('CLIENT_URL') ?? 'http://localhost:5173',
     mongoUri: readOptional('MONGODB_URI'),
     llmApiKey: readOptional('LLM_API_KEY'),
+    llmBaseUrl: readOptional('LLM_BASE_URL') ?? 'https://api.openai.com/v1',
+    llmModel: readOptional('LLM_MODEL') ?? 'gpt-4o-mini',
     voxideApiKey: readOptional('VOXIDE_API_KEY'),
   };
 
