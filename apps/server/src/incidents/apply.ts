@@ -2,7 +2,7 @@ import type { Id, Incident, IncidentEvent } from '@voicesos/shared';
 import { nowIso } from '../database/ids.js';
 import { appendIncidentEvent, getIncidentById, saveIncidentSnapshot } from '../database/persist.js';
 import type { IncidentCommand } from './commands.js';
-import { applyCommand } from './stateEngine.js';
+import { applyCommand, type EngineEvent } from './stateEngine.js';
 
 /**
  * Load an incident, apply one validated command, persist the new state, and
@@ -31,4 +31,26 @@ export async function applyIncidentCommand(
   }
 
   return { incident, events };
+}
+
+/** Persist an already-computed state change and append its timeline events. */
+export async function commitIncidentMutation(
+  incident: Incident,
+  events: EngineEvent[],
+  at = nowIso(),
+): Promise<{ incident: Incident; events: IncidentEvent[] }> {
+  const saved = await saveIncidentSnapshot(incident);
+  const persisted: IncidentEvent[] = [];
+  for (const event of events) {
+    persisted.push(
+      await appendIncidentEvent(incident.id, {
+        type: event.type,
+        source: event.source,
+        summary: event.summary,
+        payload: event.payload,
+        occurredAt: at,
+      }),
+    );
+  }
+  return { incident: saved, events: persisted };
 }

@@ -77,4 +77,7 @@ See `.env.example` at the repository root.
 | `CLIENT_URL` | `http://localhost:5173` | yes |
 | `MONGODB_URI` | — | yes |
 | `LLM_API_KEY` | — | yes |
+| `LLM_BASE_URL` | `https://api.openai.com/v1` | no |
+| `LLM_MODEL` | `gpt-4o-mini` | no |
 | `VOXIDE_API_KEY` | — | yes |
+| `VOXIDE_BASE_URL` | `https://api.voxide.app/v1` | no |

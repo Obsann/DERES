@@ -5,6 +5,7 @@ export {
   appendIncidentEvent,
   createIncident,
   getIncidentById,
+  findLatestHandoff,
   getLatestHandoff,
   getProtocolById,
   getSessionById,

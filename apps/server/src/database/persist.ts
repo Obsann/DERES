@@ -234,9 +234,13 @@ export async function insertHandoff(handoff: Handoff): Promise<Handoff> {
   return handoff;
 }
 
-export async function getLatestHandoff(incidentId: Id): Promise<Handoff> {
+export async function findLatestHandoff(incidentId: Id): Promise<Handoff | null> {
   const doc = await HandoffModel.findOne({ incidentId }).sort({ version: -1 }).lean().exec();
-  return toHandoff(requireLean(doc, 'Handoff'));
+  return doc ? toHandoff(doc) : null;
+}
+
+export async function getLatestHandoff(incidentId: Id): Promise<Handoff> {
+  return requireLean(await findLatestHandoff(incidentId), 'Handoff');
 }
 
 export async function insertUser(user: AuthUser): Promise<AuthUser> {

@@ -26,6 +26,8 @@ const REDACTED_KEYS = new Set([
   'voxideapikey',
   'transcript',
   'prompt',
+  'audio',
+  'audiobase64',
   'location',
   'latitude',
   'longitude',
