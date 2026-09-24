@@ -80,3 +80,4 @@ See `.env.example` at the repository root.
 | `LLM_BASE_URL` | `https://api.openai.com/v1` | no |
 | `LLM_MODEL` | `gpt-4o-mini` | no |
 | `VOXIDE_API_KEY` | — | yes |
+| `VOXIDE_BASE_URL` | `https://api.voxide.app/v1` | no |

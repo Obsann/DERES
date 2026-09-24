@@ -9,8 +9,20 @@ languages, and voice failure states.
 session. It does not interpret meaning (`ai/`) or decide what to say
 (`protocols/`).
 
-Must handle recognition failure, silence and timeouts, repeat requests, and
-interruptions. Spoken responses stay short, action-oriented, and ask one
-critical question at a time.
+Voxide (browser SDK) captures speech. This server:
 
-Audio is not persisted — only transcripts (specification section 18).
+```text
+POST /api/voice/sessions
+POST /api/voice/sessions/:incidentId/turns
+```
+
+A turn is classified before any state change:
+
+- silence / empty transcript → ask again
+- recognition failure or low confidence → ask again
+- timeout → stay on the line
+- "repeat" / "say that again" → replay the current protocol prompt
+- otherwise → LLM extraction → protocol reply
+
+Spoken responses stay short and come from the protocol or a fixed phrase.
+Audio is not persisted — only transcripts.

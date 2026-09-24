@@ -34,6 +34,8 @@ export interface AppConfig {
   llmModel: string;
   /** Null until Voxide credentials are issued. */
   voxideApiKey: string | null;
+  /** Voxide or compatible speech endpoint. */
+  voxideBaseUrl: string;
 }
 
 class ConfigError extends Error {}
@@ -87,6 +89,7 @@ export function loadConfig(): AppConfig {
     llmBaseUrl: readOptional('LLM_BASE_URL') ?? 'https://api.openai.com/v1',
     llmModel: readOptional('LLM_MODEL') ?? 'gpt-4o-mini',
     voxideApiKey: readOptional('VOXIDE_API_KEY'),
+    voxideBaseUrl: readOptional('VOXIDE_BASE_URL') ?? 'https://api.voxide.app/v1',
   };
 
   if (isProduction) {

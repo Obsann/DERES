@@ -8,6 +8,8 @@ import { requestId } from './common/middleware/requestId.js';
 import { requestLogger } from './common/middleware/requestLogger.js';
 import { errorHandler, notFoundHandler } from './common/middleware/errorHandler.js';
 import { createIncidentRouter } from './incidents/routes.js';
+import { createVoiceRouter } from './voice/routes.js';
+import type { VoxideProvider } from './voice/provider.js';
 
 /**
  * Builds the Express application.
@@ -17,6 +19,7 @@ import { createIncidentRouter } from './incidents/routes.js';
  */
 export interface CreateAppOptions {
   llmProvider?: LlmProvider | null;
+  voxideProvider?: VoxideProvider | null;
 }
 
 export function createApp(options: CreateAppOptions = {}): Express {
@@ -43,9 +46,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
   const api = Router();
   api.use(healthRouter);
   api.use(createIncidentRouter({ llmProvider: options.llmProvider }));
+  api.use(createVoiceRouter({ llmProvider: options.llmProvider, voxideProvider: options.voxideProvider }));
   // Feature routers still to mount:
-  //   protocols  Task 5 public list    voice      Task 9
-  //   security   Task 12
+  //   protocols  Task 5 public list    security   Task 12
   app.use('/api', api);
 
   app.use(notFoundHandler);
