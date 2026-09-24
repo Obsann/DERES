@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { sendSuccess } from '../common/http.js';
+import { createIncidentHandoff } from '../handoff/service.js';
 import {
   parseAddMessage,
   parseCreateIncident,
@@ -47,6 +48,11 @@ export function createIncidentRouter(options: IncidentServiceOptions = {}): Rout
   router.get('/incidents/:id/timeline', async (req, res) => {
     const timeline = await readIncidentTimeline(req.params.id as string);
     sendSuccess(res, timeline);
+  });
+
+  router.get('/incidents/:id/handoff', async (req, res) => {
+    const handoff = await createIncidentHandoff(req.params.id as string);
+    sendSuccess(res, handoff);
   });
 
   return router;

@@ -10,4 +10,7 @@ must never assert information that was never established. Unknown and
 uncertain facts are carried through and shown as such — that is the point of
 `Certainty` and `UncertaintyNote` in the shared contracts.
 
+`criticalInformation` only includes facts with `certainty: known`. Everything
+else is listed under `uncertainty` or `warnings`.
+
 **Endpoint:** `GET /api/incidents/:id/handoff`

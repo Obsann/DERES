@@ -45,7 +45,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
   api.use(createIncidentRouter({ llmProvider: options.llmProvider }));
   // Feature routers still to mount:
   //   protocols  Task 5 public list    voice      Task 9
-  //   handoff    Task 11               security   Task 12
+  //   security   Task 12
   app.use('/api', api);
 
   app.use(notFoundHandler);
