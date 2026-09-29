@@ -1,4 +1,5 @@
 export { publishedProtocols, unconsciousAdultProtocol } from './catalog.js';
+export { createProtocolRouter } from './routes.js';
 export { conditionsHold, evaluateCondition, readStateField } from './conditions.js';
 export {
   assertActionPermitted,

@@ -122,24 +122,37 @@ export interface AddMessageRequest {
 }
 
 /**
- * `POST /api/incidents/:id/voice`
+ * `POST /api/incidents/:id/voice` (also `POST /api/voice/sessions/:id/turns`)
  *
- * Starts or continues a Voxide-backed voice turn. Exact provider fields may
- * grow in Task 9; this is the contract Melkamu and Obsan agree on for MVP.
+ * The browser (or Voxide) sends a transcript or audio. The server classifies
+ * the turn, runs the safety pipeline, and returns the protocol line to speak.
  */
 export interface VoiceTurnRequest {
   /** Optional client-generated turn id for idempotency / reconnect. */
   clientTurnId?: Id;
   /** Language for this utterance; defaults to the incident language. */
   language?: Language;
+  transcript?: string;
+  recognitionConfidence?: number | null;
+  audioBase64?: string;
+  mimeType?: string;
+  silence?: boolean;
+  timeout?: boolean;
+  interrupted?: boolean;
+  recognitionFailed?: boolean;
 }
 
 export interface VoiceTurnResponse {
   incidentId: Id;
-  /** Provider session token or handle, opaque to the UI. */
+  /** Incident session id. Opaque to the UI; used to continue the same call. */
   voiceSessionId: string;
   /** What the UI should show while this turn is live. */
   phase: VoiceSessionPhase;
+  heard: string | null;
+  /** Protocol prompt or a fixed safe phrase. Never model-authored guidance. */
+  reply: string;
+  source: 'protocol' | 'safe_fallback';
+  failure: 'recognition' | 'silence' | 'timeout' | 'upstream' | null;
 }
 
 /** `POST /api/incidents/:id/actions` */

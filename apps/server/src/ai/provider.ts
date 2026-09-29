@@ -66,10 +66,9 @@ export class OpenAiCompatibleProvider implements LlmProvider {
   }
 }
 
-export function createLlmProvider(): LlmProvider {
-  if (config.llmApiKey === null) {
-    throw new UpstreamUnavailableError('LLM');
-  }
+/** Null until `LLM_API_KEY` is set. Tests inject {@link ScriptedLlmProvider}. */
+export function createLlmProvider(): LlmProvider | null {
+  if (config.llmApiKey === null) return null;
   return new OpenAiCompatibleProvider({
     apiKey: config.llmApiKey,
     baseUrl: config.llmBaseUrl,

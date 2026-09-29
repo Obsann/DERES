@@ -14,6 +14,7 @@ Voxide (browser SDK) captures speech. This server:
 ```text
 POST /api/voice/sessions
 POST /api/voice/sessions/:incidentId/turns
+POST /api/incidents/:id/voice   (shared contract alias — same handler)
 ```
 
 A turn is classified before any state change:

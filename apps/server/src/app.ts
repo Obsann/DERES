@@ -8,6 +8,7 @@ import { requestId } from './common/middleware/requestId.js';
 import { requestLogger } from './common/middleware/requestLogger.js';
 import { errorHandler, notFoundHandler } from './common/middleware/errorHandler.js';
 import { createIncidentRouter } from './incidents/routes.js';
+import { createProtocolRouter } from './protocols/routes.js';
 import { attachPrincipal } from './security/middleware.js';
 import { createAuthRouter } from './security/routes.js';
 import { createResponderRouter } from './security/responder.routes.js';
@@ -50,7 +51,8 @@ export function createApp(options: CreateAppOptions = {}): Express {
   api.use(healthRouter);
   api.use(attachPrincipal);
   api.use(createAuthRouter());
-  api.use(createIncidentRouter({ llmProvider: options.llmProvider }));
+  api.use(createProtocolRouter());
+  api.use(createIncidentRouter({ llmProvider: options.llmProvider, voxideProvider: options.voxideProvider }));
   api.use(createVoiceRouter({ llmProvider: options.llmProvider, voxideProvider: options.voxideProvider }));
   api.use(createResponderRouter());
   app.use('/api', api);

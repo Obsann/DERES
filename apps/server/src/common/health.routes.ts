@@ -15,6 +15,10 @@ export const healthRouter: Router = Router();
 healthRouter.get('/health', async (_req, res) => {
   const dependencies: HealthResponse['dependencies'] = {
     database: await getDatabaseHealth(),
+    // Configured means the process will call that provider. We do not ping
+    // paid APIs from health.
+    llm: config.llmApiKey === null ? 'unknown' : 'up',
+    voice: config.voxideApiKey === null ? 'unknown' : 'up',
   };
 
   const body: HealthResponse = {
