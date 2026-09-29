@@ -1,9 +1,11 @@
 import { createServer, type Server } from 'node:http';
+import { createLlmProvider } from './ai/provider.js';
 import { createApp } from './app.js';
 import { config } from './common/config.js';
 import { logger } from './common/logger.js';
 import { connectDatabase, disconnectDatabase } from './database/connection.js';
 import { attachRealtime, closeRealtime, type IncidentIo } from './realtime/index.js';
+import { createVoxideProvider } from './voice/provider.js';
 
 let server: Server | undefined;
 let io: IncidentIo | undefined;
@@ -22,7 +24,10 @@ async function start(): Promise<void> {
     logger.warn('MONGODB_URI not set; persistence is disabled');
   }
 
-  const app = createApp();
+  const app = createApp({
+    llmProvider: createLlmProvider(),
+    voxideProvider: createVoxideProvider(),
+  });
   const httpServer = createServer(app);
   io = attachRealtime(httpServer);
 

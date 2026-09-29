@@ -1,5 +1,5 @@
 import { Language, UserRole } from '@voicesos/shared';
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { config } from '../common/config.js';
 import { UnauthorizedError, ValidationError } from '../common/errors.js';
 import { sendSuccess } from '../common/http.js';
@@ -12,7 +12,7 @@ export function createAuthRouter(): Router {
   const router = Router();
 
   /** Anonymous emergency session. No account. */
-  router.post('/auth/session', async (req, res) => {
+  const openAnonymousSession = async (req: Request, res: Response): Promise<void> => {
     const language = req.body?.language as string | undefined;
     if (!language || !isSupportedVoiceLanguage(language)) {
       throw new ValidationError('language is required', [
@@ -29,7 +29,11 @@ export function createAuthRouter(): Router {
       expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
     });
     sendSuccess(res, { sessionId: session.id, language: session.language }, 201);
-  });
+  };
+
+  router.post('/auth/session', openAnonymousSession);
+  // Shared contract (Task 3 / Melkamu client) uses this path.
+  router.post('/sessions', openAnonymousSession);
 
   /** Responder/admin sign-in. Invite is compared in constant time and never returned. */
   router.post('/auth/responder', async (req, res) => {

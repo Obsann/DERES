@@ -50,7 +50,7 @@ clearer names below. **These are intentional, not drift:**
 | `ConnectionStatus` | Socket / network UI |
 | `AsyncStatus` | API client loading/error lifecycle (Task 19) |
 | `VoiceSessionPhase` | Voice UI phases (Tasks 20–21) |
-| `VoiceTurnRequest` / `VoiceTurnResponse` | `POST .../voice` contract |
+| `VoiceTurnRequest` / `VoiceTurnResponse` | `POST /api/incidents/:id/voice` (Task 14 aligned with server turns) |
 | `GetProtocolResponse` | `GET /api/protocols/:id` |
 
 ## Change rule

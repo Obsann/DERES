@@ -2,4 +2,4 @@ export { classifyVoiceTurn, isSupportedVoiceLanguage, VoiceFailure, VOICE_PHRASE
 export { createVoxideProvider, HttpVoxideProvider, ScriptedVoxideProvider } from './provider.js';
 export type { VoxideProvider } from './provider.js';
 export { createVoiceRouter } from './routes.js';
-export { handleVoiceTurn, startVoiceSession } from './session.js';
+export { handleVoiceTurn, startVoiceSession, toVoiceTurnResponse } from './session.js';

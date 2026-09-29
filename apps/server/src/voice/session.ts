@@ -1,4 +1,12 @@
-import { EventSource, MessageRole, type Incident, type Language } from '@voicesos/shared';
+import {
+  ActionStatus,
+  EventSource,
+  MessageRole,
+  VoiceSessionPhase,
+  type Incident,
+  type Language,
+  type VoiceTurnResponse,
+} from '@voicesos/shared';
 import { interpretTurn } from '../ai/orchestrate.js';
 import { SAFE_PHRASES } from '../ai/phrases.js';
 import { currentStep, stepPrompt } from '../protocols/engine.js';
@@ -30,6 +38,22 @@ export interface HandleVoiceTurnInput extends VoiceTurnInput {
   incidentId: string;
   audioBase64?: string;
   mimeType?: string;
+}
+
+export function parseVoiceTurnBody(incidentId: string, body: unknown): HandleVoiceTurnInput {
+  const record = body !== null && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+  return {
+    incidentId,
+    transcript: typeof record['transcript'] === 'string' ? record['transcript'] : undefined,
+    recognitionConfidence:
+      typeof record['recognitionConfidence'] === 'number' ? record['recognitionConfidence'] : undefined,
+    audioBase64: typeof record['audioBase64'] === 'string' ? record['audioBase64'] : undefined,
+    mimeType: typeof record['mimeType'] === 'string' ? record['mimeType'] : undefined,
+    silence: Boolean(record['silence']),
+    timeout: Boolean(record['timeout']),
+    interrupted: Boolean(record['interrupted']),
+    recognitionFailed: Boolean(record['recognitionFailed']),
+  };
 }
 
 function currentPrompt(incident: Incident): string {
@@ -85,6 +109,26 @@ function rejected(incident: Incident, classification: Extract<VoiceClassificatio
     source: 'safe_fallback',
     failure: classification.failure,
   };
+}
+
+export function toVoiceTurnResponse(result: VoiceTurnResult): VoiceTurnResponse {
+  return {
+    incidentId: result.incident.id,
+    voiceSessionId: result.incident.sessionId,
+    phase: voicePhase(result),
+    heard: result.heard,
+    reply: result.reply,
+    source: result.source,
+    failure: result.failure,
+  };
+}
+
+function voicePhase(result: VoiceTurnResult): VoiceSessionPhase {
+  if (result.failure) return VoiceSessionPhase.ERROR;
+  if (result.incident.state.actions.some((action) => action.status === ActionStatus.GIVEN)) {
+    return VoiceSessionPhase.AWAITING_CONFIRMATION;
+  }
+  return VoiceSessionPhase.SPEAKING;
 }
 
 export async function startVoiceSession(input: {
