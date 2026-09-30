@@ -10,7 +10,7 @@ import {
 import { AiValidationError } from '../common/errors.js';
 import { initialIncident } from '../database/initialState.js';
 import { interpretTurn } from './orchestrate.js';
-import { SAFE_PHRASES } from './phrases.js';
+import { SAFE_PHRASES, safePhrases } from './phrases.js';
 import { ScriptedLlmProvider } from './provider.js';
 import { LlmIntent } from './schema.js';
 import { emptyExtraction } from './validate.js';
@@ -190,7 +190,82 @@ describe('LLM orchestration', () => {
     });
 
     expect(result.incident.state.patient.consciousness).toBe(ConsciousnessState.UNRESPONSIVE);
-    expect(result.reply).toBe('Call emergency services now. Put the phone on speaker if you can.');
+    expect(result.source).toBe('protocol');
+    expect(result.reply).toBe(unconsciousAdultProtocol.steps[1]?.prompt[Language.AMHARIC]);
+    expect(result.incident.state.actions[0]?.instruction).toBe(result.reply);
+  });
+
+  it('speaks Afaan Oromoo protocol lines to an Afaan Oromoo incident', async () => {
+    const result = await interpretTurn({
+      incident: initialIncident({
+        id: 'incident-om',
+        sessionId: 'session-om',
+        language: Language.AFAAN_OROMO,
+        at: AT,
+      }),
+      transcript: 'Hiriyaan koo kufe, deebii hin kennu',
+      protocols: [unconsciousAdultProtocol],
+      provider: new ScriptedLlmProvider([
+        extract({
+          emergencyType: EmergencyType.UNCONSCIOUS,
+          emergencyTypeConfidence: 0.85,
+          consciousness: ConsciousnessState.UNRESPONSIVE,
+          questionAnswer: ConsciousnessState.UNRESPONSIVE,
+          intent: LlmIntent.ANSWER,
+        }),
+      ]),
+      at: AT,
+    });
+
+    expect(result.source).toBe('protocol');
+    expect(result.reply).toBe(unconsciousAdultProtocol.steps[1]?.prompt[Language.AFAAN_OROMO]);
+  });
+
+  it('keeps browser coordinates when the user later describes the location', async () => {
+    const incident = openIncident();
+    incident.state.location = {
+      description: null,
+      latitude: 9.0108,
+      longitude: 38.7613,
+      accuracyMeters: 25,
+      certainty: Certainty.KNOWN,
+      reportedAt: AT,
+    };
+
+    const result = await interpretTurn({
+      incident,
+      transcript: 'We are in Bole near Edna Mall',
+      protocols: [unconsciousAdultProtocol],
+      provider: new ScriptedLlmProvider([extract({ locationDescription: 'Bole, near Edna Mall' })]),
+      at: AT,
+    });
+
+    expect(result.incident.state.location).toMatchObject({
+      description: 'Bole, near Edna Mall',
+      latitude: 9.0108,
+      longitude: 38.7613,
+      accuracyMeters: 25,
+    });
+  });
+
+  it('uses the incident language for safe fallback phrases', async () => {
+    const result = await interpretTurn({
+      incident: initialIncident({
+        id: 'incident-om-burn',
+        sessionId: 'session-om-burn',
+        language: Language.AFAAN_OROMO,
+        at: AT,
+      }),
+      transcript: 'Harki ishee gubate',
+      protocols: [unconsciousAdultProtocol],
+      provider: new ScriptedLlmProvider([
+        extract({ emergencyType: EmergencyType.BURN, emergencyTypeConfidence: 0.8 }),
+      ]),
+      at: AT,
+    });
+
+    expect(result.source).toBe('safe_fallback');
+    expect(result.reply).toBe(safePhrases(Language.AFAAN_OROMO).unsupportedEmergency);
   });
 
   it('confirms a protocol action and speaks the next protocol step', async () => {

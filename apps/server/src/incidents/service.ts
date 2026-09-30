@@ -150,13 +150,18 @@ export async function updateIncident(id: Id, input: UpdateIncidentRequest): Prom
   let incident = await getIncidentById(id);
 
   if (input.location) {
+    const previous = incident.state.location;
+    const coordinatesSent = input.location.latitude !== undefined || input.location.longitude !== undefined;
     const result = await applyIncidentCommand(id, {
       kind: 'set_location',
       location: {
-        description: input.location.description ?? null,
-        latitude: input.location.latitude ?? null,
-        longitude: input.location.longitude ?? null,
-        accuracyMeters: input.location.accuracyMeters ?? null,
+        description:
+          input.location.description === undefined ? (previous?.description ?? null) : input.location.description,
+        latitude: coordinatesSent ? (input.location.latitude ?? null) : (previous?.latitude ?? null),
+        longitude: coordinatesSent ? (input.location.longitude ?? null) : (previous?.longitude ?? null),
+        accuracyMeters: coordinatesSent
+          ? (input.location.accuracyMeters ?? null)
+          : (previous?.accuracyMeters ?? null),
         certainty: Certainty.KNOWN,
         reportedAt: nowIso(),
       },

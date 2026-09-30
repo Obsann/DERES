@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/AppShell';
+import { DesignSystemPage } from '@/pages/DesignSystemPage';
 import { ConnectionPage } from '@/pages/emergency/ConnectionPage';
 import { HomePage } from '@/pages/emergency/HomePage';
 import { LanguagePage } from '@/pages/emergency/LanguagePage';
@@ -29,6 +30,7 @@ export function App() {
           <Route path={routes.responder.list} element={<ResponderListPage />} />
           <Route path={routes.responder.incident} element={<ResponderIncidentPage />} />
           <Route path="/responder/incidents" element={<Navigate to={routes.responder.list} replace />} />
+          <Route path={routes.design} element={<DesignSystemPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AppShell>

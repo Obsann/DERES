@@ -56,5 +56,8 @@ src/
 
 ## Next
 
-- **Task 20** — emergency UI (after Samuel's UX)
-- **Task 23** — responder dashboard (after Samuel's design)
+- **Task 20** — emergency UI: build from `docs/ux/screens.md` (E1–E5)
+- **Task 23** — responder dashboard: build from `docs/ux/screens.md` (R1–R3)
+
+Use the shared UI kit in `src/components/ui` (live at `/design`); rules are in
+`docs/ux/design-system.md`, states and failures in `docs/ux/emergency-ux-map.md`.
