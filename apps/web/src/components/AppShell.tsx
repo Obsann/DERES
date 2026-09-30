@@ -43,6 +43,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <NavLink to={routes.responder.list} style={linkStyle}>
             Responder
           </NavLink>
+          <NavLink to={routes.design} style={linkStyle}>
+            UI kit
+          </NavLink>
         </nav>
       </header>
       {children}

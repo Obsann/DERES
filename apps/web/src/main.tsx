@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { AppQueryProvider } from './providers/AppQueryProvider';
 import { EmergencySessionProvider, ResponderUiProvider } from './state';
+import './styles/tokens.css';
 import './index.css';
+import './styles/ui.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

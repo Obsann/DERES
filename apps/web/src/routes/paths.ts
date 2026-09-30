@@ -17,6 +17,7 @@ export const routes = {
     list: '/responder',
     incident: '/responder/incidents/:incidentId',
   },
+  design: '/design',
 } as const;
 
 export function emergencyTimelinePath(incidentId: string): string {

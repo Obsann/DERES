@@ -1,8 +1,8 @@
 :root {
-  color: #14201a;
-  background: #f3f1eb;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  line-height: 1.45;
+  color: var(--d-ink);
+  background: var(--d-canvas);
+  font-family: var(--d-font);
+  line-height: var(--d-leading-body);
   font-weight: 400;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
