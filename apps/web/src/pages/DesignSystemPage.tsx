@@ -9,6 +9,7 @@ import {
   VoiceSessionPhase,
   type HandoffFact,
 } from '@voicesos/shared';
+import { emergencyCallHref } from '@/config/emergency';
 import {
   ActionStatusBadge,
   Banner,
@@ -77,7 +78,7 @@ export function DesignSystemPage() {
       <Section title="Buttons" note="Emergency red is reserved for starting an emergency and calling emergency services.">
         <div className="d-row">
           <Button variant="emergency" size="xl" icon="alert">Start emergency</Button>
-          <ButtonLink variant="emergency" size="lg" icon="phone" href="tel:">Call emergency services</ButtonLink>
+          <ButtonLink variant="emergency" size="lg" icon="phone" href={emergencyCallHref}>Call emergency services</ButtonLink>
         </div>
         <div className="d-row">
           <Button variant="primary" size="lg" icon="check">Done</Button>
@@ -116,7 +117,7 @@ export function DesignSystemPage() {
           </Frame>
           <Frame label="Escalation">
             <InstructionCard kind={ProtocolStepKind.ESCALATION} text="This guidance is for adults. Call emergency services and follow their instructions.">
-              <ButtonLink variant="emergency" size="lg" icon="phone" href="tel:" block>Call emergency services</ButtonLink>
+              <ButtonLink variant="emergency" size="lg" icon="phone" href={emergencyCallHref} block>Call emergency services</ButtonLink>
             </InstructionCard>
           </Frame>
           <Frame label="Exit step">
@@ -136,7 +137,7 @@ export function DesignSystemPage() {
       </Section>
 
       <Section title="Banners" note="Each failure banner carries exactly one recovery action.">
-        <Banner tone="critical" title="Call emergency services now." action={<ButtonLink variant="emergency" icon="phone" href="tel:">Call</ButtonLink>}>
+        <Banner tone="critical" title="Call emergency services now." action={<ButtonLink variant="emergency" icon="phone" href={emergencyCallHref}>Call</ButtonLink>}>
           They are not responding.
         </Banner>
         <Banner tone="warning" title="Connection lost — reconnecting." icon="wifiOff">

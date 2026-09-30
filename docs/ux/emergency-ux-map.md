@@ -46,7 +46,8 @@ right now?"* and nothing else.
 - Three large buttons, each labelled **in its own language and script**:
   `English`, `አማርኛ`, `Afaan Oromoo`.
 - Only languages the protocol actually supports are enabled (`protocol.languages`;
-  today English only). Others show "Coming soon" rather than silently falling back.
+  English, Amharic and Afaan Oromoo). Others show "Coming soon" rather than
+  silently falling back.
 - One tap proceeds; no "Next" button.
 
 ### Step 3 — Active emergency (`/emergency/session`)
@@ -178,12 +179,16 @@ Use this during the walkthrough; every row needs a screen answer.
 - [ ] Summary shown to responder
 - [ ] Responder: empty list, live new incident, incident with no location, incident with only unknowns
 
-## 6. Open questions for the team
+## 6. Decisions
 
-1. **Emergency number.** Which number does the **Call emergency services** button
-   dial in the demo (Ethiopian ambulance line vs. a demo number)? Must be confirmed
-   before the demo; do not hard-code a guess.
-2. **Amharic / Afaan Oromo prompts.** The protocol only has English prompts today;
-   language buttons stay disabled until translations are reviewed (Task 35).
-3. **Location.** Ask the browser for geolocation on start, or only ask by voice?
-   Proposal: ask the browser once on the session screen, never block on it.
+1. **Emergency number — 907 (ambulance).** Verified against the Ethiopian Red Cross
+   and the French Embassy in Ethiopia (fire 939, police 991; there is no unified
+   112/911). Set in `apps/web/src/config/emergency.ts`, overridable with
+   `VITE_EMERGENCY_NUMBER` for regions outside Addis Ababa.
+2. **Amharic and Afaan Oromoo are enabled.** Protocol prompts and fixed phrases
+   exist in all three languages. The drafts need native-speaker sign-off before
+   the demo: [`translation-review.md`](./translation-review.md).
+3. **Location — ask the browser once when the incident opens.** `useIncidentLocation`
+   requests it automatically and never blocks the flow. If it is denied, the
+   location can still be described by voice, and the server merges the spoken
+   description with any coordinates.

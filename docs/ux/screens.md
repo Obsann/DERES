@@ -45,10 +45,10 @@ bottom within thumb reach. No global navigation during an active emergency.
 │ │ English                   │ │  Button primary lg block
 │ └───────────────────────────┘ │
 │ ┌───────────────────────────┐ │
-│ │ አማርኛ        Coming soon   │ │  disabled until protocol supports it
+│ │ አማርኛ                      │ │  lang="am"
 │ └───────────────────────────┘ │
 │ ┌───────────────────────────┐ │
-│ │ Afaan Oromoo  Coming soon │ │
+│ │ Afaan Oromoo              │ │  lang="om"
 │ └───────────────────────────┘ │
 └───────────────────────────────┘
 ```
@@ -91,6 +91,10 @@ Variants by step kind:
 | `escalation` | Call emergency services (emergency) |
 | `exit` | Help has arrived (secondary) |
 
+- Voice: `useDeresVoice(incidentId, language)` (Voxide). Location:
+  `useIncidentLocation(incidentId)` asks once on entry; show a quiet
+  "Location shared" / "Location not shared — say where you are" line, never a blocker.
+- Call button: `emergencyCallHref` from `@/config/emergency` (dials 907).
 - Reads: `VoiceTurnResponse.{phase, reply, failure, source}`, current protocol step
   (`kind`, `label`, `requiresConfirmation`), `incident.state.escalationStatus`,
   `ConnectionStatus`.
