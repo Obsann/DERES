@@ -46,7 +46,7 @@ export const unconsciousAdultProtocol: Protocol = {
     edition: '2021',
     retrievedAt: RETRIEVED_AT,
     notes:
-      'Adult lay-rescuer path only. Untrained helpers are instructed to use compression-only chest compressions. Not a substitute for local emergency-service instructions.',
+      'Adult lay-rescuer path only. Untrained helpers are instructed to use compression-only chest compressions. Not a substitute for local emergency-service instructions. Amharic and Afaan Oromoo prompts are drafts pending native-speaker review (docs/ux/translation-review.md).',
   },
   entryConditions: [
     eq('entry-type', 'emergencyType', EmergencyType.UNCONSCIOUS, 'Emergency is an unresponsive or collapsed person'),
@@ -60,6 +60,8 @@ export const unconsciousAdultProtocol: Protocol = {
       label: 'Check response',
       prompt: {
         [Language.ENGLISH]: 'Tap their shoulders and shout. Are they responding to you?',
+        [Language.AMHARIC]: 'ትከሻቸውን መታ መታ አድርገው ጮክ ብለው ይጥሯቸው። ምላሽ እየሰጡዎት ነው?',
+        [Language.AFAAN_OROMO]: 'Gateettii isaanii rurrukutii sagalee ol kaasii waami. Deebii siif kennaa jiru?',
       },
       entryConditions: [],
       acceptedAnswers: [ConsciousnessState.UNRESPONSIVE, ConsciousnessState.RESPONSIVE],
@@ -90,6 +92,8 @@ export const unconsciousAdultProtocol: Protocol = {
       label: 'Call emergency services',
       prompt: {
         [Language.ENGLISH]: 'Call emergency services now. Put the phone on speaker if you can.',
+        [Language.AMHARIC]: 'አሁኑኑ ወደ ድንገተኛ አገልግሎት ይደውሉ። ከቻሉ ስልኩን በድምጽ ማጉያ ላይ ያድርጉት።',
+        [Language.AFAAN_OROMO]: 'Amma tajaajila balaa tasaatiif bilbili. Yoo dandeesse, bilbilaa sagalee guddaa irra kaa\'i.',
       },
       entryConditions: [],
       acceptedAnswers: [],
@@ -110,6 +114,8 @@ export const unconsciousAdultProtocol: Protocol = {
       label: 'Open the airway',
       prompt: {
         [Language.ENGLISH]: 'Tilt the head back and lift the chin to open the airway.',
+        [Language.AMHARIC]: 'የመተንፈሻ መንገዱን ለመክፈት ጭንቅላታቸውን ወደ ኋላ ዘንበል አድርገው አገጫቸውን ቀና ያድርጉ።',
+        [Language.AFAAN_OROMO]: 'Karaa hargansuu banuuf mataa isaanii gara duubaatti gad qabii, areeda isaanii ol kaasi.',
       },
       entryConditions: [],
       acceptedAnswers: [],
@@ -130,6 +136,8 @@ export const unconsciousAdultProtocol: Protocol = {
       label: 'Check breathing',
       prompt: {
         [Language.ENGLISH]: 'Look, listen and feel for up to 10 seconds. Are they breathing normally?',
+        [Language.AMHARIC]: 'እስከ 10 ሰከንድ ድረስ ይመልከቱ፣ ያዳምጡ እና ይሰማቸው። በመደበኛ ሁኔታ እየተነፈሱ ነው?',
+        [Language.AFAAN_OROMO]: 'Hanga sekondii 10tti ilaali, dhaggeeffadhu, akkasumas miiri. Haala idileetiin hargansaa jiru?',
       },
       entryConditions: [],
       acceptedAnswers: [BreathingState.NORMAL, BreathingState.ABNORMAL, BreathingState.ABSENT],
@@ -166,6 +174,10 @@ export const unconsciousAdultProtocol: Protocol = {
       prompt: {
         [Language.ENGLISH]:
           'Push hard and fast in the centre of the chest. Keep going until help takes over. Do not stop to check for a pulse.',
+        [Language.AMHARIC]:
+          'በደረታቸው መሃል ላይ አጥብቀው እና በፍጥነት ይጫኑ። እርዳታ እስኪደርስ ድረስ ይቀጥሉ። የልብ ምት ለመፈተሽ አያቁሙ።',
+        [Language.AFAAN_OROMO]:
+          'Walakkaa qomaa irratti jabeessii fi saffisaan dhiibi. Hanga gargaarsi dhufee si bakka bu\'utti itti fufi. Rukuttaa onnee ilaaluuf hin dhaabatin.',
       },
       entryConditions: [],
       acceptedAnswers: [],
@@ -186,6 +198,10 @@ export const unconsciousAdultProtocol: Protocol = {
       label: 'Recovery position',
       prompt: {
         [Language.ENGLISH]: 'Roll them onto their side. Tilt the head back so they can keep breathing. Stay with them.',
+        [Language.AMHARIC]:
+          'ወደ ጎናቸው ያዙሯቸው። መተንፈሳቸውን እንዲቀጥሉ ጭንቅላታቸውን ወደ ኋላ ዘንበል ያድርጉ። ከአጠገባቸው አይለዩ።',
+        [Language.AFAAN_OROMO]:
+          'Cinaacha isaaniitti garagalchi. Akka hargansuu itti fufaniif mataa isaanii gara duubaatti gad qabi. Isaan bira turi.',
       },
       entryConditions: [],
       acceptedAnswers: [],
@@ -206,6 +222,9 @@ export const unconsciousAdultProtocol: Protocol = {
       label: 'Continue until help arrives',
       prompt: {
         [Language.ENGLISH]: 'Keep pushing in the centre of the chest until emergency services take over.',
+        [Language.AMHARIC]: 'የድንገተኛ አገልግሎት ሠራተኞች እስኪረከቡ ድረስ በደረት መሃል ላይ መጫንዎን ይቀጥሉ።',
+        [Language.AFAAN_OROMO]:
+          'Hanga hojjettoonni tajaajila balaa tasaa si bakka bu\'anitti walakkaa qomaa dhiibuu itti fufi.',
       },
       entryConditions: [],
       acceptedAnswers: [],
@@ -220,6 +239,8 @@ export const unconsciousAdultProtocol: Protocol = {
       label: 'Stay and keep checking',
       prompt: {
         [Language.ENGLISH]: 'Stay with them. If breathing stops, start pushing in the centre of the chest.',
+        [Language.AMHARIC]: 'ከአጠገባቸው አይለዩ። መተንፈሳቸው ካቆመ በደረት መሃል ላይ መጫን ይጀምሩ።',
+        [Language.AFAAN_OROMO]: 'Isaan bira turi. Yoo hargansuun dhaabate, walakkaa qomaa dhiibuu jalqabi.',
       },
       entryConditions: [],
       acceptedAnswers: [],
@@ -234,6 +255,10 @@ export const unconsciousAdultProtocol: Protocol = {
       label: 'They are responding',
       prompt: {
         [Language.ENGLISH]: 'They are responding. Stay with them and keep checking while you wait for help if you have already called.',
+        [Language.AMHARIC]:
+          'ምላሽ እየሰጡ ነው። ከአጠገባቸው ይቆዩ፤ አስቀድመው ደውለው ከሆነ እርዳታ እስኪመጣ ድረስ ሁኔታቸውን መከታተልዎን ይቀጥሉ።',
+        [Language.AFAAN_OROMO]:
+          'Deebii kennaa jiru. Isaan bira turi; yoo duraan bilbilte, hanga gargaarsi dhufutti haala isaanii hordofuu itti fufi.',
       },
       entryConditions: [],
       acceptedAnswers: [],
@@ -278,6 +303,9 @@ export const unconsciousAdultProtocol: Protocol = {
       escalateTo: EscalationState.ESCALATED,
       instruction: {
         [Language.ENGLISH]: 'This guidance is for adults. Call emergency services and follow their instructions.',
+        [Language.AMHARIC]: 'ይህ መመሪያ ለአዋቂዎች ነው። ወደ ድንገተኛ አገልግሎት ደውለው መመሪያቸውን ይከተሉ።',
+        [Language.AFAAN_OROMO]:
+          'Qajeelfamni kun kan ga\'eessotaati. Tajaajila balaa tasaatiif bilbiliitii qajeelfama isaanii hordofi.',
       },
       reason: 'Pediatric resuscitation is outside this protocol',
     },
@@ -294,6 +322,8 @@ export const unconsciousAdultProtocol: Protocol = {
       escalateTo: EscalationState.ESCALATED,
       instruction: {
         [Language.ENGLISH]: 'Keep the emergency services on the line and start chest compressions.',
+        [Language.AMHARIC]: 'የድንገተኛ አገልግሎቱን ስልክ ሳይዘጉ የደረት ግፊት ይጀምሩ።',
+        [Language.AFAAN_OROMO]: 'Bilbila tajaajila balaa tasaa osoo hin cufin, qoma dhiibuu jalqabi.',
       },
       reason: 'Unresponsive and not breathing normally',
     },
@@ -305,6 +335,8 @@ export const unconsciousAdultProtocol: Protocol = {
       escalateTo: EscalationState.RECOMMENDED,
       instruction: {
         [Language.ENGLISH]: 'Call emergency services now.',
+        [Language.AMHARIC]: 'አሁኑኑ ወደ ድንገተኛ አገልግሎት ይደውሉ።',
+        [Language.AFAAN_OROMO]: 'Amma tajaajila balaa tasaatiif bilbili.',
       },
       reason: 'Unresponsive adult needs professional help',
     },
@@ -312,7 +344,7 @@ export const unconsciousAdultProtocol: Protocol = {
   exitConditions: [
     eq('exit-responsive', 'patient.consciousness', ConsciousnessState.RESPONSIVE, 'Person is responding'),
   ],
-  languages: [Language.ENGLISH],
+  languages: [Language.ENGLISH, Language.AMHARIC, Language.AFAAN_OROMO],
   published: true,
   createdAt: CREATED_AT,
   updatedAt: CREATED_AT,

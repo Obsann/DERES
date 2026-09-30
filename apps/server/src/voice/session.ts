@@ -8,7 +8,7 @@ import {
   type VoiceTurnResponse,
 } from '@voicesos/shared';
 import { interpretTurn } from '../ai/orchestrate.js';
-import { SAFE_PHRASES } from '../ai/phrases.js';
+import { safePhrases } from '../ai/phrases.js';
 import { currentStep, stepPrompt } from '../protocols/engine.js';
 import { publishedProtocols } from '../protocols/catalog.js';
 import type { LlmProvider } from '../ai/provider.js';
@@ -60,7 +60,7 @@ function currentPrompt(incident: Incident): string {
   const protocol = publishedProtocols.find((item) => item.id === incident.state.currentProtocolId) ?? null;
   const step = protocol ? currentStep(protocol, incident.state) : null;
   if (step) return stepPrompt(step, incident.language);
-  return SAFE_PHRASES.stayWithThem;
+  return safePhrases(incident.language).stayWithThem;
 }
 
 async function persistAndInterpret(
@@ -177,7 +177,7 @@ export async function handleVoiceTurn(
         return {
           incident,
           heard: null,
-          reply: SAFE_PHRASES.sayAgain,
+          reply: safePhrases(incident.language).sayAgain,
           source: 'safe_fallback',
           failure: VoiceFailure.UPSTREAM,
         };
@@ -188,6 +188,7 @@ export async function handleVoiceTurn(
 
   const classification = classifyVoiceTurn({
     transcript,
+    language: incident.language,
     recognitionConfidence: confidence,
     silence: input.silence,
     timeout: input.timeout,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { classifyVoiceTurn, VoiceFailure, VOICE_PHRASES } from './classify.js';
+import { Language } from '@voicesos/shared';
+import { classifyVoiceTurn, VoiceFailure, VOICE_PHRASES, VOICE_PHRASES_BY_LANGUAGE } from './classify.js';
 
 describe('voice turn classification', () => {
   it('processes a natural utterance', () => {
@@ -30,5 +31,17 @@ describe('voice turn classification', () => {
   it('treats a repeat request as a replay, not a new fact', () => {
     expect(classifyVoiceTurn({ transcript: 'say that again' }).action).toBe('repeat');
     expect(classifyVoiceTurn({ transcript: 'Repeat' }).action).toBe('repeat');
+    expect(classifyVoiceTurn({ transcript: 'እንደገና', language: Language.AMHARIC }).action).toBe('repeat');
+    expect(classifyVoiceTurn({ transcript: 'ይድገሙት።', language: Language.AMHARIC }).action).toBe('repeat');
+    expect(classifyVoiceTurn({ transcript: "Irra deebi'i", language: Language.AFAAN_OROMO }).action).toBe('repeat');
+  });
+
+  it('answers failures in the incident language', () => {
+    expect(classifyVoiceTurn({ silence: true, language: Language.AMHARIC })).toMatchObject({
+      reply: VOICE_PHRASES_BY_LANGUAGE[Language.AMHARIC].silence,
+    });
+    expect(classifyVoiceTurn({ timeout: true, language: Language.AFAAN_OROMO })).toMatchObject({
+      reply: VOICE_PHRASES_BY_LANGUAGE[Language.AFAAN_OROMO].timeout,
+    });
   });
 });

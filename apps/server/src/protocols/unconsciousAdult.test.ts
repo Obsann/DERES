@@ -189,4 +189,18 @@ describe('MVP unresponsive-adult protocol', () => {
     ).incident;
     expect(() => startProtocol(infant, unconsciousAdultProtocol, AT)).toThrow(ProtocolViolationError);
   });
+
+  it('has a prompt in every declared language, so no user silently hears English', () => {
+    for (const language of unconsciousAdultProtocol.languages) {
+      for (const step of unconsciousAdultProtocol.steps) {
+        expect(step.prompt[language], `${step.id} (${language})`).toBeTruthy();
+      }
+      for (const rule of unconsciousAdultProtocol.escalationRules) {
+        expect(rule.instruction[language], `${rule.id} (${language})`).toBeTruthy();
+      }
+    }
+    expect(unconsciousAdultProtocol.languages).toEqual(
+      expect.arrayContaining([Language.ENGLISH, Language.AMHARIC, Language.AFAAN_OROMO]),
+    );
+  });
 });

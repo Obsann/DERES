@@ -21,7 +21,7 @@ import {
   stepPrompt,
   resolveProtocolAction,
 } from '../protocols/index.js';
-import { SAFE_PHRASES } from './phrases.js';
+import { safePhrases } from './phrases.js';
 import { buildSystemPrompt, buildUserPrompt } from './prompt.js';
 import type { LlmProvider } from './provider.js';
 import { runSafetyPipeline } from './pipeline.js';
@@ -123,7 +123,8 @@ function applyFacts(builder: ResultBuilder, extraction: LlmExtraction, at: IsoDa
     );
   }
 
-  if (extraction.locationDescription && state.location === null) {
+  if (extraction.locationDescription && !state.location?.description) {
+    const coordinates = state.location;
     builder.push(
       applyCommand(
         builder.incident,
@@ -131,10 +132,13 @@ function applyFacts(builder: ResultBuilder, extraction: LlmExtraction, at: IsoDa
           kind: 'set_location',
           location: {
             description: extraction.locationDescription,
-            latitude: null,
-            longitude: null,
-            accuracyMeters: null,
-            certainty: extraction.certainty === Certainty.KNOWN ? Certainty.KNOWN : Certainty.UNCERTAIN,
+            latitude: coordinates?.latitude ?? null,
+            longitude: coordinates?.longitude ?? null,
+            accuracyMeters: coordinates?.accuracyMeters ?? null,
+            certainty:
+              coordinates?.certainty === Certainty.KNOWN || extraction.certainty === Certainty.KNOWN
+                ? Certainty.KNOWN
+                : Certainty.UNCERTAIN,
             reportedAt: at,
           },
           source,
@@ -217,22 +221,23 @@ function applyProtocolTurn(
 function spokenReply(incident: Incident, protocol: Protocol | null, blocked: boolean): InterpretTurnResult {
   const step = protocol ? currentStep(protocol, incident.state) : null;
   const protocolLine = step ? stepPrompt(step, incident.language) : null;
+  const phrases = safePhrases(incident.language);
 
   if (!protocol) {
     return {
       incident,
       events: [],
-      reply: SAFE_PHRASES.unsupportedEmergency,
+      reply: phrases.unsupportedEmergency,
       source: 'safe_fallback',
     };
   }
 
   if (blocked) {
-    const rest = protocolLine ?? SAFE_PHRASES.stayWithThem;
+    const rest = protocolLine ?? phrases.stayWithThem;
     return {
       incident,
       events: [],
-      reply: `${SAFE_PHRASES.cannotInvent} ${rest}`,
+      reply: `${phrases.cannotInvent} ${rest}`,
       source: 'safe_fallback',
     };
   }
@@ -240,7 +245,7 @@ function spokenReply(incident: Incident, protocol: Protocol | null, blocked: boo
   return {
     incident,
     events: [],
-    reply: protocolLine ?? SAFE_PHRASES.stayWithThem,
+    reply: protocolLine ?? phrases.stayWithThem,
     source: protocolLine ? 'protocol' : 'safe_fallback',
   };
 }
