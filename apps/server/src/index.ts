@@ -31,7 +31,7 @@ async function start(): Promise<void> {
   const httpServer = createServer(app);
   io = attachRealtime(httpServer);
 
-  server = httpServer.listen(config.port, () => {
+  server = httpServer.listen(config.port, '0.0.0.0', () => {
     logger.info('server listening', {
       port: config.port,
       nodeEnv: config.nodeEnv,

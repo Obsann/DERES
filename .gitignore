@@ -24,3 +24,6 @@ Thumbs.db
 
 # Local screenshots
 .shots/
+
+# Hosting CLI
+.vercel/

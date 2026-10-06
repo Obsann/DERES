@@ -15,7 +15,9 @@ curl http://localhost:4000/api/health
 The server starts without an LLM key or Voxide key so those integrations can
 land later. Persistence is live when `MONGODB_URI` is set; without it the
 process still boots and `/api/health` reports `database: "unknown"`.
-In production the database, LLM and Voxide keys are all required.
+In production the database, LLM key, `CLIENT_URL`, `SESSION_SECRET`, and
+`RESPONDER_INVITE` are required. The Voxide browser SDK uses the web app's
+publishable key, not `VOXIDE_API_KEY`. See `docs/deploy.md`.
 
 | Script | Purpose |
 |---|---|
