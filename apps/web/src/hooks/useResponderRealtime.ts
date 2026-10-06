@@ -38,9 +38,18 @@ export function useResponderRealtime(incidentId?: Id) {
       void queryClient.invalidateQueries({ queryKey: ['responder', 'incidents'] });
       void queryClient.invalidateQueries({ queryKey: ['incidents'] });
     };
+    // One turn emits a burst of events; refetch once after the burst settles.
+    const pending = new Map<Id, ReturnType<typeof setTimeout>>();
     const refreshIncident = ({ incidentId: id }: { incidentId: Id }) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.incidents.handoff(id) });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.incidents.timeline(id) });
+      clearTimeout(pending.get(id));
+      pending.set(
+        id,
+        setTimeout(() => {
+          pending.delete(id);
+          void queryClient.invalidateQueries({ queryKey: queryKeys.incidents.handoff(id) });
+          void queryClient.invalidateQueries({ queryKey: queryKeys.incidents.timeline(id) });
+        }, 400),
+      );
     };
 
     socket.on('connect', () => setConnection(ConnectionStatus.CONNECTED));
@@ -58,10 +67,14 @@ export function useResponderRealtime(incidentId?: Id) {
     });
     socket.on(IncidentSocketEvent.STATE_CHANGED, refreshIncident);
     socket.on(IncidentSocketEvent.ACTION_RECORDED, refreshIncident);
-    socket.on(IncidentSocketEvent.HANDOFF_UPDATED, refreshIncident);
+    // Use the pushed handoff directly: refetching would mint yet another version.
+    socket.on(IncidentSocketEvent.HANDOFF_UPDATED, ({ incidentId: id, handoff }) => {
+      queryClient.setQueryData(queryKeys.incidents.handoff(id), handoff);
+    });
     socket.on(IncidentSocketEvent.MESSAGE_ADDED, refreshIncident);
 
     return () => {
+      for (const timer of pending.values()) clearTimeout(timer);
       socket.disconnect();
       socketRef.current = null;
       setConnection(ConnectionStatus.IDLE);

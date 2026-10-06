@@ -540,7 +540,7 @@
 
 .d-timeline li {
   display: grid;
-  grid-template-columns: 6rem minmax(0, 1fr);
+  grid-template-columns: 8.5rem minmax(0, 1fr);
   gap: var(--d-space-3);
   padding: var(--d-space-2) 0;
   border-bottom: 1px solid var(--d-border);
@@ -551,6 +551,7 @@
 }
 
 .d-timeline time {
+  white-space: nowrap;
   color: var(--d-ink-muted);
   font-family: var(--d-font-mono);
   font-size: var(--d-text-sm);

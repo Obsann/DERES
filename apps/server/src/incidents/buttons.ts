@@ -109,21 +109,26 @@ export async function handleButtonTurn(incidentId: string, press: ButtonTurnRequ
     return { incident, heard: null, reply: result.reply, source: result.source, failure: null };
   }
 
-  await insertConversationMessage({
-    incidentId,
-    role: MessageRole.USER,
-    transcript: `[button] ${label}`,
-    language: incident.language,
-    recognitionConfidence: null,
-  });
-  const committed = await commitIncidentMutation(result.incident, result.events);
-  await insertConversationMessage({
-    incidentId,
-    role: MessageRole.ASSISTANT,
-    transcript: result.reply,
-    language: incident.language,
-    recognitionConfidence: null,
-  });
+  const pressedAt = new Date();
+  const [, committed] = await Promise.all([
+    insertConversationMessage({
+      incidentId,
+      role: MessageRole.USER,
+      transcript: `[button] ${label}`,
+      language: incident.language,
+      recognitionConfidence: null,
+      createdAt: pressedAt.toISOString(),
+    }),
+    commitIncidentMutation(result.incident, result.events),
+    insertConversationMessage({
+      incidentId,
+      role: MessageRole.ASSISTANT,
+      transcript: result.reply,
+      language: incident.language,
+      recognitionConfidence: null,
+      createdAt: new Date(pressedAt.getTime() + 1).toISOString(),
+    }),
+  ]);
 
   return { incident: committed.incident, heard: label, reply: result.reply, source: result.source, failure: null };
 }

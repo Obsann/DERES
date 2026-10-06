@@ -44,6 +44,8 @@ const FIELD_LABEL: Record<string, string> = {
   'patient.breathing': 'Breathing',
   'patient.ageGroup': 'Age group',
   location: 'Location',
+  peopleAffected: 'People affected',
+  emergencyType: 'Emergency type',
 };
 
 function time(iso: string): string {

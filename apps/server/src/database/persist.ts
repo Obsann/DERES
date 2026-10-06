@@ -172,6 +172,69 @@ export async function appendIncidentEvent(
   return event;
 }
 
+/**
+ * Appends several events in two round trips: reserve a block of sequence
+ * numbers atomically, then insert them together. One emergency turn writes
+ * several events, and per-event round trips to a remote database add seconds.
+ */
+export async function appendIncidentEvents(
+  incidentId: Id,
+  inputs: Omit<IncidentEvent, 'id' | 'incidentId' | 'sequence'>[],
+): Promise<IncidentEvent[]> {
+  if (inputs.length === 0) return [];
+  const last = inputs[inputs.length - 1] as (typeof inputs)[number];
+  const updated = await IncidentModel.findOneAndUpdate(
+    { _id: incidentId },
+    { $inc: { eventSequence: inputs.length }, $set: { updatedAt: last.occurredAt } },
+    { new: true },
+  )
+    .lean<IncidentDocument>()
+    .exec();
+
+  if (!updated) throw new NotFoundError('Incident');
+
+  const first = updated.eventSequence - inputs.length + 1;
+  const events: IncidentEvent[] = inputs.map((input, index) => ({
+    id: createId(),
+    incidentId,
+    sequence: first + index,
+    type: input.type,
+    source: input.source,
+    summary: input.summary,
+    payload: input.payload,
+    occurredAt: input.occurredAt,
+  }));
+
+  try {
+    await IncidentEventModel.insertMany(
+      events.map(
+        (event) =>
+          ({
+            _id: event.id,
+            incidentId: event.incidentId,
+            sequence: event.sequence,
+            type: event.type,
+            source: event.source,
+            summary: event.summary,
+            payload: event.payload,
+            occurredAt: event.occurredAt,
+          }) satisfies IncidentEventDocument,
+      ),
+      { ordered: true },
+    );
+  } catch (error) {
+    const code = (error as { code?: number }).code;
+    if (code === 11000) {
+      throw new ConflictError(`Duplicate event sequence for incident ${incidentId}`);
+    }
+    throw error;
+  }
+
+  const incident = toIncident(updated);
+  for (const event of events) publishTimelineEvent(incident, event);
+  return events;
+}
+
 /** Timeline in `sequence` order. Events are append-only and never rewritten. */
 export async function listIncidentEvents(incidentId: Id): Promise<IncidentEvent[]> {
   const docs = await IncidentEventModel.find({ incidentId })
