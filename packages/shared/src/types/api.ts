@@ -153,7 +153,25 @@ export interface VoiceTurnResponse {
   reply: string;
   source: 'protocol' | 'safe_fallback';
   failure: 'recognition' | 'silence' | 'timeout' | 'upstream' | null;
+  /**
+   * What the app does after the line is spoken. The model never names this.
+   * Anything other than `place_call` is ignored, and the line is still spoken.
+   */
+  capability: 'place_call' | null;
 }
+
+/**
+ * `POST /api/incidents/:id/buttons` — the on-screen fallback for voice.
+ *
+ * Runs the same protocol path as a voice turn without calling the LLM, so the
+ * emergency flow still works when speech or the model is unavailable.
+ * The response is a {@link VoiceTurnResponse}.
+ */
+export type ButtonTurnRequest =
+  | { kind: 'start'; emergency: 'collapsed' }
+  | { kind: 'answer'; answer: 'yes' | 'no' | 'unsure' }
+  | { kind: 'action'; status: 'confirmed' | 'unable' }
+  | { kind: 'repeat' };
 
 /** `POST /api/incidents/:id/actions` */
 export interface RecordActionRequest {

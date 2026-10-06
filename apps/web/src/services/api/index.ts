@@ -8,6 +8,7 @@ export {
   toUiErrorMessage,
   type ApiRequestOptions,
 } from './client';
+export { authApi } from './auth';
 export { getApiBaseUrl } from './config';
 export { getHealth, sessionsApi } from './health';
 export { incidentsApi } from './incidents';

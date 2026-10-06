@@ -14,6 +14,7 @@ import { createAuthRouter } from './security/routes.js';
 import { createResponderRouter } from './security/responder.routes.js';
 import { createVoiceRouter } from './voice/routes.js';
 import type { VoxideProvider } from './voice/provider.js';
+import { createSpeechRouter } from './voice/speech.routes.js';
 
 /**
  * Builds the Express application.
@@ -41,6 +42,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
     }),
   );
 
+  // A voice turn may carry ~10s of 16kHz WAV as base64. Parsed here first, the
+  // global parser below skips it.
+  app.use(['/api/incidents/:id/voice', '/api/voice/sessions/:incidentId/turns'], express.json({ limit: '2mb' }));
   // Emergency payloads are transcripts, not uploads. A small cap limits abuse.
   app.use(express.json({ limit: '256kb' }));
 
@@ -54,6 +58,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
   api.use(createProtocolRouter());
   api.use(createIncidentRouter({ llmProvider: options.llmProvider, voxideProvider: options.voxideProvider }));
   api.use(createVoiceRouter({ llmProvider: options.llmProvider, voxideProvider: options.voxideProvider }));
+  api.use(createSpeechRouter({ speechProvider: options.voxideProvider }));
   api.use(createResponderRouter());
   app.use('/api', api);
 

@@ -62,6 +62,28 @@ describe('LLM orchestration', () => {
     expect(result.incident.state.actions[0]?.instruction).toBe(result.reply);
   });
 
+  it('retries once when the model replies in prose, then applies the second JSON', async () => {
+    const result = await interpretTurn({
+      incident: openIncident(),
+      transcript: 'He is not responding',
+      protocols: [unconsciousAdultProtocol],
+      provider: new ScriptedLlmProvider([
+        'He needs CPR right now.',
+        extract({
+          emergencyType: EmergencyType.UNCONSCIOUS,
+          emergencyTypeConfidence: 0.9,
+          consciousness: ConsciousnessState.UNRESPONSIVE,
+          questionAnswer: ConsciousnessState.UNRESPONSIVE,
+          intent: LlmIntent.ANSWER,
+        }),
+      ]),
+      at: AT,
+    });
+
+    expect(result.source).toBe('protocol');
+    expect(result.incident.state.patient.consciousness).toBe(ConsciousnessState.UNRESPONSIVE);
+  });
+
   it('rejects malformed model output and does not change the incident', async () => {
     const incident = openIncident();
     const provider = new ScriptedLlmProvider(['not-json']);

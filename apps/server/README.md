@@ -79,7 +79,7 @@ See `.env.example` at the repository root.
 | `LLM_API_KEY` | — | yes |
 | `LLM_BASE_URL` | `https://api.openai.com/v1` | no |
 | `LLM_MODEL` | `gpt-4o-mini` | no |
-| `VOXIDE_API_KEY` | — | yes |
+| `VOXIDE_API_KEY` | — | no (browser voice uses the web app's `VITE_VOXIDE_PUBLIC_KEY`) |
 | `VOXIDE_BASE_URL` | `https://api.voxide.app/v1` | no |
 | `SESSION_SECRET` | `dev-only-session-secret` | yes |
 | `RESPONDER_INVITE` | — | yes |

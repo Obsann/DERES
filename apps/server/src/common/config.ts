@@ -99,7 +99,8 @@ export function loadConfig(): AppConfig {
   };
 
   if (isProduction) {
-    const missing = (['mongoUri', 'llmApiKey', 'voxideApiKey'] as const)
+    // Voice runs in the browser on Voxide's publishable key; the server never needs VOXIDE_API_KEY.
+    const missing = (['mongoUri', 'llmApiKey'] as const)
       .filter((key) => config[key] === null)
       .map((key) => envNameFor(key));
     if (missing.length > 0) {
@@ -119,15 +120,8 @@ export function loadConfig(): AppConfig {
   return config;
 }
 
-function envNameFor(key: 'mongoUri' | 'llmApiKey' | 'voxideApiKey'): string {
-  switch (key) {
-    case 'mongoUri':
-      return 'MONGODB_URI';
-    case 'llmApiKey':
-      return 'LLM_API_KEY';
-    case 'voxideApiKey':
-      return 'VOXIDE_API_KEY';
-  }
+function envNameFor(key: 'mongoUri' | 'llmApiKey'): string {
+  return key === 'mongoUri' ? 'MONGODB_URI' : 'LLM_API_KEY';
 }
 
 export const config: AppConfig = loadConfig();

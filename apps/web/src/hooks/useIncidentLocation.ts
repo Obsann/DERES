@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Id } from '@voicesos/shared';
 import { incidentsApi } from '@/services/api';
+import { isLocalIncidentId } from '@/services/protocol/localIncident';
 
 export type LocationShareStatus = 'idle' | 'requesting' | 'shared' | 'denied' | 'unavailable';
 
@@ -14,7 +15,7 @@ export function useIncidentLocation(incidentId: Id | null) {
   const requestedFor = useRef<Id | null>(null);
 
   const request = useCallback(() => {
-    if (!incidentId) return;
+    if (!incidentId || isLocalIncidentId(incidentId)) return;
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setStatus('unavailable');
       return;

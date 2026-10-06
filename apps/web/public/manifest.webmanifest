@@ -1,0 +1,16 @@
+{
+  "name": "DERES — Emergency first-response guide",
+  "short_name": "DERES",
+  "description": "Voice-first, step-by-step first-response guidance in English, Amharic and Afaan Oromoo.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f2ec",
+  "theme_color": "#1f3d32",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

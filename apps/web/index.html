@@ -2,15 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700;800&display=swap"
+    />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#07130f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="DERES" />
     <meta
       name="description"
-      content="VoiceSOS — voice-first guided first response for bystanders during emergencies."
+      content="DERES (ድረስ) — voice-first, step-by-step first-response guidance for bystanders in English, Amharic and Afaan Oromoo."
     />
-    <title>VoiceSOS</title>
+    <title>DERES · ድረስ</title>
   </head>
   <body>
+    <!-- Google Translate mounts here, outside React. Only the responder header shows it. -->
+    <div id="google_translate_element" class="notranslate" translate="no" hidden></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -7,6 +7,8 @@ import {
 } from '@voicesos/shared';
 import { emergencyCallHref } from '@/config/emergency';
 import { incidentsApi } from '@/services/api';
+import { voiceLoopCopy } from '@/services/voice/loopCopy';
+import { speak } from '@/services/voice/speech';
 
 /** BCP-47 tags Voxide (Gemini Live) uses for speech in each DERES language. */
 export const VOXIDE_LANGUAGE: Record<Language, string> = {
@@ -47,7 +49,7 @@ export function bindDeresSession(voxide: VoxideClient, binding: DeresVoiceBindin
   voxide.register({
     reportToDeres: {
       description:
-        'Call this for EVERYTHING the user says during the emergency: answers, observations, "done", "I can\'t", "repeat", or questions. Pass their exact words. Then speak the returned sayExactly text word for word and nothing else.',
+        'Call this for every thing the person says. Pass their exact words and do not speak your own sentence first. The app says "I am thinking" while you wait. When this returns, speak sayExactly word for word and then stop. Do not add, translate, or describe this tool.',
       params: {
         utterance: {
           type: 'string',
@@ -56,10 +58,13 @@ export function bindDeresSession(voxide: VoxideClient, binding: DeresVoiceBindin
         },
       },
       handler: async ({ utterance }: Record<string, unknown>) => {
+        const lines = voiceLoopCopy(binding.language);
+        const thinking = speak(lines.thinking, binding.language);
         const turn = await incidentsApi.voiceTurn(binding.incidentId, {
           transcript: typeof utterance === 'string' ? utterance : '',
           language: binding.language,
         });
+        await thinking;
         binding.onTurn(turn);
         return { sayExactly: turn.reply, language: speechLanguage };
       },
@@ -78,7 +83,7 @@ export function bindDeresSession(voxide: VoxideClient, binding: DeresVoiceBindin
     app: 'DERES emergency first-aid guidance',
     language: speechLanguage,
     currentInstruction: binding.getCurrentInstruction(),
-    rule: 'Never give medical advice of your own. Only speak text returned by reportToDeres.',
+    rule: 'You are DERES. Never give medical advice of your own. Only speak text returned by reportToDeres.',
   }));
 }
 

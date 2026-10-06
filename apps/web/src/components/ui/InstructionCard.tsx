@@ -22,15 +22,19 @@ interface InstructionCardProps {
   kind: ProtocolStepKind;
   /** The protocol prompt exactly as the server returned it. Never rewrite it client-side. */
   text: string;
-  /** e.g. "Step 2 of 5". */
+  /** e.g. "Step 2". */
   progress?: string;
   lang?: string;
+  /** Localized heading; defaults to the English label for the step kind. */
+  kindLabel?: string;
+  /** Replaces the kind icon, e.g. a speaker while the line is read aloud. */
+  icon?: IconName;
   /** Answer or confirmation controls rendered under the text. */
   children?: ReactNode;
 }
 
 /** The single thing the bystander must know or do right now. One per screen. */
-export function InstructionCard({ kind, text, progress, lang, children }: InstructionCardProps) {
+export function InstructionCard({ kind, text, progress, lang, kindLabel, icon, children }: InstructionCardProps) {
   const meta = kindMeta[kind];
   return (
     <section
@@ -39,16 +43,27 @@ export function InstructionCard({ kind, text, progress, lang, children }: Instru
       aria-atomic="true"
     >
       <div className="d-instruction__meta">
-        <span className="d-row" style={{ gap: 'var(--d-space-2)' }}>
-          <Icon name={meta.icon} />
-          {meta.label}
+        <span className="d-instruction__kind">
+          <span className="d-instruction__icon">
+            <Icon name={icon ?? meta.icon} />
+          </span>
+          <span lang={kindLabel ? lang : undefined}>{kindLabel ?? meta.label}</span>
         </span>
-        {progress ? <span>{progress}</span> : null}
+        {progress ? (
+          <span className="d-instruction__progress" lang={lang}>
+            {progress}
+          </span>
+        ) : null}
       </div>
-      <p className="d-instruction__text" lang={lang}>
+      <h2 className="d-instruction__text" lang={lang}>
         {text}
-      </p>
-      {children}
+      </h2>
+      {children ? (
+        <>
+          <hr className="d-instruction__divider" />
+          {children}
+        </>
+      ) : null}
     </section>
   );
 }

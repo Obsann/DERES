@@ -1,31 +1,37 @@
-/*
- * DERES design tokens (Task 31). docs/ux/design-system.md explains when to use each.
- * Every text/background pair below meets WCAG AA (4.5:1) on its paired surface.
+﻿/*
+ * DERES design tokens — clean, calm light UI.
  */
 :root {
   /* Surfaces */
-  --d-canvas: #f4f2ec;
+  --d-canvas: #f5f7f6;
   --d-surface: #ffffff;
-  --d-surface-sunken: #ebe7de;
-  --d-border: #d6d2c8;
-  --d-border-strong: #9a968c;
+  --d-surface-soft: #f8faf9;
+  --d-surface-sunken: #edf2ef;
+  --d-header: rgb(255 255 255 / 0.9);
+  --d-border: #d7ded9;
+  --d-border-strong: #a0aca5;
 
   /* Text */
-  --d-ink: #111a15;
-  --d-ink-muted: #4a564f;
+  --d-ink: #1b2520;
+  --d-ink-strong: #0f1713;
+  --d-ink-muted: #55645c;
+  --d-ink-faint: #73827b;
   --d-ink-inverse: #ffffff;
 
   /* Brand / primary action */
-  --d-brand: #1f3d32;
-  --d-brand-hover: #16302a;
+  --d-brand: #1f4f40;
+  --d-brand-hover: #183c32;
+  --d-brand-soft: #e5f0ec;
+  --d-brand-line: #98c3b3;
 
-  /* Emergency: start, call, escalation. Reserved; never decorative. */
+  /* Emergency */
   --d-emergency: #b3261e;
   --d-emergency-hover: #8f1d17;
   --d-emergency-soft: #fde8e6;
   --d-emergency-ink: #7d1a15;
+  --d-emergency-mark: #b3261e;
 
-  /* Semantic tones: -soft is a background, -ink is text on that background */
+  /* Semantic tones */
   --d-success: #1e6b43;
   --d-success-soft: #e3f3e9;
   --d-success-ink: #14502f;
@@ -41,25 +47,24 @@
 
   --d-focus: #1f4e8c;
 
-  /* Type. Ge'ez fonts cover Amharic; Afaan Oromoo uses Latin script. */
-  --d-font: 'Segoe UI', system-ui, -apple-system, 'Nyala', 'Noto Sans Ethiopic',
-    'Abyssinica SIL', sans-serif;
+  /* Type */
+  --d-font: 'Manrope', 'Noto Sans Ethiopic', ui-sans-serif, system-ui, sans-serif;
   --d-font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
   --d-text-xs: 0.8125rem;
   --d-text-sm: 0.9375rem;
   --d-text-md: 1rem;
-  --d-text-lg: 1.25rem;
-  --d-text-xl: 1.5rem;
-  --d-text-instruction: clamp(1.75rem, 1.2rem + 2.6vw, 2.75rem);
-  --d-text-display: clamp(2rem, 1.4rem + 3vw, 3.25rem);
+  --d-text-lg: 1.125rem;
+  --d-text-xl: 1.375rem;
+  --d-text-heading: clamp(1.55rem, 1.3rem + 0.9vw, 1.9rem);
+  --d-text-instruction: clamp(1.55rem, 1.22rem + 1.7vw, 2.35rem);
+  --d-text-display: clamp(1.85rem, 1.4rem + 2vw, 2.7rem);
 
-  --d-leading-tight: 1.2;
-  --d-leading-body: 1.5;
-  /* Ge'ez glyphs need more vertical room than Latin. */
+  --d-leading-tight: 1.22;
+  --d-leading-body: 1.55;
   --d-leading-ethiopic: 1.7;
 
-  /* Spacing (4px base) */
+  /* Spacing */
   --d-space-1: 0.25rem;
   --d-space-2: 0.5rem;
   --d-space-3: 0.75rem;
@@ -71,14 +76,18 @@
 
   --d-radius-sm: 0.5rem;
   --d-radius-md: 0.875rem;
+  --d-radius-lg: 1.125rem;
+  --d-radius-card: 1.125rem;
   --d-radius-pill: 999px;
 
-  /* Touch targets: dashboard meets WCAG 2.5.5; emergency is sized for shaking hands. */
   --d-touch-min: 3rem;
-  --d-touch-emergency: 4rem;
+  --d-touch-emergency: 3.6rem;
 
-  --d-shadow-raised: 0 1px 2px rgb(17 26 21 / 0.08), 0 4px 12px rgb(17 26 21 / 0.06);
+  --d-shadow-raised: 0 1px 2px rgb(14 23 19 / 0.06), 0 8px 22px rgb(14 23 19 / 0.08);
+  --d-shadow-card: 0 6px 24px rgb(14 23 19 / 0.08);
+  --d-shadow-brand: 0 0 0 1px rgb(31 79 64 / 0.14), 0 8px 20px rgb(31 79 64 / 0.16);
+  --d-shadow-emergency: 0 0 0 1px rgb(179 38 30 / 0.14), 0 8px 20px rgb(179 38 30 / 0.16);
 
-  --d-content-emergency: 36rem;
-  --d-content-dashboard: 72rem;
+  --d-content-emergency: 46rem;
+  --d-content-dashboard: 80rem;
 }

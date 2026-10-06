@@ -5,6 +5,7 @@ import {
   type ApiResponse,
   isApiSuccess,
 } from '@voicesos/shared';
+import { responderSession } from '@/services/auth/responderToken';
 import { getApiBaseUrl } from './config';
 
 export interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
@@ -149,6 +150,7 @@ function toClientError<T>(response: Response, body: ApiResponse<T>): ApiClientEr
 
 async function executeOnce<T>(path: string, init: ApiRequestOptions): Promise<T> {
   const { body, headers, retries: _retries, skipRetry: _skip, ...rest } = init;
+  const token = responderSession.token();
 
   let response: Response;
   try {
@@ -157,6 +159,7 @@ async function executeOnce<T>(path: string, init: ApiRequestOptions): Promise<T>
       headers: {
         Accept: 'application/json',
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers,
       },
       body: body === undefined ? undefined : JSON.stringify(body),

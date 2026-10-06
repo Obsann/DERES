@@ -1,6 +1,7 @@
 import type {
   AddMessageRequest,
   AddMessageResponse,
+  ButtonTurnRequest,
   CreateIncidentRequest,
   CreateIncidentResponse,
   GetHandoffResponse,
@@ -103,5 +104,14 @@ export const incidentsApi = {
     options?: ApiRequestOptions,
   ): Promise<VoiceTurnResponse> {
     return apiPost<VoiceTurnResponse>(`/api/incidents/${id}/voice`, body, options);
+  },
+
+  buttonTurn(
+    id: Id,
+    body: ButtonTurnRequest,
+    options?: ApiRequestOptions,
+  ): Promise<VoiceTurnResponse> {
+    // Not idempotent: a retried "Done" could confirm the next step too.
+    return apiPost<VoiceTurnResponse>(`/api/incidents/${id}/buttons`, body, { skipRetry: true, ...options });
   },
 };

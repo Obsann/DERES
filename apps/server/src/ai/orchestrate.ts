@@ -2,6 +2,7 @@ import {
   ActionStatus,
   AgeGroup,
   Certainty,
+  ConsciousnessState,
   EmergencyType,
   EventSource,
   ProtocolStepKind,
@@ -10,6 +11,8 @@ import {
   type Protocol,
   type ProtocolStep,
 } from '@voicesos/shared';
+import { AiValidationError } from '../common/errors.js';
+import { logger } from '../common/logger.js';
 import { nowIso } from '../database/ids.js';
 import { applyCommand, type EngineEvent, type TransitionResult } from '../incidents/stateEngine.js';
 import {
@@ -22,7 +25,7 @@ import {
   resolveProtocolAction,
 } from '../protocols/index.js';
 import { safePhrases } from './phrases.js';
-import { buildSystemPrompt, buildUserPrompt } from './prompt.js';
+import { buildSystemPrompt, buildUserPrompt, PROMPT_VERSION } from './prompt.js';
 import type { LlmProvider } from './provider.js';
 import { runSafetyPipeline } from './pipeline.js';
 import { LlmIntent, type LlmExtraction } from './schema.js';
@@ -32,6 +35,8 @@ export interface InterpretTurnInput {
   transcript: string;
   protocols: Protocol[];
   provider: LlmProvider;
+  /** Successful turns only, already capped. Empty when this is the first turn. */
+  history?: string;
   at?: IsoDateTime;
 }
 
@@ -55,6 +60,33 @@ class ResultBuilder {
     this.incident = result.incident;
     this.events.push(...result.events);
   }
+}
+
+const UNRESPONSIVE_REPORT =
+  /collapsed|unconscious|not responding|unresponsive|fainted|passed out|ወድቋ|ወደቀ|አይመልስም|ምላሽ አይሰጥ|kufe|deebii hin kenn|hin deebine/iu;
+
+/**
+ * A collapsed, unresponsive person is the one emergency this build can guide.
+ * When the utterance says so plainly, those facts are filled in even if the
+ * model did not recognise the language.
+ */
+function withTranscriptHints(transcript: string, extraction: LlmExtraction): LlmExtraction {
+  if (!UNRESPONSIVE_REPORT.test(transcript)) return extraction;
+  const modelWasUnsure = extraction.intent === LlmIntent.UNSUPPORTED || extraction.intent === LlmIntent.UNKNOWN;
+  return {
+    ...extraction,
+    emergencyType: extraction.emergencyType ?? EmergencyType.UNCONSCIOUS,
+    emergencyTypeConfidence: extraction.emergencyType
+      ? extraction.emergencyTypeConfidence
+      : Math.max(extraction.emergencyTypeConfidence, 0.8),
+    consciousness:
+      extraction.consciousness && extraction.consciousness !== ConsciousnessState.UNKNOWN
+        ? extraction.consciousness
+        : ConsciousnessState.UNRESPONSIVE,
+    questionAnswer: extraction.questionAnswer ?? ConsciousnessState.UNRESPONSIVE,
+    intent: modelWasUnsure ? LlmIntent.ANSWER : extraction.intent,
+    unsupportedRequest: modelWasUnsure ? null : extraction.unsupportedRequest,
+  };
 }
 
 function activeProtocol(incident: Incident, protocols: Protocol[]): Protocol | null {
@@ -88,13 +120,16 @@ function applyFacts(builder: ResultBuilder, extraction: LlmExtraction, at: IsoDa
   const state = builder.incident.state;
   const source = EventSource.AI;
 
-  if (extraction.emergencyType && state.emergencyType === EmergencyType.UNKNOWN) {
+  const describedAsUnresponsive =
+    extraction.consciousness === ConsciousnessState.UNRESPONSIVE && !extraction.emergencyType;
+  const emergencyType = extraction.emergencyType ?? (describedAsUnresponsive ? EmergencyType.UNCONSCIOUS : null);
+  if (emergencyType && state.emergencyType === EmergencyType.UNKNOWN) {
     builder.push(
       applyCommand(
         builder.incident,
         {
           kind: 'set_emergency_type',
-          emergencyType: extraction.emergencyType,
+          emergencyType,
           confidence: extraction.emergencyTypeConfidence,
           source,
         },
@@ -254,31 +289,66 @@ function spokenReply(incident: Incident, protocol: Protocol | null, blocked: boo
  * One conversation turn: the model interprets language; the protocol engine
  * decides what the user is told.
  */
+async function readExtraction(input: InterpretTurnInput, protocolForPrompt: Protocol | null) {
+  const ask = () =>
+    input.provider.complete({
+      system: buildSystemPrompt(input.incident, protocolForPrompt),
+      user: buildUserPrompt(input.transcript, input.history),
+    });
+
+  const first = await ask();
+  try {
+    return runSafetyPipeline(first, { incident: input.incident, protocol: protocolForPrompt });
+  } catch (error) {
+    if (!(error instanceof AiValidationError)) throw error;
+    // About one reply in four comes back as prose. A second call is cheaper
+    // than making the person ask again out loud.
+    let second: string;
+    try {
+      second = await ask();
+    } catch {
+      throw error;
+    }
+    return runSafetyPipeline(second, { incident: input.incident, protocol: protocolForPrompt });
+  }
+}
+
 export async function interpretTurn(input: InterpretTurnInput): Promise<InterpretTurnResult> {
   const at = input.at ?? nowIso();
   const protocolForPrompt = activeProtocol(input.incident, input.protocols);
-  const raw = await input.provider.complete({
-    system: buildSystemPrompt(input.incident, protocolForPrompt),
-    user: buildUserPrompt(input.transcript),
-  });
-  const extraction = runSafetyPipeline(raw, {
-    incident: input.incident,
-    protocol: protocolForPrompt,
-  });
+  logger.info('interpret turn', { promptVersion: PROMPT_VERSION, incidentId: input.incident.id });
+  const extraction = withTranscriptHints(input.transcript, await readExtraction(input, protocolForPrompt));
+  return applyExtraction(input.incident, extraction, input.protocols, at);
+}
 
+/**
+ * Applies an already-validated extraction to the incident and picks the spoken
+ * line. Voice turns reach this through the LLM and safety pipeline; button
+ * presses build the extraction on the server and skip the model entirely.
+ */
+export function applyExtraction(
+  incident: Incident,
+  extraction: LlmExtraction,
+  protocols: Protocol[],
+  at: IsoDateTime,
+): InterpretTurnResult {
   if (extraction.intent === LlmIntent.REPEAT) {
-    const spoken = spokenReply(input.incident, protocolForPrompt, false);
-    return { ...spoken, incident: input.incident, events: [] };
+    const spoken = spokenReply(incident, activeProtocol(incident, protocols), false);
+    return { ...spoken, incident, events: [] };
   }
 
-  const builder = new ResultBuilder(input.incident);
+  const builder = new ResultBuilder(incident);
   applyFacts(builder, extraction, at);
-  const protocol = ensureProtocol(builder, input.protocols, at);
+  const protocol = ensureProtocol(builder, protocols, at);
   if (protocol) {
     applyProtocolTurn(builder, protocol, extraction, at);
   }
 
-  const blocked = Boolean(extraction.unsupportedRequest) || extraction.intent === LlmIntent.UNSUPPORTED;
+  // A turn that established facts is a description, even if the model also set
+  // "unsupported". Refuse only when nothing usable was extracted.
+  const blocked =
+    builder.events.length === 0 &&
+    (Boolean(extraction.unsupportedRequest) || extraction.intent === LlmIntent.UNSUPPORTED);
   const spoken = spokenReply(builder.incident, protocol, blocked);
   return {
     incident: builder.incident,

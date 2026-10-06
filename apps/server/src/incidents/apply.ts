@@ -1,6 +1,6 @@
 import type { Id, Incident, IncidentEvent } from '@voicesos/shared';
 import { nowIso } from '../database/ids.js';
-import { appendIncidentEvent, getIncidentById, saveIncidentSnapshot } from '../database/persist.js';
+import { appendIncidentEvents, getIncidentById, saveIncidentSnapshot } from '../database/persist.js';
 import type { IncidentCommand } from './commands.js';
 import { applyCommand, type EngineEvent } from './stateEngine.js';
 
@@ -15,22 +15,7 @@ export async function applyIncidentCommand(
   const current = await getIncidentById(incidentId);
   const at = nowIso();
   const result = applyCommand(current, command, at);
-
-  const incident = await saveIncidentSnapshot(result.incident);
-  const events: IncidentEvent[] = [];
-  for (const event of result.events) {
-    events.push(
-      await appendIncidentEvent(incidentId, {
-        type: event.type,
-        source: event.source,
-        summary: event.summary,
-        payload: event.payload,
-        occurredAt: at,
-      }),
-    );
-  }
-
-  return { incident, events };
+  return commitIncidentMutation(result.incident, result.events, at);
 }
 
 /** Persist an already-computed state change and append its timeline events. */
@@ -39,18 +24,19 @@ export async function commitIncidentMutation(
   events: EngineEvent[],
   at = nowIso(),
 ): Promise<{ incident: Incident; events: IncidentEvent[] }> {
-  const saved = await saveIncidentSnapshot(incident);
-  const persisted: IncidentEvent[] = [];
-  for (const event of events) {
-    persisted.push(
-      await appendIncidentEvent(incident.id, {
+  // Independent fields (state vs. event counter), so both writes can run together.
+  const [saved, persisted] = await Promise.all([
+    saveIncidentSnapshot(incident),
+    appendIncidentEvents(
+      incident.id,
+      events.map((event) => ({
         type: event.type,
         source: event.source,
         summary: event.summary,
         payload: event.payload,
         occurredAt: at,
-      }),
-    );
-  }
+      })),
+    ),
+  ]);
   return { incident: saved, events: persisted };
 }

@@ -1,7 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", "Noto Sans Ethiopic", ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
   color: var(--d-ink);
   background: var(--d-canvas);
-  font-family: var(--d-font);
+  font-family: var(--font-sans);
   line-height: var(--d-leading-body);
   font-weight: 400;
   font-synthesis: none;
@@ -20,6 +26,11 @@ body,
 #root {
   min-height: 100%;
   margin: 0;
+  font-family: var(--font-sans);
+}
+
+html {
+  min-width: 320px;
 }
 
 body {
@@ -32,4 +43,74 @@ a {
 
 button {
   font: inherit;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid #86e9c6;
+  outline-offset: 3px;
+}
+
+::selection {
+  background: #86e9c6;
+  color: #07130f;
+}
+
+.map-grid {
+  background-color: #d9e6e5;
+  background-image:
+    linear-gradient(rgba(61, 104, 101, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 104, 101, 0.14) 1px, transparent 1px),
+    linear-gradient(35deg, transparent 47%, rgba(255, 255, 255, 0.8) 48%, rgba(255, 255, 255, 0.8) 52%, transparent 53%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+
+@keyframes voice-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.35;
+  }
+  60% {
+    transform: scale(1.12);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+.voice-ring {
+  animation: voice-ring 1.6s ease-out infinite;
+}
+
+.voice-control {
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.voice-control:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-ring {
+    animation: none;
+  }
+
+  .voice-control.is-listening {
+    outline: 5px double #86e9c6;
+    outline-offset: 8px;
+  }
 }

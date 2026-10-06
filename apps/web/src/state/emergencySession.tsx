@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -25,10 +26,37 @@ export interface EmergencySessionState {
 
 const EmergencySessionContext = createContext<EmergencySessionState | null>(null);
 
+const STORAGE_KEY = 'deres.emergency';
+
+interface StoredSession {
+  language: Language;
+  incidentId: string | null;
+  sessionId: string | null;
+}
+
+/** A reload mid-emergency must land back on the same incident, not a blank start. */
+function readStored(): StoredSession | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as StoredSession) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function EmergencySessionProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(Language.ENGLISH);
-  const [incidentId, setIncidentId] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [stored] = useState(readStored);
+  const [language, setLanguage] = useState<Language>(stored?.language ?? Language.ENGLISH);
+  const [incidentId, setIncidentId] = useState<string | null>(stored?.incidentId ?? null);
+  const [sessionId, setSessionId] = useState<string | null>(stored?.sessionId ?? null);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ language, incidentId, sessionId }));
+    } catch {
+      // Private mode without storage: the session still works until reload.
+    }
+  }, [language, incidentId, sessionId]);
 
   const value = useMemo<EmergencySessionState>(
     () => ({
