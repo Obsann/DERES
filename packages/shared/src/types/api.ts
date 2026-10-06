@@ -153,6 +153,11 @@ export interface VoiceTurnResponse {
   reply: string;
   source: 'protocol' | 'safe_fallback';
   failure: 'recognition' | 'silence' | 'timeout' | 'upstream' | null;
+  /**
+   * What the app does after the line is spoken. The model never names this.
+   * Anything other than `place_call` is ignored, and the line is still spoken.
+   */
+  capability: 'place_call' | null;
 }
 
 /**
