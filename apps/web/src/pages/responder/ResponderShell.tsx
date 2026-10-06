@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { TranslateSlot } from '@/components/TranslateSlot';
+import { LogoMark } from '@/components/ui';
 import { routes } from '@/routes/paths';
 import { responderSession } from '@/services/auth/responderToken';
 import { useResponderSession } from './format';
@@ -21,9 +22,11 @@ export function ResponderShell({ children }: { children: ReactNode }) {
   return (
     <main className="min-h-screen bg-[#eef2f5] text-[#12202d]">
       <header className="border-b border-[#ccd5dc] bg-[#142737] text-white">
-        <div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between px-5 sm:px-8">
+        <div className="mx-auto flex h-16 w-full max-w-[1680px] items-center justify-between px-6 md:px-10 xl:px-16">
           <Link to={routes.responder.list} className="flex items-center gap-3 text-left">
-            <span className="grid size-8 place-items-center rounded-lg bg-[#55d1b1] font-black text-[#10251f]">ድ</span>
+            <span className="grid size-10 place-items-center rounded-lg bg-white p-1">
+              <LogoMark compact className="h-8 w-8" />
+            </span>
             <span className="font-extrabold tracking-[0.04em]">
               DERES <span className="font-medium text-white/50">RESPONDER</span>
             </span>

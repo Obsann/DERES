@@ -160,7 +160,7 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
 
   return (
     <ResponderShell>
-      <div className="mx-auto max-w-[1500px] px-5 py-6 sm:px-8">
+      <div className="mx-auto w-full max-w-[1680px] px-6 py-6 md:px-10 xl:px-16">
         <Link to={routes.responder.list} className="flex items-center gap-2 text-sm font-bold text-[#536672]">
           <Icon name="chevron" className="size-4 rotate-180" /> All live incidents
         </Link>

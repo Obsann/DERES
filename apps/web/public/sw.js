@@ -1,7 +1,7 @@
 // App-shell cache only. API and realtime traffic always go to the network:
 // a cached incident or protocol step could tell someone the wrong thing.
-const CACHE = 'deres-shell-v1';
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
+const CACHE = 'deres-shell-v2';
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/logo.png', '/icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));

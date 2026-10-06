@@ -5,12 +5,13 @@
   "lang": "en",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait",
+  "display": "browser",
+  "orientation": "any",
   "background_color": "#f4f2ec",
   "theme_color": "#1f3d32",
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.png", "sizes": "600x600", "type": "image/png", "purpose": "any" },
+    { "src": "/logo.png", "sizes": "600x872", "type": "image/png", "purpose": "any" },
     { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ]
 }

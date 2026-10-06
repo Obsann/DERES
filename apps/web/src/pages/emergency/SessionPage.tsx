@@ -170,7 +170,7 @@ function StepControls({
               type="button"
               disabled={busy}
               onClick={() => press({ kind: 'answer', answer })}
-              className={`min-h-16 rounded-2xl px-2 text-base font-extrabold disabled:opacity-60 ${className}`}
+              className={`min-h-12 rounded-xl px-3 text-sm font-extrabold disabled:opacity-60 md:min-h-14 md:text-base ${className}`}
             >
               {label}
             </button>
@@ -238,7 +238,7 @@ function OpeningControls({
         type="button"
         disabled={busy}
         onClick={onCollapsed}
-        className="min-h-16 rounded-2xl bg-[#86e9c6] px-5 text-base font-extrabold text-[#07130f] disabled:opacity-60 sm:min-h-18"
+        className="min-h-12 rounded-xl bg-[#86e9c6] px-5 text-sm font-extrabold text-[#07130f] disabled:opacity-60 md:min-h-14 md:text-base"
       >
         {copy.collapsed}
       </button>
@@ -246,7 +246,7 @@ function OpeningControls({
         type="button"
         disabled={busy}
         onClick={onOther}
-        className="min-h-16 rounded-2xl border border-white/25 px-5 text-base font-extrabold text-white disabled:opacity-60 sm:min-h-18"
+        className="min-h-12 rounded-xl border border-white/25 px-5 text-sm font-extrabold text-white disabled:opacity-60 md:min-h-14 md:text-base"
       >
         {copy.somethingElse}
       </button>
@@ -266,8 +266,8 @@ function Shell({
   showCall?: boolean;
 }) {
   return (
-    <main className="min-h-screen bg-[#07130f] text-white" lang={language}>
-      <div className="mx-auto flex min-h-screen max-w-[1500px] flex-col px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(20px,env(safe-area-inset-top))] sm:px-9 lg:px-14">
+    <main className="min-h-dvh w-full bg-[#07130f] text-white" lang={language}>
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1680px] flex-col px-6 py-6 md:px-10 md:py-8 xl:px-16">
         <header className="flex items-center justify-between gap-4">
           <Brand dark />
           {showCall ? <Call907 label={copy.callShort} /> : null}
@@ -280,17 +280,17 @@ function Shell({
 
 function UnsupportedScreen({ copy, language, onHome }: { copy: EmergencyCopy; language: string; onHome: () => void }) {
   return (
-    <main className="flex min-h-screen flex-col bg-[#401b15] px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(24px,env(safe-area-inset-top))] text-white sm:px-10" lang={language}>
+    <main className="flex min-h-dvh w-full flex-col bg-[#401b15] px-6 py-6 text-white md:px-10 md:py-8 xl:px-16" lang={language}>
       <Brand dark />
-      <section className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center py-14">
+      <section className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col justify-center py-12 md:py-16">
         <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#ff9b88]">{copy.cannotGuide}</p>
-        <h1 className="mt-5 text-[clamp(2rem,5vw,3.5rem)] font-extrabold leading-[1.02] tracking-[-0.045em]">{copy.callNowHeadline}</h1>
-        <p className="mt-6 max-w-xl text-lg font-medium leading-relaxed text-white/65">{copy.tellOperator}</p>
+        <h1 className="mt-4 max-w-3xl text-[clamp(2.1rem,3.2vw,3.5rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">{copy.callNowHeadline}</h1>
+        <p className="mt-5 max-w-xl text-base font-medium leading-relaxed text-white/65 md:text-lg">{copy.tellOperator}</p>
         <a
           href={emergencyCallHref}
-          className="mt-10 flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-[#ff6b50] text-xl font-extrabold text-[#2e100b] sm:min-h-20 sm:text-2xl"
+          className="mt-8 inline-flex min-h-14 w-full max-w-sm items-center justify-center gap-3 rounded-2xl bg-[#ff6b50] text-lg font-extrabold text-[#2e100b] md:min-h-16"
         >
-          <Icon name="phone" className="size-9" />
+          <Icon name="phone" className="size-6" />
           {copy.callShort}
         </a>
         <button type="button" onClick={onHome} className="mt-6 min-h-14 text-sm font-bold text-white/60">
@@ -317,16 +317,16 @@ function CompleteScreen({
   onHome: () => void;
 }) {
   return (
-    <main className="min-h-screen bg-[#dff4eb] px-5 py-[max(24px,env(safe-area-inset-top))] text-[#0d2c22] sm:px-8" lang={language}>
-      <div className="mx-auto flex min-h-[calc(100vh-48px)] max-w-3xl flex-col">
+    <main className="min-h-dvh w-full bg-[#dff4eb] text-[#0d2c22]" lang={language}>
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1680px] flex-col px-6 py-6 md:px-10 md:py-8 xl:px-16">
         <Brand />
-        <section className="flex flex-1 flex-col justify-center py-12">
-          <div className="grid size-20 place-items-center rounded-full bg-[#16775a] text-white">
-            <Icon name="check" className="size-10" />
+        <section className="flex flex-1 flex-col justify-center py-12 md:max-w-3xl">
+          <div className="grid size-16 place-items-center rounded-full bg-[#16775a] text-white">
+            <Icon name="check" className="size-8" />
           </div>
-          <p className="mt-8 text-sm font-extrabold uppercase tracking-[0.18em] text-[#16775a]">{copy.helpArrived}</p>
-          <h1 className="mt-4 text-[clamp(2rem,4.5vw,3.25rem)] font-extrabold leading-[1.02] tracking-[-0.045em]">{copy.stayedWithThem}</h1>
-          <p className="mt-6 max-w-xl text-lg font-medium leading-relaxed text-[#48675d]">{copy.handoffHint}</p>
+          <p className="mt-6 text-sm font-extrabold uppercase tracking-[0.18em] text-[#16775a]">{copy.helpArrived}</p>
+          <h1 className="mt-3 text-[clamp(2.1rem,3.2vw,3.25rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">{copy.stayedWithThem}</h1>
+          <p className="mt-5 max-w-xl text-base font-medium leading-relaxed text-[#48675d] md:text-lg">{copy.handoffHint}</p>
           {showHandoff ? (
             <ol className="mt-8 space-y-3">
               {steps.map((step) => (
@@ -339,15 +339,15 @@ function CompleteScreen({
               ))}
             </ol>
           ) : null}
-          <div className="mt-10 grid gap-3 sm:grid-cols-2">
+          <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-2">
             <button
               type="button"
               onClick={onToggleHandoff}
-              className="min-h-16 rounded-2xl bg-[#123d30] px-6 text-base font-extrabold text-white"
+              className="min-h-12 rounded-xl bg-[#123d30] px-6 text-sm font-extrabold text-white md:min-h-14 md:text-base"
             >
               {copy.viewHandoff}
             </button>
-            <button type="button" onClick={onHome} className="min-h-16 rounded-2xl border-2 border-[#9dbcb0] px-6 text-base font-extrabold">
+            <button type="button" onClick={onHome} className="min-h-12 rounded-xl border-2 border-[#9dbcb0] px-6 text-sm font-extrabold md:min-h-14 md:text-base">
               {copy.newEmergency}
             </button>
           </div>
@@ -499,15 +499,15 @@ export function SessionPage() {
             : copy.startCaption;
 
   return (
-    <main className="min-h-screen bg-[#07130f] text-white" lang={language}>
+    <main className="min-h-dvh w-full bg-[#07130f] text-white" lang={language}>
       {!browserOnline || offlineGuide ? (
         <p className="flex min-h-11 w-full items-center justify-center gap-2 bg-[#e7b84f] px-4 text-center text-xs font-extrabold text-[#201b0d]">
           <Icon name="signal" className="size-4" />
           {copy.offlineLive}
         </p>
       ) : null}
-      <div className="mx-auto grid min-h-screen max-w-[1500px] lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_370px]">
-        <section className="flex min-h-screen flex-col px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(20px,env(safe-area-inset-top))] sm:px-9 lg:px-14 xl:px-20">
+      <div className="grid min-h-dvh w-full md:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="flex min-h-dvh flex-col px-6 py-6 md:px-10 md:py-8 xl:px-16">
           <header className="flex items-center justify-between gap-4">
             <Brand dark />
             <Call907 label={copy.callShort} />
@@ -533,18 +533,18 @@ export function SessionPage() {
             </p>
           ) : null}
 
-          <div className="flex flex-1 flex-col justify-center py-8 sm:py-12">
+          <div className="flex flex-1 flex-col justify-center py-8 md:py-10">
             <div className="notranslate" translate="no" lang={language}>
-              <p className="mb-5 text-xs font-extrabold uppercase tracking-[0.2em] text-[#86e9c6]">{kindLabel}</p>
-              <h1 className="max-w-4xl text-[clamp(1.75rem,3vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.04em]">
+              <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-[#86e9c6]">{kindLabel}</p>
+              <h1 className="max-w-4xl text-[clamp(1.85rem,2.6vw,3rem)] font-extrabold leading-[1.15] tracking-[-0.035em]">
                 {headline}
               </h1>
-              <p className="mt-6 max-w-2xl text-base font-medium leading-relaxed text-white/55 sm:text-lg">{support}</p>
+              <p className="mt-5 max-w-2xl text-sm font-medium leading-relaxed text-white/55 md:text-base">{support}</p>
             </div>
           </div>
 
-          <div className="grid items-end gap-7 border-t border-white/12 pt-6 sm:grid-cols-[1fr_auto] sm:gap-10">
-            <div className="order-2 grid gap-3 sm:order-1">
+          <div className="grid items-center gap-5 border-t border-white/12 pt-5 md:grid-cols-[minmax(0,1fr)_auto] md:gap-8">
+            <div className="grid gap-3">
               {pendingAnswer ? (
                 <p className="text-sm font-bold text-[#86e9c6]">{copy.preparingNext}</p>
               ) : step ? (
@@ -569,7 +569,7 @@ export function SessionPage() {
                 </button>
               </div>
             </div>
-            <div className="order-1 sm:order-2">
+            <div className="flex justify-center md:justify-end">
               <VoicePhaseIndicator
                 phase={voicePhase}
                 label={copy.phase[voicePhase]}
@@ -582,7 +582,7 @@ export function SessionPage() {
           </div>
         </section>
 
-        <aside className="hidden border-l border-white/10 bg-[#0d1c17] p-8 lg:flex lg:flex-col" aria-label={copy.whatsHappening}>
+        <aside className="hidden border-l border-white/10 bg-[#0d1c17] p-6 md:flex md:flex-col xl:p-8" aria-label={copy.whatsHappening}>
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-white/38">{copy.sessionAside}</p>
           <div className="mt-3 flex items-baseline justify-between">
             <ElapsedClock since={incident.data.createdAt} />

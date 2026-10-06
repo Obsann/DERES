@@ -87,11 +87,14 @@ function IncidentList() {
 
   return (
     <ResponderShell>
-      <div className="mx-auto max-w-[1500px] px-5 py-7 sm:px-8 lg:py-9">
+      <div className="mx-auto w-full max-w-[1680px] px-6 py-8 md:px-10 lg:py-10 xl:px-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#087a65]">Operations</p>
+            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#087a65]">Incident intelligence</p>
             <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">Live incidents</h1>
+            <p className="mt-2 max-w-xl text-sm font-medium text-[#60717e]">
+              Warnings, facts, and steps already taken — updated as the bystander confirms each instruction.
+            </p>
           </div>
           <div
             className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-extrabold ${
@@ -100,6 +103,21 @@ function IncidentList() {
           >
             <span className={`size-2 rounded-full ${live ? 'bg-[#079679]' : 'bg-[#d29319]'}`} />
             {live ? 'Socket live' : connection === ConnectionStatus.CONNECTING ? 'Connecting…' : 'Socket offline'}
+          </div>
+        </div>
+
+        <div className="mt-7 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-[#cbd5dc] bg-white px-5 py-4">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#71808b]">Active</p>
+            <p className="mt-1 text-3xl font-extrabold tracking-[-0.04em] tabular-nums">{open.length}</p>
+          </div>
+          <div className="rounded-xl border border-[#cbd5dc] bg-white px-5 py-4">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#71808b]">Escalated</p>
+            <p className="mt-1 text-3xl font-extrabold tracking-[-0.04em] tabular-nums">{escalated.length}</p>
+          </div>
+          <div className="rounded-xl border border-[#cbd5dc] bg-white px-5 py-4">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#71808b]">Dispatch link</p>
+            <p className="mt-1 text-3xl font-extrabold tracking-[-0.04em]">{live ? 'Live' : 'Offline'}</p>
           </div>
         </div>
 
