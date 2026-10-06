@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { siteFrame } from '@/components/AppShell';
+import { MoleculeField } from '@/components/marketing/MoleculeField';
 import { Brand, Icon, type IconName } from '@/components/ui';
 import { EMERGENCY_NUMBERS } from '@/config/emergency';
 import { emergencyCopy } from '@/i18n/emergencyCopy';
@@ -26,23 +28,36 @@ export function HomePage() {
   };
 
   return (
-    <main className="min-h-dvh w-full bg-[#f4f1e9] text-[#122d25]" lang={language}>
-      <header className="sticky top-0 z-30 border-b border-[#d9ddd4] bg-[#f4f1e9]/90 backdrop-blur-md">
+    <main className="relative min-h-dvh w-full overflow-x-hidden bg-[#f4f1e9] text-[#122d25]" lang={language}>
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[min(92vh,54rem)]">
+        <MoleculeField />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#f4f1e9]/20 via-transparent to-[#f4f1e9]" />
+      </div>
+
+      <header className="sticky top-0 z-30 border-b border-[#d9ddd4]/70 bg-[#f4f1e9]/75 backdrop-blur-md">
         <div className={`${siteFrame} flex h-20 items-center justify-between gap-6 md:h-24`}>
           <Brand />
-          <nav className="flex items-center gap-3 md:gap-5">
-            <a href="#platform" className="hidden text-sm font-bold text-[#52645e] hover:text-[#122d25] lg:inline" lang="en">
+          <nav className="flex items-center gap-3 md:gap-6">
+            <a
+              href="#platform"
+              className="hidden text-sm font-semibold text-[#6c7974] transition hover:text-[#122d25] lg:inline"
+              lang="en"
+            >
               {landing.navPlatform}
             </a>
-            <a href="#how" className="hidden text-sm font-bold text-[#52645e] hover:text-[#122d25] lg:inline" lang="en">
+            <a href="#how" className="hidden text-sm font-semibold text-[#6c7974] transition hover:text-[#122d25] lg:inline" lang="en">
               {landing.navHow}
             </a>
-            <Link to={routes.responder.list} className="hidden text-sm font-bold text-[#52645e] hover:text-[#122d25] md:inline" lang="en">
+            <Link
+              to={routes.responder.list}
+              className="hidden text-sm font-semibold text-[#6c7974] transition hover:text-[#122d25] md:inline"
+              lang="en"
+            >
               {landing.navResponders}
             </Link>
             <Link
               to={routes.emergency.language}
-              className="flex min-h-11 items-center gap-2 rounded-full border border-[#b9c2bc] bg-white/70 px-4 text-sm font-bold"
+              className="flex min-h-11 items-center gap-2 rounded-full border border-[#d0d5cf] bg-white/80 px-4 text-sm font-semibold transition hover:border-[#9bb0a7]"
               lang={language}
             >
               {copy.languageName}
@@ -52,7 +67,7 @@ export function HomePage() {
               type="button"
               onClick={onStart}
               disabled={isPending}
-              className="hidden min-h-11 rounded-full bg-[#e84e36] px-4 text-sm font-extrabold text-white hover:bg-[#d9432e] disabled:opacity-70 md:inline-flex md:items-center"
+              className="hidden min-h-11 rounded-full bg-[#e84e36] px-4 text-sm font-bold text-white shadow-[0_8px_24px_rgba(175,47,32,0.18)] transition hover:bg-[#d9432e] hover:shadow-[0_10px_28px_rgba(175,47,32,0.24)] disabled:opacity-70 md:inline-flex md:items-center"
             >
               {isPending ? copy.starting : copy.startEmergency}
             </button>
@@ -60,32 +75,32 @@ export function HomePage() {
         </div>
       </header>
 
-      <section className={`${siteFrame} grid items-center gap-12 py-12 md:grid-cols-2 md:gap-16 md:py-16 xl:gap-24 xl:py-20`}>
-        <div className="max-w-2xl">
-          <p className="mb-5 text-sm font-extrabold uppercase tracking-[0.18em] text-[#ba3b2a]">{copy.eyebrow}</p>
-          <h1 className="text-[clamp(2.4rem,3.4vw,4.25rem)] font-extrabold leading-[1.02] tracking-[-0.045em]">
+      <section className={`relative z-10 ${siteFrame} grid items-center gap-14 py-16 md:grid-cols-2 md:gap-16 md:py-24 xl:gap-24`}>
+        <div className="reveal max-w-2xl">
+          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-[#ba3b2a]">{copy.eyebrow}</p>
+          <h1 className="text-[clamp(2.6rem,4vw,4.6rem)] font-extrabold leading-[1.02] tracking-[-0.05em]">
             {copy.stayWithThem}
             <br />
             <span className="text-[#407a68]">{copy.wellGuideYou}</span>
           </h1>
-          <p className="mt-6 max-w-xl text-base font-medium leading-relaxed text-[#52645e] md:text-lg">{copy.subhead}</p>
-          <p className="mt-4 max-w-xl text-sm font-medium leading-relaxed text-[#6c7974] md:text-base" lang="en">
+          <p className="mt-6 max-w-xl text-lg font-normal leading-relaxed text-[#52645e]">{copy.subhead}</p>
+          <p className="mt-4 max-w-xl text-base font-normal leading-relaxed text-[#6c7974]" lang="en">
             {landing.heroLead}
           </p>
           {error ? (
-            <p className="mt-4 text-sm font-bold text-[#ba3b2a]" role="alert">
+            <p className="mt-4 text-sm font-semibold text-[#ba3b2a]" role="alert">
               {toUiErrorMessage(error)}
             </p>
           ) : null}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-stretch">
             <button
               type="button"
               onClick={onStart}
               disabled={isPending}
-              className="group flex min-h-16 flex-1 items-center justify-between rounded-2xl bg-[#e84e36] px-5 text-left text-white shadow-[0_24px_60px_rgba(175,47,32,0.18)] transition hover:bg-[#d9432e] disabled:opacity-70"
+              className="group flex min-h-16 flex-1 items-center justify-between rounded-2xl bg-[#e84e36] px-5 text-left text-white shadow-[0_24px_60px_rgba(175,47,32,0.18)] transition hover:bg-[#d9432e] hover:shadow-[0_28px_64px_rgba(175,47,32,0.22)] disabled:opacity-70"
             >
               <span>
-                <span className="block text-[11px] font-bold uppercase tracking-[0.15em] text-white/70">{copy.noAccountNeeded}</span>
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-white/70">{copy.noAccountNeeded}</span>
                 <span className="mt-1 block text-xl font-extrabold leading-none tracking-[-0.03em]">
                   {isPending ? copy.starting : copy.startEmergency}
                 </span>
@@ -97,42 +112,44 @@ export function HomePage() {
             <Link
               to={routes.responder.list}
               lang="en"
-              className="flex min-h-16 items-center justify-center rounded-2xl border-2 border-[#bcc5bf] bg-white px-6 text-sm font-extrabold text-[#122d25] hover:border-[#1e5e4b] sm:min-w-[12.5rem]"
+              className="flex min-h-16 items-center justify-center rounded-2xl border border-[#d0d5cf] bg-white/80 px-6 text-sm font-semibold text-[#122d25] backdrop-blur-sm transition hover:border-[#1e5e4b] hover:bg-white sm:min-w-[12.5rem]"
             >
               {landing.secondaryCta}
             </Link>
           </div>
-          <p className="mt-4 text-sm font-semibold text-[#6c7974]">{copy.startCaption}</p>
+          <p className="mt-4 text-sm font-normal text-[#6c7974]">{copy.startCaption}</p>
         </div>
-        <HeroPreview />
+        <div className="reveal reveal-delay-2">
+          <ProductFrame />
+        </div>
       </section>
 
-      <section className="border-y border-[#d9ddd4] bg-white" lang="en">
-        <div className={`${siteFrame} py-8 md:py-10`}>
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#7a8882]">{landing.trustLabel}</p>
-          <div className="mt-5 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="relative z-10 border-y border-[#e4e6df] bg-white/80 backdrop-blur-sm" lang="en">
+        <div className={`${siteFrame} py-12 md:py-14`}>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a8882]">{landing.trustLabel}</p>
+          <div className="mt-8 grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
             {landing.trust.map((item) => (
-              <div key={item.label} className="border-l-2 border-[#c5d4ce] pl-4">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7a8882]">{item.label}</p>
-                <p className="mt-1 text-sm font-bold leading-snug text-[#122d25]">{item.value}</p>
+              <div key={item.label} className="border-l border-[#d5ddd8] pl-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7a8882]">{item.label}</p>
+                <p className="mt-2 text-[15px] font-semibold leading-snug text-[#122d25]">{item.value}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className={`${siteFrame} py-12 md:py-16`} lang="en">
-        <div className="overflow-hidden rounded-3xl border border-[#d5d5cb]">
+      <Reveal className={`${siteFrame} py-20 md:py-28`} lang="en">
+        <div className="overflow-hidden rounded-[1.5rem] border border-[#e2e4dc] shadow-[0_24px_60px_rgba(18,45,37,0.06)]">
           <div className="grid md:grid-cols-2">
-            <div className="bg-[#f3e6df] p-8 md:p-12 lg:p-14">
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ba3b2a]">{landing.problemEyebrow}</p>
-              <h2 className="mt-3 text-[clamp(1.6rem,2.2vw,2.35rem)] font-extrabold leading-tight tracking-[-0.03em]">
+            <div className="bg-[#f7eee9] p-10 md:p-14 lg:p-16">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#ba3b2a]">{landing.problemEyebrow}</p>
+              <h2 className="mt-4 text-[clamp(1.75rem,2.4vw,2.55rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
                 {landing.problemTitle}
               </h2>
-              <p className="mt-4 text-sm font-medium leading-relaxed text-[#5c4a43] md:text-base">{landing.problemBody}</p>
-              <ul className="mt-6 space-y-3">
+              <p className="mt-5 text-base font-normal leading-relaxed text-[#5c4a43]">{landing.problemBody}</p>
+              <ul className="mt-8 space-y-3">
                 {landing.problemPoints.map((point) => (
-                  <li key={point} className="flex items-start gap-3 text-sm font-bold text-[#3d2e29]">
+                  <li key={point} className="flex items-start gap-3 text-sm font-medium text-[#3d2e29]">
                     <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[#e8cfc6] text-[#ba3b2a]">
                       <Icon name="alert" className="size-3.5" />
                     </span>
@@ -141,15 +158,15 @@ export function HomePage() {
                 ))}
               </ul>
             </div>
-            <div className="bg-[#14362d] p-8 text-[#e7f0eb] md:p-12 lg:p-14">
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#86c9b4]">{landing.solutionEyebrow}</p>
-              <h2 className="mt-3 text-[clamp(1.6rem,2.2vw,2.35rem)] font-extrabold leading-tight tracking-[-0.03em] text-white">
+            <div className="bg-[#14362d] p-10 text-[#e7f0eb] md:p-14 lg:p-16">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#86c9b4]">{landing.solutionEyebrow}</p>
+              <h2 className="mt-4 text-[clamp(1.75rem,2.4vw,2.55rem)] font-extrabold leading-[1.12] tracking-[-0.035em] text-white">
                 {landing.solutionTitle}
               </h2>
-              <p className="mt-4 text-sm font-medium leading-relaxed text-[#c5d9d0] md:text-base">{landing.solutionBody}</p>
-              <ul className="mt-6 space-y-3">
+              <p className="mt-5 text-base font-normal leading-relaxed text-[#c5d9d0]">{landing.solutionBody}</p>
+              <ul className="mt-8 space-y-3">
                 {landing.solutionPoints.map((point) => (
-                  <li key={point} className="flex items-start gap-3 text-sm font-bold text-white">
+                  <li key={point} className="flex items-start gap-3 text-sm font-medium text-white">
                     <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[#1e5e4b]">
                       <Icon name="check" className="size-3.5" />
                     </span>
@@ -160,140 +177,143 @@ export function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
-      <section id="platform" className={`${siteFrame} scroll-mt-24 pb-6 md:pb-10`} lang="en">
-        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ba3b2a]">{landing.solutionsEyebrow}</p>
-        <h2 className="mt-3 max-w-3xl text-[clamp(1.7rem,2.4vw,2.6rem)] font-extrabold leading-tight tracking-[-0.03em]">
+      <Reveal id="platform" className={`${siteFrame} scroll-mt-28 pb-8 md:pb-12`} lang="en">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#ba3b2a]">{landing.solutionsEyebrow}</p>
+        <h2 className="mt-4 max-w-3xl text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
           {landing.solutionsTitle}
         </h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {landing.solutions.map((item) => (
-            <article key={item.title} className="flex flex-col rounded-2xl border border-[#d5d5cb] bg-white p-6">
-              <span className="grid size-11 place-items-center rounded-xl bg-[#e8f1ed] text-[#1c5b48]">
+            <article key={item.title} className="landing-card flex flex-col p-7">
+              <span className="grid size-11 place-items-center rounded-2xl bg-[#e8f1ed] text-[#1c5b48]">
                 <Icon name={item.icon} className="size-5" />
               </span>
-              <h3 className="mt-5 text-lg font-extrabold tracking-[-0.02em]">{item.title}</h3>
-              <p className="mt-2 flex-1 text-sm font-medium leading-relaxed text-[#5d6c66]">{item.body}</p>
-              <p className="mt-5 border-t border-[#e4e6df] pt-4 text-sm font-bold text-[#1c5b48]">{item.outcome}</p>
+              <h3 className="mt-6 text-lg font-bold tracking-[-0.02em]">{item.title}</h3>
+              <p className="mt-2 flex-1 text-sm font-normal leading-relaxed text-[#5d6c66]">{item.body}</p>
+              <p className="mt-6 border-t border-[#eceee8] pt-4 text-sm font-semibold text-[#1c5b48]">{item.outcome}</p>
             </article>
           ))}
         </div>
-      </section>
+      </Reveal>
 
-      <section className="mt-10 bg-[#122d25] text-white" lang="en">
-        <div className={`${siteFrame} py-12 md:py-16`}>
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#86c9b4]">{landing.impactEyebrow}</p>
-          <h2 className="mt-3 max-w-3xl text-[clamp(1.7rem,2.4vw,2.6rem)] font-extrabold leading-tight tracking-[-0.03em]">
+      <section className="mt-8 bg-[#122d25] text-white" lang="en">
+        <Reveal className={`${siteFrame} py-20 md:py-24`}>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#86c9b4]">{landing.impactEyebrow}</p>
+          <h2 className="mt-4 max-w-3xl text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
             {landing.impactTitle}
           </h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {landing.impact.map((item) => (
-              <article key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <span className="grid size-10 place-items-center rounded-lg bg-[#1e5e4b] text-[#9ee0cb]">
+              <article
+                key={item.title}
+                className="rounded-2xl border border-white/10 bg-white/5 p-7 transition duration-300 hover:-translate-y-1 hover:bg-white/[0.08]"
+              >
+                <span className="grid size-10 place-items-center rounded-xl bg-[#1e5e4b] text-[#9ee0cb]">
                   <Icon name={item.icon} className="size-5" />
                 </span>
-                <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.12em] text-[#86c9b4]">{item.impact}</p>
-                <h3 className="mt-2 text-lg font-extrabold tracking-[-0.02em]">{item.title}</h3>
-                <p className="mt-2 text-sm font-medium leading-relaxed text-[#c5d9d0]">{item.body}</p>
+                <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#86c9b4]">{item.impact}</p>
+                <h3 className="mt-2 text-lg font-bold tracking-[-0.02em]">{item.title}</h3>
+                <p className="mt-2 text-sm font-normal leading-relaxed text-[#c5d9d0]">{item.body}</p>
               </article>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
-      <section className={`${siteFrame} grid items-center gap-10 py-14 md:grid-cols-2 md:gap-16 md:py-20`} lang="en">
+      <Reveal className={`${siteFrame} grid items-center gap-12 py-20 md:grid-cols-2 md:gap-20 md:py-28`} lang="en">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ba3b2a]">{landing.storyEyebrow}</p>
-          <h2 className="mt-3 text-[clamp(1.7rem,2.4vw,2.6rem)] font-extrabold leading-tight tracking-[-0.03em]">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#ba3b2a]">{landing.storyEyebrow}</p>
+          <h2 className="mt-4 text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
             {landing.storyTitle}
           </h2>
-          <p className="mt-4 max-w-xl text-base font-medium leading-relaxed text-[#52645e]">{landing.storyBody}</p>
+          <p className="mt-5 max-w-xl text-lg font-normal leading-relaxed text-[#52645e]">{landing.storyBody}</p>
         </div>
-        <div className="rounded-3xl border border-[#d5d5cb] bg-white p-6 md:p-8">
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7a8882]">Usual path</p>
-          <ol className="mt-5 space-y-4">
+        <div className="landing-card p-8 md:p-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7a8882]">Usual path</p>
+          <ol className="mt-6 space-y-5">
             {['Check response', `Call ambulance ${ambulance}`, 'Open airway', 'Check breathing', 'Chest compressions'].map(
               (step, index) => (
                 <li key={step} className="flex items-center gap-4">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#122d25] text-sm font-extrabold text-white">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#122d25] text-sm font-bold text-white">
                     {index + 1}
                   </span>
-                  <span className="text-base font-bold">{step}</span>
+                  <span className="text-base font-semibold">{step}</span>
                 </li>
               ),
             )}
           </ol>
         </div>
-      </section>
+      </Reveal>
 
-      <section id="how" className="scroll-mt-24 border-y border-[#d9ddd4] bg-white" lang="en">
-        <div className={`${siteFrame} py-14 md:py-20`}>
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ba3b2a]">{landing.stepsEyebrow}</p>
-          <h2 className="mt-3 max-w-3xl text-[clamp(1.7rem,2.4vw,2.6rem)] font-extrabold leading-tight tracking-[-0.03em]">
+      <section id="how" className="scroll-mt-28 border-y border-[#e4e6df] bg-white" lang="en">
+        <Reveal className={`${siteFrame} py-20 md:py-28`}>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#ba3b2a]">{landing.stepsEyebrow}</p>
+          <h2 className="mt-4 max-w-3xl text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
             {landing.stepsTitle}
           </h2>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
             {landing.steps.map((step) => (
-              <article key={step.n} className="rounded-2xl border border-[#d5d5cb] bg-[#f4f1e9] p-6 md:p-8">
-                <p className="text-sm font-extrabold tracking-[0.12em] text-[#407a68]">{step.n}</p>
-                <h3 className="mt-3 text-xl font-extrabold tracking-[-0.02em]">{step.title}</h3>
-                <p className="mt-2 text-sm font-medium leading-relaxed text-[#5d6c66]">{step.body}</p>
+              <article key={step.n} className="landing-card bg-[#f7f5ee] p-8">
+                <p className="text-sm font-semibold tracking-[0.14em] text-[#407a68]">{step.n}</p>
+                <h3 className="mt-4 text-xl font-bold tracking-[-0.02em]">{step.title}</h3>
+                <p className="mt-3 text-sm font-normal leading-relaxed text-[#5d6c66]">{step.body}</p>
               </article>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className="bg-[#0e1f1a] text-white" lang="en">
-        <div className={`${siteFrame} py-12 md:py-16`}>
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#86c9b4]">{landing.statsEyebrow}</p>
-          <div className="mt-8 grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
+        <Reveal className={`${siteFrame} py-20 md:py-24`}>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#86c9b4]">{landing.statsEyebrow}</p>
+          <div className="mt-12 grid gap-10 sm:grid-cols-2 xl:grid-cols-4">
             {landing.stats.map((stat) => (
-              <div key={stat.label} className="border-t border-white/15 pt-5">
-                <p className="text-[clamp(2.2rem,3vw,3.25rem)] font-extrabold leading-none tracking-[-0.04em]">{stat.value}</p>
-                <p className="mt-3 text-sm font-extrabold">{stat.label}</p>
-                <p className="mt-1 text-sm font-medium text-[#9bb3ab]">{stat.detail}</p>
+              <div key={stat.label} className="border-t border-white/12 pt-6">
+                <p className="text-[clamp(2.4rem,3.2vw,3.5rem)] font-extrabold leading-none tracking-[-0.05em]">{stat.value}</p>
+                <p className="mt-4 text-sm font-semibold">{stat.label}</p>
+                <p className="mt-1 text-sm font-normal text-[#9bb3ab]">{stat.detail}</p>
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
-      <section className={`${siteFrame} py-14 md:py-20`} lang="en">
-        <div className="rounded-3xl bg-[#14362d] px-6 py-10 text-white md:px-12 md:py-14">
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#86c9b4]">{landing.ctaEyebrow}</p>
-          <h2 className="mt-3 max-w-3xl text-[clamp(1.8rem,2.6vw,2.8rem)] font-extrabold leading-tight tracking-[-0.03em]">
+      <Reveal className={`${siteFrame} py-20 md:py-28`} lang="en">
+        <div className="rounded-[1.5rem] bg-[#14362d] px-8 py-12 text-white shadow-[0_30px_80px_rgba(18,45,37,0.18)] md:px-14 md:py-16">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#86c9b4]">{landing.ctaEyebrow}</p>
+          <h2 className="mt-4 max-w-3xl text-[clamp(1.95rem,2.8vw,3.1rem)] font-extrabold leading-[1.1] tracking-[-0.04em]">
             {landing.ctaTitle}
           </h2>
-          <p className="mt-4 max-w-2xl text-base font-medium text-[#c5d9d0]">{landing.ctaBody}</p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <p className="mt-5 max-w-2xl text-lg font-normal text-[#c5d9d0]">{landing.ctaBody}</p>
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={onStart}
               disabled={isPending}
-              className="min-h-14 rounded-2xl bg-[#e84e36] px-6 text-base font-extrabold hover:bg-[#d9432e] disabled:opacity-70"
+              className="min-h-14 rounded-2xl bg-[#e84e36] px-7 text-base font-bold transition hover:bg-[#d9432e] disabled:opacity-70"
             >
               {isPending ? copy.starting : copy.startEmergency}
             </button>
             <Link
               to={routes.responder.list}
-              className="flex min-h-14 items-center justify-center rounded-2xl border border-white/25 px-6 text-base font-extrabold hover:bg-white/5"
+              className="flex min-h-14 items-center justify-center rounded-2xl border border-white/20 px-7 text-base font-semibold transition hover:bg-white/5"
             >
               {landing.secondaryCta}
             </Link>
           </div>
         </div>
-      </section>
+      </Reveal>
 
-      <footer className="border-t border-[#d5d5cb] pb-10 pt-8">
+      <footer className="border-t border-[#e4e6df] pb-12 pt-10">
         <div className={`${siteFrame} flex flex-col gap-6 md:flex-row md:items-end md:justify-between`}>
-          <p className="max-w-2xl text-xs leading-relaxed text-[#78837e] md:text-sm" lang="en">
+          <p className="max-w-2xl text-sm font-normal leading-relaxed text-[#78837e]" lang="en">
             {landing.footerNote} {copy.protocolNote}
           </p>
           <Link
             to={routes.responder.list}
-            className="text-xs font-bold text-[#52645e] underline decoration-[#aab3ae] underline-offset-4 md:hidden"
+            className="text-xs font-semibold text-[#52645e] underline decoration-[#aab3ae] underline-offset-4 md:hidden"
             lang="en"
           >
             {copy.responderAccess}
@@ -304,7 +324,60 @@ export function HomePage() {
   );
 }
 
-function HeroPreview() {
+function Reveal({
+  children,
+  className = '',
+  id,
+  lang,
+}: {
+  children: ReactNode;
+  className?: string;
+  id?: string;
+  lang?: string;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const [on, setOn] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setOn(true);
+      return;
+    }
+    const showIfVisible = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.94) setOn(true);
+    };
+    showIfVisible();
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setOn(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <section
+      ref={ref}
+      id={id}
+      lang={lang}
+      className={`${className} transition-[opacity,transform] duration-700 ease-out ${
+        on ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+      }`}
+    >
+      {children}
+    </section>
+  );
+}
+
+function ProductFrame() {
   const rows: { icon: IconName; label: string; value: string; tone?: 'warn' | 'ok' | 'muted' }[] = [
     { icon: 'location', label: 'Location', value: 'Shared with responders', tone: 'ok' },
     { icon: 'pulse', label: 'Breathing', value: 'Unknown', tone: 'warn' },
@@ -313,41 +386,52 @@ function HeroPreview() {
   ];
 
   return (
-    <aside className="w-full md:justify-self-end" lang="en" aria-hidden="true">
-      <div className="overflow-hidden rounded-3xl border border-[#1a3d34] bg-[#122d25] text-white shadow-[0_28px_70px_rgba(18,45,37,0.28)]">
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-          <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#86c9b4]">Live incident intelligence</p>
-            <p className="mt-1 text-lg font-extrabold">Unresponsive adult</p>
-          </div>
-          <span className="flex items-center gap-2 rounded-full bg-[#1e5e4b] px-3 py-1 text-[11px] font-extrabold text-[#9ee0cb]">
-            <span className="size-1.5 rounded-full bg-[#6ee7b7]" />
-            Live
+    <aside className="relative w-full md:justify-self-end" lang="en" aria-hidden="true">
+      <div className="absolute -inset-10 rounded-full bg-[#86c9b4]/18 blur-3xl" />
+      <div className="relative overflow-hidden rounded-2xl border border-[#d7ddd6] bg-white shadow-[0_32px_80px_rgba(18,45,37,0.16)]">
+        <div className="flex items-center gap-2 border-b border-[#eceee8] bg-[#f7f6f1] px-4 py-3">
+          <span className="size-2.5 rounded-full bg-[#e88b80]" />
+          <span className="size-2.5 rounded-full bg-[#e4c36a]" />
+          <span className="size-2.5 rounded-full bg-[#7dcf9a]" />
+          <span className="ml-3 flex-1 truncate rounded-md bg-white px-3 py-1 text-[11px] font-medium text-[#7a8882]">
+            deres.app · live incident
           </span>
         </div>
-        <div className="space-y-3 p-5">
-          {rows.map((row) => (
-            <div key={row.label} className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3">
-              <span className="grid size-9 place-items-center rounded-lg bg-white/10 text-[#9ee0cb]">
-                <Icon name={row.icon} className="size-4" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8aa198]">{row.label}</span>
-                <span className="block truncate text-sm font-bold">{row.value}</span>
-              </span>
-              <span
-                className={`rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase ${
-                  row.tone === 'ok'
-                    ? 'bg-[#1e5e4b] text-[#9ee0cb]'
-                    : row.tone === 'warn'
-                      ? 'bg-[#5a3a18] text-[#f3d08a]'
-                      : 'bg-white/10 text-[#c5d9d0]'
-                }`}
-              >
-                {row.tone === 'ok' ? 'Known' : row.tone === 'warn' ? 'Unknown' : 'Now'}
-              </span>
+        <div className="bg-[#122d25] text-white">
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#86c9b4]">Live incident intelligence</p>
+              <p className="mt-1 text-lg font-bold">Unresponsive adult</p>
             </div>
-          ))}
+            <span className="flex items-center gap-2 rounded-full bg-[#1e5e4b] px-3 py-1 text-[11px] font-semibold text-[#9ee0cb]">
+              <span className="size-1.5 rounded-full bg-[#6ee7b7]" />
+              Live
+            </span>
+          </div>
+          <div className="space-y-3 p-5">
+            {rows.map((row) => (
+              <div key={row.label} className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3">
+                <span className="grid size-9 place-items-center rounded-lg bg-white/10 text-[#9ee0cb]">
+                  <Icon name={row.icon} className="size-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8aa198]">{row.label}</span>
+                  <span className="block truncate text-sm font-semibold">{row.value}</span>
+                </span>
+                <span
+                  className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                    row.tone === 'ok'
+                      ? 'bg-[#1e5e4b] text-[#9ee0cb]'
+                      : row.tone === 'warn'
+                        ? 'bg-[#5a3a18] text-[#f3d08a]'
+                        : 'bg-white/10 text-[#c5d9d0]'
+                  }`}
+                >
+                  {row.tone === 'ok' ? 'Known' : row.tone === 'warn' ? 'Unknown' : 'Now'}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </aside>
