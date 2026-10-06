@@ -39,24 +39,40 @@ function parseJsonObject(raw: string): Record<string, unknown> {
   return parsed;
 }
 
-function requireEnum<T extends string>(
-  value: unknown,
-  allowed: readonly T[],
-  path: string,
-): T {
-  if (typeof value !== 'string' || !allowed.includes(value as T)) {
-    throw new AiValidationError(`Invalid ${path}`, { path, value });
-  }
-  return value as T;
-}
-
 function optionalEnum<T extends string>(
   value: unknown,
   allowed: readonly T[],
-  path: string,
+  _path: string,
 ): T | null {
-  if (value === null || value === undefined) return null;
-  return requireEnum(value, allowed, path);
+  if (typeof value !== 'string') return null;
+  const normalised = value.trim().toLowerCase().replace(/[\s-]+/g, '_') as T;
+  return allowed.includes(normalised) ? normalised : null;
+}
+
+const EMERGENCY_SYNONYMS: Record<string, EmergencyType> = {
+  collapse: EmergencyType.UNCONSCIOUS,
+  collapsed: EmergencyType.UNCONSCIOUS,
+  unconscious_adult: EmergencyType.UNCONSCIOUS,
+  unresponsive: EmergencyType.UNCONSCIOUS,
+  unresponsive_adult: EmergencyType.UNCONSCIOUS,
+  not_responding: EmergencyType.UNCONSCIOUS,
+  fainted: EmergencyType.UNCONSCIOUS,
+  passed_out: EmergencyType.UNCONSCIOUS,
+  bleeding: EmergencyType.SEVERE_BLEEDING,
+  hemorrhage: EmergencyType.SEVERE_BLEEDING,
+  stroke: EmergencyType.SUSPECTED_STROKE,
+  allergy: EmergencyType.SEVERE_ALLERGIC_REACTION,
+  allergic_reaction: EmergencyType.SEVERE_ALLERGIC_REACTION,
+};
+
+/** Models paraphrase the enum. A near-miss maps; anything else is "not established". */
+function readEmergencyType(value: unknown): EmergencyType | null {
+  if (typeof value !== 'string') return null;
+  const key = value.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  const synonym = EMERGENCY_SYNONYMS[key];
+  if (synonym) return synonym;
+  if (key === EmergencyType.UNKNOWN) return null;
+  return (Object.values(EmergencyType) as string[]).includes(key) ? (key as EmergencyType) : null;
 }
 
 function optionalString(value: unknown, path: string): string | null {
@@ -66,6 +82,42 @@ function optionalString(value: unknown, path: string): string | null {
   }
   const trimmed = value.trim();
   return trimmed === '' ? null : trimmed;
+}
+
+function finiteNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+/** Accepts 0.9, "0.9" and a 0–100 percentage. Missing becomes 0, so the protocol decides. */
+function readConfidence(value: unknown): number {
+  const number = finiteNumber(value);
+  if (number === null) return 0;
+  const scaled = number > 1 && number <= 100 ? number / 100 : number;
+  if (scaled < 0 || scaled > 1) {
+    throw new AiValidationError('emergencyTypeConfidence must be a number between 0 and 1');
+  }
+  return scaled;
+}
+
+/** A count the model could not express cleanly is treated as unknown, not as a failed turn. */
+function readPeopleAffected(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const number = finiteNumber(value);
+  if (number === null || number < 1) return null;
+  return Math.round(number);
+}
+
+/** An intent outside the allowed list becomes unknown, so the protocol repeats instead of failing. */
+function readIntent(value: unknown): LlmIntent {
+  if (typeof value === 'string' && (LLM_INTENTS as readonly string[]).includes(value)) {
+    return value as LlmIntent;
+  }
+  return LlmIntent.UNKNOWN;
 }
 
 function stringList(value: unknown, path: string): string[] {
@@ -93,32 +145,18 @@ export function validateExtraction(raw: string): LlmExtraction {
     });
   }
 
-  const unknown = keys.filter((key) => !(EXTRACTION_KEYS as readonly string[]).includes(key));
-  if (unknown.length > 0) {
-    throw new AiValidationError('Model output has unsupported fields', { unknown });
-  }
+  // Extra keys are dropped. Only keys that would let the model write medical
+  // guidance are rejected; a harmless extra field must not fail the turn.
+  const confidence = readConfidence(parsed.emergencyTypeConfidence);
+  const peopleAffected = readPeopleAffected(parsed.peopleAffected);
 
-  const confidence = parsed.emergencyTypeConfidence;
-  if (typeof confidence !== 'number' || !Number.isFinite(confidence) || confidence < 0 || confidence > 1) {
-    throw new AiValidationError('emergencyTypeConfidence must be a number between 0 and 1');
-  }
-
-  const peopleAffected = parsed.peopleAffected;
-  if (peopleAffected !== null && peopleAffected !== undefined) {
-    if (!Number.isInteger(peopleAffected) || (peopleAffected as number) < 1) {
-      throw new AiValidationError('peopleAffected must be a positive integer or null');
-    }
-  }
-
-  const actionStatus = parsed.actionStatus;
-  if (actionStatus !== null && actionStatus !== undefined) {
-    if (typeof actionStatus !== 'string' || !ACTION_STATUSES.has(actionStatus as LlmActionStatus)) {
-      throw new AiValidationError('Invalid actionStatus', { actionStatus });
-    }
-  }
+  const actionStatus =
+    typeof parsed.actionStatus === 'string' && ACTION_STATUSES.has(parsed.actionStatus as LlmActionStatus)
+      ? (parsed.actionStatus as LlmActionStatus)
+      : null;
 
   return {
-    emergencyType: optionalEnum(parsed.emergencyType, Object.values(EmergencyType), 'emergencyType'),
+    emergencyType: readEmergencyType(parsed.emergencyType),
     emergencyTypeConfidence: confidence,
     ageGroup: optionalEnum(parsed.ageGroup, Object.values(AgeGroup), 'ageGroup'),
     consciousness: optionalEnum(parsed.consciousness, Object.values(ConsciousnessState), 'consciousness'),
@@ -128,10 +166,14 @@ export function validateExtraction(raw: string): LlmExtraction {
     symptoms: stringList(parsed.symptoms, 'symptoms'),
     observations: stringList(parsed.observations, 'observations'),
     questionAnswer: optionalString(parsed.questionAnswer, 'questionAnswer'),
-    certainty: requireEnum(parsed.certainty, Object.values(Certainty), 'certainty'),
+    certainty:
+      typeof parsed.certainty === 'string' &&
+      (Object.values(Certainty) as string[]).includes(parsed.certainty)
+        ? (parsed.certainty as Certainty)
+        : Certainty.UNKNOWN,
     actionStatus: (actionStatus as LlmActionStatus | null | undefined) ?? null,
     unsupportedRequest: optionalString(parsed.unsupportedRequest, 'unsupportedRequest'),
-    intent: requireEnum(parsed.intent, LLM_INTENTS, 'intent'),
+    intent: readIntent(parsed.intent),
   };
 }
 

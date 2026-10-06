@@ -35,10 +35,15 @@ export class OpenAiCompatibleProvider implements LlmProvider {
         headers: {
           Authorization: `Bearer ${this.options.apiKey}`,
           'Content-Type': 'application/json',
+          // OpenRouter uses these to attribute the app; other providers ignore them.
+          'HTTP-Referer': config.clientUrl,
+          'X-Title': 'DERES',
         },
         body: JSON.stringify({
           model: this.options.model,
           temperature: 0,
+          // A capped reply stays inside a small credit balance. The extraction is a short JSON object.
+          max_tokens: 500,
           response_format: { type: 'json_object' },
           messages: [
             { role: 'system', content: input.system },
@@ -51,7 +56,8 @@ export class OpenAiCompatibleProvider implements LlmProvider {
     }
 
     if (!response.ok) {
-      logger.warn('LLM provider returned an error status', { status: response.status });
+      const detail = (await response.text()).slice(0, 300);
+      logger.warn('LLM provider returned an error status', { status: response.status, detail });
       throw new UpstreamUnavailableError('LLM');
     }
 

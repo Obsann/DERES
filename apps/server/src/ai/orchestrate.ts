@@ -2,6 +2,7 @@ import {
   ActionStatus,
   AgeGroup,
   Certainty,
+  ConsciousnessState,
   EmergencyType,
   EventSource,
   ProtocolStepKind,
@@ -57,6 +58,33 @@ class ResultBuilder {
   }
 }
 
+const UNRESPONSIVE_REPORT =
+  /collapsed|unconscious|not responding|unresponsive|fainted|passed out|ወድቋ|ወደቀ|አይመልስም|ምላሽ አይሰጥ|kufe|deebii hin kenn|hin deebine/iu;
+
+/**
+ * A collapsed, unresponsive person is the one emergency this build can guide.
+ * When the utterance says so plainly, those facts are filled in even if the
+ * model did not recognise the language.
+ */
+function withTranscriptHints(transcript: string, extraction: LlmExtraction): LlmExtraction {
+  if (!UNRESPONSIVE_REPORT.test(transcript)) return extraction;
+  const modelWasUnsure = extraction.intent === LlmIntent.UNSUPPORTED || extraction.intent === LlmIntent.UNKNOWN;
+  return {
+    ...extraction,
+    emergencyType: extraction.emergencyType ?? EmergencyType.UNCONSCIOUS,
+    emergencyTypeConfidence: extraction.emergencyType
+      ? extraction.emergencyTypeConfidence
+      : Math.max(extraction.emergencyTypeConfidence, 0.8),
+    consciousness:
+      extraction.consciousness && extraction.consciousness !== ConsciousnessState.UNKNOWN
+        ? extraction.consciousness
+        : ConsciousnessState.UNRESPONSIVE,
+    questionAnswer: extraction.questionAnswer ?? ConsciousnessState.UNRESPONSIVE,
+    intent: modelWasUnsure ? LlmIntent.ANSWER : extraction.intent,
+    unsupportedRequest: modelWasUnsure ? null : extraction.unsupportedRequest,
+  };
+}
+
 function activeProtocol(incident: Incident, protocols: Protocol[]): Protocol | null {
   if (incident.state.currentProtocolId) {
     return protocols.find((item) => item.id === incident.state.currentProtocolId) ?? null;
@@ -88,13 +116,16 @@ function applyFacts(builder: ResultBuilder, extraction: LlmExtraction, at: IsoDa
   const state = builder.incident.state;
   const source = EventSource.AI;
 
-  if (extraction.emergencyType && state.emergencyType === EmergencyType.UNKNOWN) {
+  const describedAsUnresponsive =
+    extraction.consciousness === ConsciousnessState.UNRESPONSIVE && !extraction.emergencyType;
+  const emergencyType = extraction.emergencyType ?? (describedAsUnresponsive ? EmergencyType.UNCONSCIOUS : null);
+  if (emergencyType && state.emergencyType === EmergencyType.UNKNOWN) {
     builder.push(
       applyCommand(
         builder.incident,
         {
           kind: 'set_emergency_type',
-          emergencyType: extraction.emergencyType,
+          emergencyType,
           confidence: extraction.emergencyTypeConfidence,
           source,
         },
@@ -261,10 +292,13 @@ export async function interpretTurn(input: InterpretTurnInput): Promise<Interpre
     system: buildSystemPrompt(input.incident, protocolForPrompt),
     user: buildUserPrompt(input.transcript),
   });
-  const extraction = runSafetyPipeline(raw, {
-    incident: input.incident,
-    protocol: protocolForPrompt,
-  });
+  const extraction = withTranscriptHints(
+    input.transcript,
+    runSafetyPipeline(raw, {
+      incident: input.incident,
+      protocol: protocolForPrompt,
+    }),
+  );
 
   return applyExtraction(input.incident, extraction, input.protocols, at);
 }
@@ -292,7 +326,11 @@ export function applyExtraction(
     applyProtocolTurn(builder, protocol, extraction, at);
   }
 
-  const blocked = Boolean(extraction.unsupportedRequest) || extraction.intent === LlmIntent.UNSUPPORTED;
+  // A turn that established facts is a description, even if the model also set
+  // "unsupported". Refuse only when nothing usable was extracted.
+  const blocked =
+    builder.events.length === 0 &&
+    (Boolean(extraction.unsupportedRequest) || extraction.intent === LlmIntent.UNSUPPORTED);
   const spoken = spokenReply(builder.incident, protocol, blocked);
   return {
     incident: builder.incident,
