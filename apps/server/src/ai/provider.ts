@@ -1,6 +1,8 @@
 import { config } from '../common/config.js';
 import { UpstreamUnavailableError } from '../common/errors.js';
 import { logger } from '../common/logger.js';
+import { observeProviderCall } from '../common/observe.js';
+import { fetchWithRetry, readJson } from '../common/upstream.js';
 
 export interface LlmCompleteInput {
   system: string;
@@ -28,21 +30,21 @@ export class OpenAiCompatibleProvider implements LlmProvider {
 
   async complete(input: LlmCompleteInput): Promise<string> {
     const url = `${this.options.baseUrl.replace(/\/$/, '')}/chat/completions`;
-    let response: Response;
-    try {
-      response = await fetch(url, {
+    const startedAt = Date.now();
+    const response = await fetchWithRetry({
+      dependency: 'LLM',
+      url,
+      init: {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.options.apiKey}`,
           'Content-Type': 'application/json',
-          // OpenRouter uses these to attribute the app; other providers ignore them.
           'HTTP-Referer': config.clientUrl,
           'X-Title': 'DERES',
         },
         body: JSON.stringify({
           model: this.options.model,
           temperature: 0,
-          // A capped reply stays inside a small credit balance. The extraction is a short JSON object.
           max_tokens: 500,
           response_format: { type: 'json_object' },
           messages: [
@@ -50,24 +52,32 @@ export class OpenAiCompatibleProvider implements LlmProvider {
             { role: 'user', content: input.user },
           ],
         }),
-      });
-    } catch (error) {
-      throw new UpstreamUnavailableError('LLM', { cause: error });
-    }
+      },
+      timeoutMs: 20_000,
+    });
 
     if (!response.ok) {
       const detail = (await response.text()).slice(0, 300);
+      observeProviderCall({
+        provider: 'llm',
+        operation: 'complete',
+        startedAt,
+        ok: false,
+        status: response.status,
+      });
       logger.warn('LLM provider returned an error status', { status: response.status, detail });
       throw new UpstreamUnavailableError('LLM');
     }
 
-    const body = (await response.json()) as {
+    const body = await readJson<{
       choices?: Array<{ message?: { content?: string | null } }>;
-    };
+    }>(response, 'LLM');
     const content = body.choices?.[0]?.message?.content;
     if (!content) {
+      observeProviderCall({ provider: 'llm', operation: 'complete', startedAt, ok: false, failure: 'empty' });
       throw new UpstreamUnavailableError('LLM');
     }
+    observeProviderCall({ provider: 'llm', operation: 'complete', startedAt, ok: true, status: response.status });
     return content;
   }
 }

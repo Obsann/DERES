@@ -5,6 +5,7 @@ export interface SafePhraseSet {
   unsupportedEmergency: string;
   stayWithThem: string;
   sayAgain: string;
+  noConnection: string;
 }
 
 /**
@@ -22,6 +23,7 @@ export const SAFE_PHRASES_BY_LANGUAGE: Record<Language, SafePhraseSet> = {
       'I can only guide you for an unresponsive adult. Call emergency services now for any other emergency.',
     stayWithThem: 'Stay with them and call emergency services if you have not already.',
     sayAgain: 'I need you to say that again. Call emergency services if someone is unresponsive.',
+    noConnection: 'I have no connection. Use the buttons, or try speaking again in a moment.',
   },
   [Language.AMHARIC]: {
     cannotInvent: 'ያንን እንዲያደርጉ ልነግርዎ አልችልም።',
@@ -29,6 +31,7 @@ export const SAFE_PHRASES_BY_LANGUAGE: Record<Language, SafePhraseSet> = {
       'መምራት የምችለው ምላሽ ለማይሰጥ አዋቂ ሰው ብቻ ነው። ለሌላ ማንኛውም ድንገተኛ አደጋ አሁኑኑ ወደ ድንገተኛ አገልግሎት ይደውሉ።',
     stayWithThem: 'ከአጠገባቸው ይቆዩ፤ እስካሁን ካልደወሉ ወደ ድንገተኛ አገልግሎት ይደውሉ።',
     sayAgain: 'እባክዎ እንደገና ይናገሩ። አንድ ሰው ምላሽ የማይሰጥ ከሆነ ወደ ድንገተኛ አገልግሎት ይደውሉ።',
+    noConnection: 'ግንኙነት የለኝም። ቁልፎቹን ይጠቀሙ፣ ወይም ትንሽ ቆይተው እንደገና ይናገሩ።',
   },
   [Language.AFAAN_OROMO]: {
     cannotInvent: "Waan sana akka gootu sitti himuu hin danda'u.",
@@ -36,6 +39,7 @@ export const SAFE_PHRASES_BY_LANGUAGE: Record<Language, SafePhraseSet> = {
       "Ani kan si qajeelchuu danda'u ga'eessa deebii hin kennineef qofa. Balaa tasaa kan biraatiif amma tajaajila balaa tasaatiif bilbili.",
     stayWithThem: 'Isaan bira turi; yoo hanga ammaatti hin bilbilin, tajaajila balaa tasaatiif bilbili.',
     sayAgain: "Maaloo irra deebi'ii dubbadhu. Namni deebii hin kennu yoo ta'e, tajaajila balaa tasaatiif bilbili.",
+    noConnection: "Quunnamtiin hin jiru. Tuqaawwan fayyadami, ykn booda irra deebi'ii dubbadhu.",
   },
 };
 

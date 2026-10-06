@@ -1,6 +1,5 @@
 import {
   ActionStatus,
-  EventSource,
   MessageRole,
   VoiceSessionPhase,
   type Incident,
@@ -12,9 +11,10 @@ import { safePhrases } from '../ai/phrases.js';
 import { currentStep, stepPrompt } from '../protocols/engine.js';
 import { publishedProtocols } from '../protocols/catalog.js';
 import type { LlmProvider } from '../ai/provider.js';
-import { UpstreamUnavailableError, ValidationError } from '../common/errors.js';
-import { nowIso } from '../database/ids.js';
-import { getIncidentById, insertConversationMessage } from '../database/persist.js';
+import { AiValidationError, UpstreamUnavailableError, ValidationError } from '../common/errors.js';
+import { getIncidentById, insertConversationMessage, listConversationMessages } from '../database/persist.js';
+import { formatHistory } from './history.js';
+import { prepareSpokenLine } from './spoken.js';
 import { commitIncidentMutation } from '../incidents/apply.js';
 import { openIncident } from '../incidents/service.js';
 import {
@@ -69,28 +69,59 @@ async function persistAndInterpret(
   confidence: number | null,
   llmProvider: LlmProvider,
 ): Promise<VoiceTurnResult> {
-  await insertConversationMessage({
-    incidentId: incident.id,
-    role: MessageRole.USER,
-    transcript,
-    language: incident.language,
-    recognitionConfidence: confidence,
-  });
+  const history = formatHistory(await listConversationMessages(incident.id));
+  let interpreted;
+  try {
+    interpreted = await interpretTurn({
+      incident,
+      transcript,
+      history,
+      protocols: publishedProtocols,
+      provider: llmProvider,
+    });
+  } catch (error) {
+    // A failed turn is not stored, so the next turn does not re-answer a question that never got a reply.
+    if (error instanceof UpstreamUnavailableError) {
+      return {
+        incident,
+        heard: null,
+        reply: safePhrases(incident.language).noConnection,
+        source: 'safe_fallback',
+        failure: VoiceFailure.UPSTREAM,
+      };
+    }
+    if (error instanceof AiValidationError) {
+      return {
+        incident,
+        heard: null,
+        reply: safePhrases(incident.language).sayAgain,
+        source: 'safe_fallback',
+        failure: null,
+      };
+    }
+    throw error;
+  }
 
-  const interpreted = await interpretTurn({
-    incident,
-    transcript,
-    protocols: publishedProtocols,
-    provider: llmProvider,
-  });
   const committed = await commitIncidentMutation(interpreted.incident, interpreted.events);
-  await insertConversationMessage({
-    incidentId: incident.id,
-    role: MessageRole.ASSISTANT,
-    transcript: interpreted.reply,
-    language: committed.incident.language,
-    recognitionConfidence: null,
-  });
+  const heardAt = new Date();
+  await Promise.all([
+    insertConversationMessage({
+      incidentId: incident.id,
+      role: MessageRole.USER,
+      transcript,
+      language: incident.language,
+      recognitionConfidence: confidence,
+      createdAt: heardAt.toISOString(),
+    }),
+    insertConversationMessage({
+      incidentId: incident.id,
+      role: MessageRole.ASSISTANT,
+      transcript: interpreted.reply,
+      language: committed.incident.language,
+      recognitionConfidence: null,
+      createdAt: new Date(heardAt.getTime() + 1).toISOString(),
+    }),
+  ]);
 
   return {
     incident: committed.incident,
@@ -117,9 +148,10 @@ export function toVoiceTurnResponse(result: VoiceTurnResult): VoiceTurnResponse 
     voiceSessionId: result.incident.sessionId,
     phase: voicePhase(result),
     heard: result.heard,
-    reply: result.reply,
+    reply: prepareSpokenLine(result.reply),
     source: result.source,
     failure: result.failure,
+    capability: result.incident.state.currentStepId === 'step-call-ems' ? 'place_call' : null,
   };
 }
 

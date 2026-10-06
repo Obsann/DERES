@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { Language } from '@voicesos/shared';
 import { createApp } from '../app.js';
+import { config } from '../common/config.js';
 import { unconsciousAdultProtocol } from '../protocols/catalog.js';
 
 describe('contract-aligned HTTP surface', () => {
@@ -24,8 +25,8 @@ describe('contract-aligned HTTP surface', () => {
   it('reports llm and voice in health without calling those providers', async () => {
     const health = await request(app).get('/api/health');
     expect(health.status).toBe(200);
-    expect(health.body.data.dependencies.llm).toBe('unknown');
-    expect(health.body.data.dependencies.voice).toBe('unknown');
+    expect(health.body.data.dependencies.llm).toBe(config.llmApiKey === null ? 'unknown' : 'up');
+    expect(health.body.data.dependencies.voice).toBe(config.voxideApiKey === null ? 'unknown' : 'up');
   });
 
   it('rejects an unauthenticated incident list and a voice turn without an LLM', async () => {

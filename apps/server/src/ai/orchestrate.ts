@@ -11,6 +11,8 @@ import {
   type Protocol,
   type ProtocolStep,
 } from '@voicesos/shared';
+import { AiValidationError } from '../common/errors.js';
+import { logger } from '../common/logger.js';
 import { nowIso } from '../database/ids.js';
 import { applyCommand, type EngineEvent, type TransitionResult } from '../incidents/stateEngine.js';
 import {
@@ -23,7 +25,7 @@ import {
   resolveProtocolAction,
 } from '../protocols/index.js';
 import { safePhrases } from './phrases.js';
-import { buildSystemPrompt, buildUserPrompt } from './prompt.js';
+import { buildSystemPrompt, buildUserPrompt, PROMPT_VERSION } from './prompt.js';
 import type { LlmProvider } from './provider.js';
 import { runSafetyPipeline } from './pipeline.js';
 import { LlmIntent, type LlmExtraction } from './schema.js';
@@ -33,6 +35,8 @@ export interface InterpretTurnInput {
   transcript: string;
   protocols: Protocol[];
   provider: LlmProvider;
+  /** Successful turns only, already capped. Empty when this is the first turn. */
+  history?: string;
   at?: IsoDateTime;
 }
 
@@ -285,21 +289,35 @@ function spokenReply(incident: Incident, protocol: Protocol | null, blocked: boo
  * One conversation turn: the model interprets language; the protocol engine
  * decides what the user is told.
  */
+async function readExtraction(input: InterpretTurnInput, protocolForPrompt: Protocol | null) {
+  const ask = () =>
+    input.provider.complete({
+      system: buildSystemPrompt(input.incident, protocolForPrompt),
+      user: buildUserPrompt(input.transcript, input.history),
+    });
+
+  const first = await ask();
+  try {
+    return runSafetyPipeline(first, { incident: input.incident, protocol: protocolForPrompt });
+  } catch (error) {
+    if (!(error instanceof AiValidationError)) throw error;
+    // About one reply in four comes back as prose. A second call is cheaper
+    // than making the person ask again out loud.
+    let second: string;
+    try {
+      second = await ask();
+    } catch {
+      throw error;
+    }
+    return runSafetyPipeline(second, { incident: input.incident, protocol: protocolForPrompt });
+  }
+}
+
 export async function interpretTurn(input: InterpretTurnInput): Promise<InterpretTurnResult> {
   const at = input.at ?? nowIso();
   const protocolForPrompt = activeProtocol(input.incident, input.protocols);
-  const raw = await input.provider.complete({
-    system: buildSystemPrompt(input.incident, protocolForPrompt),
-    user: buildUserPrompt(input.transcript),
-  });
-  const extraction = withTranscriptHints(
-    input.transcript,
-    runSafetyPipeline(raw, {
-      incident: input.incident,
-      protocol: protocolForPrompt,
-    }),
-  );
-
+  logger.info('interpret turn', { promptVersion: PROMPT_VERSION, incidentId: input.incident.id });
+  const extraction = withTranscriptHints(input.transcript, await readExtraction(input, protocolForPrompt));
   return applyExtraction(input.incident, extraction, input.protocols, at);
 }
 
