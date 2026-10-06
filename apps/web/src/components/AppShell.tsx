@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { routes } from '@/routes/paths';
 
 const linkStyle = ({ isActive }: { isActive: boolean }) => ({
@@ -15,6 +15,11 @@ const linkStyle = ({ isActive }: { isActive: boolean }) => ({
  * Samuel's design system will replace this chrome in Tasks 31–33.
  */
 export function AppShell({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  // No global navigation in the bystander flow: one screen, one task.
+  if (pathname === routes.home || pathname.startsWith('/emergency')) {
+    return <div style={{ minHeight: '100vh' }}>{children}</div>;
+  }
   return (
     <div style={{ minHeight: '100vh' }}>
       <header
@@ -29,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           background: '#ebe7de',
         }}
       >
-        <strong>VoiceSOS</strong>
+        <strong>DERES</strong>
         <nav style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }} aria-label="Primary">
           <NavLink to={routes.home} style={linkStyle} end>
             Start

@@ -155,6 +155,19 @@ export interface VoiceTurnResponse {
   failure: 'recognition' | 'silence' | 'timeout' | 'upstream' | null;
 }
 
+/**
+ * `POST /api/incidents/:id/buttons` — the on-screen fallback for voice.
+ *
+ * Runs the same protocol path as a voice turn without calling the LLM, so the
+ * emergency flow still works when speech or the model is unavailable.
+ * The response is a {@link VoiceTurnResponse}.
+ */
+export type ButtonTurnRequest =
+  | { kind: 'start'; emergency: 'collapsed' }
+  | { kind: 'answer'; answer: 'yes' | 'no' | 'unsure' }
+  | { kind: 'action'; status: 'confirmed' | 'unable' }
+  | { kind: 'repeat' };
+
 /** `POST /api/incidents/:id/actions` */
 export interface RecordActionRequest {
   actionId: Id;

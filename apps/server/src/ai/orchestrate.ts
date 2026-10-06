@@ -266,14 +266,28 @@ export async function interpretTurn(input: InterpretTurnInput): Promise<Interpre
     protocol: protocolForPrompt,
   });
 
+  return applyExtraction(input.incident, extraction, input.protocols, at);
+}
+
+/**
+ * Applies an already-validated extraction to the incident and picks the spoken
+ * line. Voice turns reach this through the LLM and safety pipeline; button
+ * presses build the extraction on the server and skip the model entirely.
+ */
+export function applyExtraction(
+  incident: Incident,
+  extraction: LlmExtraction,
+  protocols: Protocol[],
+  at: IsoDateTime,
+): InterpretTurnResult {
   if (extraction.intent === LlmIntent.REPEAT) {
-    const spoken = spokenReply(input.incident, protocolForPrompt, false);
-    return { ...spoken, incident: input.incident, events: [] };
+    const spoken = spokenReply(incident, activeProtocol(incident, protocols), false);
+    return { ...spoken, incident, events: [] };
   }
 
-  const builder = new ResultBuilder(input.incident);
+  const builder = new ResultBuilder(incident);
   applyFacts(builder, extraction, at);
-  const protocol = ensureProtocol(builder, input.protocols, at);
+  const protocol = ensureProtocol(builder, protocols, at);
   if (protocol) {
     applyProtocolTurn(builder, protocol, extraction, at);
   }

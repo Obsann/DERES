@@ -7,6 +7,7 @@ import { createIncidentHandoff } from '../handoff/service.js';
 import { requireResponder } from '../security/middleware.js';
 import type { VoxideProvider } from '../voice/provider.js';
 import { handleVoiceTurn, parseVoiceTurnBody, toVoiceTurnResponse } from '../voice/session.js';
+import { handleButtonTurn, parseButtonTurn } from './buttons.js';
 import {
   parseAddMessage,
   parseCreateIncident,
@@ -59,6 +60,11 @@ export function createIncidentRouter(options: IncidentRouterOptions = {}): Route
       llmProvider: requireLlm(options),
       voxideProvider: options.voxideProvider,
     });
+    sendSuccess(res, toVoiceTurnResponse(result));
+  });
+
+  router.post('/incidents/:id/buttons', async (req, res) => {
+    const result = await handleButtonTurn(req.params.id as string, parseButtonTurn(req.body));
     sendSuccess(res, toVoiceTurnResponse(result));
   });
 

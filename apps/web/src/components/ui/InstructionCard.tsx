@@ -25,12 +25,14 @@ interface InstructionCardProps {
   /** e.g. "Step 2 of 5". */
   progress?: string;
   lang?: string;
+  /** Localized heading; defaults to the English label for the step kind. */
+  kindLabel?: string;
   /** Answer or confirmation controls rendered under the text. */
   children?: ReactNode;
 }
 
 /** The single thing the bystander must know or do right now. One per screen. */
-export function InstructionCard({ kind, text, progress, lang, children }: InstructionCardProps) {
+export function InstructionCard({ kind, text, progress, lang, kindLabel, children }: InstructionCardProps) {
   const meta = kindMeta[kind];
   return (
     <section
@@ -41,7 +43,7 @@ export function InstructionCard({ kind, text, progress, lang, children }: Instru
       <div className="d-instruction__meta">
         <span className="d-row" style={{ gap: 'var(--d-space-2)' }}>
           <Icon name={meta.icon} />
-          {meta.label}
+          <span lang={kindLabel ? lang : undefined}>{kindLabel ?? meta.label}</span>
         </span>
         {progress ? <span>{progress}</span> : null}
       </div>

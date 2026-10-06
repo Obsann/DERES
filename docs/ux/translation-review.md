@@ -61,3 +61,12 @@ Add anything people commonly say.
   Would bystanders rather hear "ambulance" (`አምቡላንስ` / `ambulaansii`)?
 - Amharic uses the polite plural (`ይደውሉ`); Afaan Oromoo uses the direct singular
   (`bilbili`). Confirm both sound right under stress.
+
+## Screen text
+
+Button labels, headings and status lines on the bystander screens live in
+`apps/web/src/i18n/emergencyCopy.ts` (start, language, session). They are not medical
+instructions, but people read them under stress. Priority for review: `yes`, `no`,
+`notSure`, `done`, `cantDo`, `repeat`, `callEmergency`, `helpArrived`, `collapsed`,
+`onlyCollapse`. Edit that file directly with the editor; do not round-trip it
+through PowerShell `Get-Content`/`Set-Content`, which corrupts Ge'ez text.

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   AddMessageRequest,
+  ButtonTurnRequest,
   CreateIncidentRequest,
   Id,
   RecordActionRequest,
@@ -68,5 +69,16 @@ export function useVoiceTurnMutation(incidentId: Id) {
   return useMutation({
     mutationFn: (body?: VoiceTurnRequest) =>
       incidentsApi.voiceTurn(incidentId, body ?? {}),
+  });
+}
+
+export function useButtonTurnMutation(incidentId: Id | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ButtonTurnRequest) => incidentsApi.buttonTurn(incidentId as Id, body),
+    onSuccess: () => {
+      if (!incidentId) return;
+      void queryClient.invalidateQueries({ queryKey: queryKeys.incidents.detail(incidentId) });
+    },
   });
 }
