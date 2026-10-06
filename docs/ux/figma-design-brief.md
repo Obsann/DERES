@@ -167,7 +167,7 @@ This is 90% of the UX. Treat it as a **voice appliance**, not a web page.
 
 | Step kind | Meaning | Buttons |
 |---|---|---|
-| Opening (no protocol yet) | What happened? | Collapsed / not responding · Something else |
+| Opening (no protocol yet) | What happened? | Collapsed · Crash · Stroke · Choking · Bleeding · Burn · Something else |
 | `question` / `assessment` | One clinical yes/no | Yes · No · Not sure |
 | `action` / `escalation` | Do this now | Done · I can’t · Call 907 (especially on call-EMS) |
 | `exit` | Stay with them | Help arrived |
@@ -176,7 +176,7 @@ Secondary: **Repeat** (hear/show the line again). Not equal to the primary actio
 
 **Desktop only:** a side rail with ambulance status, location share status, and step progress. **Mobile:** do not steal vertical space from the instruction. Progress can be a thin ticks bar or a “Step 3 of 6” caption, not a full checklist covering the prompt.
 
-**Something else:** this build only guides an **unresponsive adult**. Other emergencies → full-screen call 907, no fake protocol.
+**Something else:** scenes without a published protocol (including seizure and allergy) → full-screen call 907, no fake protocol. Collapse, crash, stroke, choking, bleeding, and burns each have their own locked path.
 
 ### 5.4 Voice phases (mic)
 
@@ -220,11 +220,13 @@ Do not mix this with the bystander’s huge-type emergency UI.
 
 ---
 
-## 6. Protocol the UI must walk (current MVP)
+## 6. Protocols the UI must walk
 
-Only one published protocol: **unresponsive adult** (ERC BLS, compression-only for untrained helpers).
+Six published first-minute protocols. Each opening button selects one. The **words on the card are the protocol’s `prompt[language]`**.
 
-Usual path (it **branches**):
+**Collapse** remains ERC BLS (response → 907 → airway → breathing → compressions or recovery). **Stroke** is 907 then FAST observation. **Choking** is back blows then abdominal thrusts. **Bleeding** is pressure, pack, tourniquet. **Burns** is cool 10–20 min. **Crash** is do not move / do not pull objects. See `docs/research/scenario-protocols.md`.
+
+**Collapse** usual path (it **branches**):
 
 1. Check response — *Tap their shoulders and shout. Are they responding?*
 2. Call emergency services — *Call now. Speaker if you can.*
@@ -233,7 +235,7 @@ Usual path (it **branches**):
 5. CPR (chest compressions) **or** recovery position
 6. Wait with them
 
-If they **are** responding, the protocol **exits**. Do not continue CPR UI.
+If they **are** responding on the collapse path, the protocol **exits**. Do not continue CPR UI on a crash, stroke, choking, bleeding, or burn.
 
 The **words on the card are the protocol’s `prompt[language]`**, not designer rewrite. You may style them. You may not shorten, joke, or “make friendlier”.
 

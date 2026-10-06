@@ -10,7 +10,13 @@ const STRENGTH = 2.4;
  * Bonded particle field. Nodes drift slowly and push away from the cursor,
  * stretching the links between them like a loose molecular lattice.
  */
-export function MoleculeField({ className = '' }: { className?: string }) {
+export function MoleculeField({
+  className = '',
+  tone = 'light',
+}: {
+  className?: string;
+  tone?: 'light' | 'dark';
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -18,6 +24,23 @@ export function MoleculeField({ className = '' }: { className?: string }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const palette =
+      tone === 'dark'
+        ? {
+            bond: '134, 201, 180',
+            accentBond: '232, 78, 54',
+            node: 'rgba(158, 224, 203, 0.72)',
+            accent: 'rgba(232, 78, 54, 0.78)',
+            bondAlpha: 0.42,
+          }
+        : {
+            bond: '32, 90, 74',
+            accentBond: '186, 59, 42',
+            node: 'rgba(28, 91, 72, 0.5)',
+            accent: 'rgba(186, 59, 42, 0.55)',
+            bondAlpha: 0.38,
+          };
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const mouse = { x: -9999, y: -9999, inside: false };
@@ -66,11 +89,14 @@ export function MoleculeField({ className = '' }: { className?: string }) {
           const dy = a.y - b.y;
           const dist = Math.hypot(dx, dy);
           if (dist >= LINK) continue;
-          const alpha = (1 - dist / LINK) * 0.38;
+          const alpha = (1 - dist / LINK) * palette.bondAlpha;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = a.accent || b.accent ? `rgba(186, 59, 42, ${alpha})` : `rgba(32, 90, 74, ${alpha})`;
+          ctx.strokeStyle =
+            a.accent || b.accent
+              ? `rgba(${palette.accentBond}, ${alpha})`
+              : `rgba(${palette.bond}, ${alpha})`;
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -79,7 +105,7 @@ export function MoleculeField({ className = '' }: { className?: string }) {
       for (const node of nodes) {
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
-        ctx.fillStyle = node.accent ? 'rgba(186, 59, 42, 0.55)' : 'rgba(28, 91, 72, 0.5)';
+        ctx.fillStyle = node.accent ? palette.accent : palette.node;
         ctx.fill();
       }
     };
@@ -151,7 +177,7 @@ export function MoleculeField({ className = '' }: { className?: string }) {
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, []);
+  }, [tone]);
 
   return <canvas ref={canvasRef} className={`pointer-events-none h-full w-full ${className}`} aria-hidden="true" />;
 }

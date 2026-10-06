@@ -33,7 +33,7 @@ export function LanguagePage() {
   };
 
   return (
-    <main className="min-h-dvh w-full bg-[#f4f1e9] text-[#122d25]">
+    <main className="min-h-dvh w-full bg-[#f4f1e9] text-[#122d25]" lang={current}>
       <div className={`${siteFrame} flex min-h-dvh flex-col py-6 md:py-8`}>
         <div className="flex items-center justify-between">
           <Brand />

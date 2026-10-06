@@ -21,9 +21,36 @@ export const EmergencyType = {
   SUSPECTED_STROKE: 'suspected_stroke',
   SEIZURE: 'seizure',
   SEVERE_ALLERGIC_REACTION: 'severe_allergic_reaction',
+  /** Crash, collision, or other injury scene — not the collapse protocol. */
+  TRAUMATIC_INJURY: 'traumatic_injury',
   UNKNOWN: 'unknown',
 } as const;
 export type EmergencyType = (typeof EmergencyType)[keyof typeof EmergencyType];
+
+/**
+ * First screen: name the scene. Each mapped scene has its own protocol.
+ * `other` stays unclassified and escalates without inventing a procedure.
+ */
+export const SceneStart = {
+  COLLAPSED: 'collapsed',
+  CRASH: 'crash',
+  STROKE: 'stroke',
+  CHOKING: 'choking',
+  BLEEDING: 'bleeding',
+  BURNS: 'burns',
+  OTHER: 'other',
+} as const;
+export type SceneStart = (typeof SceneStart)[keyof typeof SceneStart];
+
+export const SCENE_EMERGENCY_TYPE: Record<SceneStart, EmergencyType | null> = {
+  [SceneStart.COLLAPSED]: EmergencyType.UNCONSCIOUS,
+  [SceneStart.CRASH]: EmergencyType.TRAUMATIC_INJURY,
+  [SceneStart.STROKE]: EmergencyType.SUSPECTED_STROKE,
+  [SceneStart.CHOKING]: EmergencyType.CHOKING,
+  [SceneStart.BLEEDING]: EmergencyType.SEVERE_BLEEDING,
+  [SceneStart.BURNS]: EmergencyType.BURN,
+  [SceneStart.OTHER]: null,
+};
 
 /** Lifecycle of an incident record. */
 export const IncidentStatus = {

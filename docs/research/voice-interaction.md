@@ -13,8 +13,12 @@ Emergencies often involve:
 - High stress / reduced ability to read long text
 - Possible low literacy or language mismatch with written UI
 
-**Hypothesis (labeled):** Under acute stress, short spoken turn-taking (“one question → one action → confirm”) reduces error vs multi-step on-screen menus.  
-We treat this as a **hypothesis** for UX validation (Samuel Tasks 30–34), not as proven clinical HCI fact for Ethiopia-specific emergencies.
+**Research (not Ethiopia-specific):** On a real French emergency-call corpus (CEMO), audio encoded more emotion than text, and multimodal fusion gained about 4–9% ([arXiv:2306.07115](https://arxiv.org/abs/2306.07115)). Product implication: treat emergency speech as noisy and incomplete; **large buttons must remain first-class**, not a fallback after ASR fails.
+
+A teammate-verified list also flags acted-emotion corpora transferring poorly ([arXiv:2207.02104](https://arxiv.org/abs/2207.02104)) — **do not cite that number in demo copy until the abs/PDF is opened locally.**
+
+**Hypothesis (labeled):** Under acute stress in Ethiopian scenes, short spoken turn-taking (“one question → one action → confirm”) reduces error vs multi-step on-screen menus.  
+We treat the *Ethiopia-specific HCI benefit* as a **hypothesis** for UX validation (Samuel Tasks 30–34). The CEMO finding is Research for “emergency speech is hard,” not proof that DERES ASR will succeed in Amharic.
 
 ## Design consequences (Decision)
 
@@ -23,7 +27,7 @@ From engineering spec UX principles and Melkamu Task 20 constraints:
 - Prefer **one critical question** or **one instruction** at a time
 - Spoken responses stay short and action-oriented
 - Confirmation before assuming an action was completed
-- Screen supports voice; it does not replace it in the MVP story
+- Screen supports voice; large buttons stay first-class so the protocol continues when speech is stressed or the mic fails
 - Failure modes (mic denied, recognition failure, silence) need explicit UI (Task 26)
 
 ## Voxide role (Decision)

@@ -41,7 +41,7 @@ Mark `[x]` when approved; write corrections directly into the source file.
 | Key | English | Amharic | Afaan Oromoo | am | om |
 |---|---|---|---|---|---|
 | cannotInvent | I cannot tell you to do that. | ያንን እንዲያደርጉ ልነግርዎ አልችልም። | Waan sana akka gootu sitti himuu hin danda'u. | [ ] | [ ] |
-| unsupportedEmergency | I can only guide you for an unresponsive adult. Call emergency services now for any other emergency. | መምራት የምችለው ምላሽ ለማይሰጥ አዋቂ ሰው ብቻ ነው። ለሌላ ማንኛውም ድንገተኛ አደጋ አሁኑኑ ወደ ድንገተኛ አገልግሎት ይደውሉ። | Ani kan si qajeelchuu danda'u ga'eessa deebii hin kennineef qofa. Balaa tasaa kan biraatiif amma tajaajila balaa tasaatiif bilbili. | [ ] | [ ] |
+| unsupportedEmergency | I cannot guide this emergency with a published first-aid protocol. Call emergency services now. Tell them what happened and where you are. | ለዚህ ድንገተኛ የታተመ የመጀመሪያ እርዳታ ፕሮቶኮል የለኝም። አሁኑኑ ወደ ድንገተኛ አገልግሎት ይደውሉ። ምን እንደሆነ እና የት እንዳሉ ይንገሩ። | Pirotokoolii gargaarsa jalqabaa maxxanfame balaa tasaa kanaaf hin qabu. Amma tajaajila balaa tasaatiif bilbili. Maaltu ta'e fi eessa akka jirtu himi. | [ ] | [ ] |
 | stayWithThem | Stay with them and call emergency services if you have not already. | ከአጠገባቸው ይቆዩ፤ እስካሁን ካልደወሉ ወደ ድንገተኛ አገልግሎት ይደውሉ። | Isaan bira turi; yoo hanga ammaatti hin bilbilin, tajaajila balaa tasaatiif bilbili. | [ ] | [ ] |
 | sayAgain | I need you to say that again. Call emergency services if someone is unresponsive. | እባክዎ እንደገና ይናገሩ። አንድ ሰው ምላሽ የማይሰጥ ከሆነ ወደ ድንገተኛ አገልግሎት ይደውሉ። | Maaloo irra deebi'ii dubbadhu. Namni deebii hin kennu yoo ta'e, tajaajila balaa tasaatiif bilbili. | [ ] | [ ] |
 | silence | I did not hear you. Please say that again. | አልሰማሁዎትም። እባክዎ እንደገና ይናገሩ። | Si hin dhageenye. Maaloo irra deebi'ii dubbadhu. | [ ] | [ ] |

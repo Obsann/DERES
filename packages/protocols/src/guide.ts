@@ -6,8 +6,11 @@ import {
   ConditionOperator,
   ConsciousnessState,
   EmergencyType,
+  EscalationState,
   EventSource,
+  IncidentStatus,
   ProtocolStepKind,
+  SCENE_EMERGENCY_TYPE,
   VoiceSessionPhase,
   type ButtonTurnRequest,
   type EmergencyState,
@@ -15,8 +18,10 @@ import {
   type Protocol,
   type ProtocolCondition,
   type ProtocolStep,
+  type SceneStart,
   type VoiceTurnResponse,
 } from '@voicesos/shared';
+import { isPlaceCallStep } from './conditions.js';
 
 /**
  * The button path, without the server or the model.
@@ -176,11 +181,22 @@ function spoken(incident: Incident, protocol: Protocol | null): GuideTurn {
   };
 }
 
-function start(incident: Incident, protocols: Protocol[], at: string): GuideTurn {
-  incident.state.emergencyType = EmergencyType.UNCONSCIOUS;
-  incident.state.emergencyTypeConfidence = 1;
+function start(incident: Incident, protocols: Protocol[], at: string, scene: SceneStart): GuideTurn {
+  const emergencyType = SCENE_EMERGENCY_TYPE[scene];
+  if (emergencyType) {
+    incident.state.emergencyType = emergencyType;
+    incident.state.emergencyTypeConfidence = 1;
+  }
   const protocol = protocolFor(incident, protocols);
-  if (!protocol) throw new GuideError('No published protocol for this emergency');
+  if (!protocol) {
+    incident.state.escalationStatus = EscalationState.ESCALATED;
+    incident.status = IncidentStatus.ESCALATED;
+    return {
+      incident: touch(incident, at),
+      reply: 'Stay with them and call emergency services if you have not already.',
+      source: 'safe_fallback',
+    };
+  }
   incident.state.currentProtocolId = protocol.id;
   if (incident.state.currentStepId === null) incident.state.currentStepId = protocol.initialStepId;
   const step = stepOf(protocol, incident);
@@ -196,8 +212,9 @@ function answer(incident: Incident, protocol: Protocol, value: 'yes' | 'no' | 'u
 
   const unsure = value === 'unsure';
   const mapping = step.updatesField ? YES_NO[step.updatesField] : undefined;
-  if (!unsure && !mapping) throw new GuideError('This question cannot be answered with yes or no');
-  const mapped = unsure ? 'unknown' : mapping?.[value];
+  const observational = !step.updatesField && step.acceptedAnswers.includes('yes') && step.acceptedAnswers.includes('no');
+  if (!unsure && !mapping && !observational) throw new GuideError('This question cannot be answered with yes or no');
+  const mapped = unsure ? 'unknown' : mapping?.[value] ?? (observational ? value : undefined);
   if (!mapped) throw new GuideError('This question cannot be answered with yes or no');
 
   incident.state.relevantAnswers = [
@@ -277,7 +294,7 @@ export function applyButtonGuide(
   at: string = new Date().toISOString(),
 ): GuideTurn {
   const next = structuredClone(incident);
-  if (press.kind === 'start') return start(next, protocols, at);
+  if (press.kind === 'start') return start(next, protocols, at, press.emergency);
 
   const protocol = protocolFor(next, protocols);
   if (press.kind === 'repeat') return spoken(next, protocol);
@@ -299,6 +316,6 @@ export function toLocalVoiceTurn(incident: Incident, turn: GuideTurn): VoiceTurn
     reply: turn.reply,
     source: turn.source,
     failure: null,
-    capability: incident.state.currentStepId === 'step-call-ems' ? 'place_call' : null,
+    capability: isPlaceCallStep(incident.state.currentStepId) ? 'place_call' : null,
   };
 }

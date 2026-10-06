@@ -1,6 +1,6 @@
 # ADR 0003 — MVP protocol is unresponsive adult
 
-**Status:** Accepted  
+**Status:** Accepted (collapse protocol). Scene exclusivity superseded in part by [ADR 0011](./0011-scenario-protocols.md).  
 **Date:** 2026-09-22  
 **Task:** 6 (MVP emergency protocol)
 
@@ -19,6 +19,10 @@ short, sequential, and already written for an untrained helper.
 Other candidate scenarios from specification section 10 stay on
 `EmergencyType` but have no published protocol, so the engine will not
 improvise guidance for them.
+
+Scene classification is broader than guided protocol. A crash or a
+possible stroke is recorded as its own type and escalated to 907. Those
+scenes must not inherit the unresponsive-adult BLS path.
 
 ## Source
 

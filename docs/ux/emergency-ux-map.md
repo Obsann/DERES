@@ -115,7 +115,7 @@ the current instruction stays visible behind them whenever it is still valid.
 | `failure: 'silence'` / `'timeout'` | "Are you still there?" | Same | Tap mic / any button |
 | `failure: 'upstream'` / `UPSTREAM_UNAVAILABLE` | "Voice help is having trouble. Follow the steps on screen." | — | Buttons-only mode keeps the protocol running |
 | `ConnectionStatus.disconnected` / `reconnecting` | Amber strip: "Connection lost — reconnecting. Keep following the last instruction." | — | Last instruction stays; auto-retry |
-| `emergencyType: unknown` / unsupported emergency | "I can only guide you for someone who has collapsed. Call emergency services now." | Same | **Call emergency services** |
+| `emergencyType: unknown` / unsupported emergency | "Call emergency services now. Tell them what happened and where you are." | Same | **Call emergency services** |
 | `SAFETY_BLOCK` event / `AI_VALIDATION_FAILED` | Nothing new; the last safe instruction stays | Fixed safe phrase (`source: 'safe_fallback'`) | Continue |
 | Contradictory answer (`Certainty.UNCERTAIN`) | Question is asked again, calmly | "Let's check again…" | Answer again or **Not sure** |
 | Child or infant mentioned (`escalate-child`) | Red banner: "This guidance is for adults. Call emergency services and follow their instructions." | Same | **Call emergency services** |

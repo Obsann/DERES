@@ -3,8 +3,11 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ActionStatus,
+  EmergencyType,
+  EscalationState,
   IncidentStatus,
   ProtocolStepKind,
+  SceneStart,
   VoiceSessionPhase,
   type ButtonTurnRequest,
   type Incident,
@@ -41,14 +44,19 @@ const USUAL_PATH = [
 
 type StepState = 'done' | 'current' | 'todo';
 
-function progressSteps(incident: Incident, arrived: boolean): { id: string; state: StepState }[] {
+function progressSteps(
+  incident: Incident,
+  arrived: boolean,
+  protocolSteps: string[],
+): { id: string; state: StepState }[] {
   const { completedStepIds, currentStepId } = incident.state;
   const seen = [...new Set(completedStepIds)];
   if (currentStepId && !seen.includes(currentStepId)) seen.push(currentStepId);
 
+  const usual = protocolSteps.length > 0 ? protocolSteps : USUAL_PATH;
   const anchor = currentStepId ?? null;
-  const from = anchor ? USUAL_PATH.indexOf(anchor) : -1;
-  const ahead = anchor === null ? USUAL_PATH : from >= 0 ? USUAL_PATH.slice(from + 1) : [];
+  const from = anchor ? usual.indexOf(anchor) : -1;
+  const ahead = anchor === null ? usual : from >= 0 ? usual.slice(from + 1) : [];
   const ids = [...seen, ...ahead.filter((id) => !seen.includes(id))];
 
   return ids.map((id) => ({
@@ -224,32 +232,39 @@ function StepControls({
 function OpeningControls({
   copy,
   busy,
-  onCollapsed,
-  onOther,
+  onStart,
 }: {
   copy: EmergencyCopy;
   busy: boolean;
-  onCollapsed: () => void;
-  onOther: () => void;
+  onStart: (scene: (typeof SceneStart)[keyof typeof SceneStart]) => void;
 }) {
+  const scenes = [
+    { id: SceneStart.COLLAPSED, label: copy.collapsed, primary: true },
+    { id: SceneStart.CRASH, label: copy.sceneCrash, primary: false },
+    { id: SceneStart.STROKE, label: copy.sceneStroke, primary: false },
+    { id: SceneStart.CHOKING, label: copy.sceneChoking, primary: false },
+    { id: SceneStart.BLEEDING, label: copy.sceneBleeding, primary: false },
+    { id: SceneStart.BURNS, label: copy.sceneBurns, primary: false },
+    { id: SceneStart.OTHER, label: copy.somethingElse, primary: false },
+  ] as const;
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <button
-        type="button"
-        disabled={busy}
-        onClick={onCollapsed}
-        className="min-h-12 rounded-xl bg-[#86e9c6] px-5 text-sm font-extrabold text-[#07130f] disabled:opacity-60 md:min-h-14 md:text-base"
-      >
-        {copy.collapsed}
-      </button>
-      <button
-        type="button"
-        disabled={busy}
-        onClick={onOther}
-        className="min-h-12 rounded-xl border border-white/25 px-5 text-sm font-extrabold text-white disabled:opacity-60 md:min-h-14 md:text-base"
-      >
-        {copy.somethingElse}
-      </button>
+      <p className="sm:col-span-2 text-sm font-medium leading-relaxed text-white/55">{copy.sceneHint}</p>
+      {scenes.map((scene) => (
+        <button
+          key={scene.id}
+          type="button"
+          disabled={busy}
+          onClick={() => onStart(scene.id)}
+          className={
+            scene.primary
+              ? 'sm:col-span-2 min-h-12 rounded-xl bg-[#86e9c6] px-5 text-sm font-extrabold text-[#07130f] disabled:opacity-60 md:min-h-14 md:text-base'
+              : 'min-h-12 rounded-xl border border-white/25 px-5 text-sm font-extrabold text-white disabled:opacity-60 md:min-h-14 md:text-base'
+          }
+        >
+          {scene.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -278,14 +293,44 @@ function Shell({
   );
 }
 
-function UnsupportedScreen({ copy, language, onHome }: { copy: EmergencyCopy; language: string; onHome: () => void }) {
+function operatorLine(copy: EmergencyCopy, emergencyType: EmergencyType): string {
+  if (emergencyType === EmergencyType.TRAUMATIC_INJURY) return copy.tellOperatorCrash;
+  if (emergencyType === EmergencyType.SUSPECTED_STROKE) return copy.tellOperatorStroke;
+  return copy.tellOperator;
+}
+
+function isUnguidedScene(incident: Incident): boolean {
+  if (incident.state.currentProtocolId) return false;
+  if (
+    incident.state.emergencyType !== EmergencyType.UNKNOWN &&
+    incident.state.emergencyType !== EmergencyType.UNCONSCIOUS
+  ) {
+    return true;
+  }
+  return (
+    incident.status === IncidentStatus.ESCALATED ||
+    incident.state.escalationStatus === EscalationState.ESCALATED
+  );
+}
+
+function UnsupportedScreen({
+  copy,
+  language,
+  tell,
+  onHome,
+}: {
+  copy: EmergencyCopy;
+  language: string;
+  tell: string;
+  onHome: () => void;
+}) {
   return (
     <main className="flex min-h-dvh w-full flex-col bg-[#401b15] px-6 py-6 text-white md:px-10 md:py-8 xl:px-16" lang={language}>
       <Brand dark />
       <section className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col justify-center py-12 md:py-16">
         <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#ff9b88]">{copy.cannotGuide}</p>
         <h1 className="mt-4 max-w-3xl text-[clamp(2.1rem,3.2vw,3.5rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">{copy.callNowHeadline}</h1>
-        <p className="mt-5 max-w-xl text-base font-medium leading-relaxed text-white/65 md:text-lg">{copy.tellOperator}</p>
+        <p className="mt-5 max-w-xl text-base font-medium leading-relaxed text-white/65 md:text-lg">{tell}</p>
         <a
           href={emergencyCallHref}
           className="mt-8 inline-flex min-h-14 w-full max-w-sm items-center justify-center gap-3 rounded-2xl bg-[#ff6b50] text-lg font-extrabold text-[#2e100b] md:min-h-16"
@@ -373,7 +418,6 @@ export function SessionPage() {
   const location = useIncidentLocation(incidentId);
   const { browserOnline } = useConnectionStatus({ probeApi: false });
 
-  const [unsupported, setUnsupported] = useState(false);
   const [arrived, setArrived] = useState(false);
   const [showHandoff, setShowHandoff] = useState(false);
   const [offlineGuide, setOfflineGuide] = useState(() => isLocalIncidentId(incidentId));
@@ -423,13 +467,13 @@ export function SessionPage() {
   const state = incident.data.state;
   const protocol = protocols.data?.find((item) => item.id === state.currentProtocolId) ?? null;
   const step = protocol?.steps.find((item) => item.id === state.currentStepId) ?? null;
-  const steps = progressSteps(incident.data, arrived);
+  const steps = progressSteps(incident.data, arrived, protocol?.steps.map((item) => item.id) ?? []);
   const currentIndex = Math.max(
     0,
     steps.findIndex((item) => item.state === 'current'),
   );
   const emsConfirmed = state.actions.some(
-    (action) => action.stepId === 'step-call-ems' && action.status === ActionStatus.CONFIRMED,
+    (action) => typeof action.stepId === 'string' && action.stepId.includes('call-ems') && action.status === ActionStatus.CONFIRMED,
   );
 
   const press = (input: ButtonTurnRequest) => {
@@ -468,8 +512,15 @@ export function SessionPage() {
     );
   }
 
-  if (unsupported) {
-    return <UnsupportedScreen copy={copy} language={language} onHome={startOver} />;
+  if (isUnguidedScene(incident.data)) {
+    return (
+      <UnsupportedScreen
+        copy={copy}
+        language={language}
+        tell={operatorLine(copy, incident.data.state.emergencyType)}
+        onHome={startOver}
+      />
+    );
   }
 
   const pendingAnswer = buttons.isPending ? answerLabel(copy, buttons.variables) : null;
@@ -553,8 +604,7 @@ export function SessionPage() {
                 <OpeningControls
                   copy={copy}
                   busy={buttons.isPending}
-                  onCollapsed={() => press({ kind: 'start', emergency: 'collapsed' })}
-                  onOther={() => setUnsupported(true)}
+                  onStart={(scene) => press({ kind: 'start', emergency: scene })}
                 />
               )}
               <div className="flex items-center justify-between">

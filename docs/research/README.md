@@ -17,6 +17,7 @@
 | [assumptions-traceability.md](./assumptions-traceability.md) | Assumption → evidence / decision / hypothesis map |
 | [research-questions.md](./research-questions.md) | Status of Phase 1 research questions |
 | [scholarxiv.md](./scholarxiv.md) | Scholarxiv ideation space + paper list |
+| [scenario-protocols.md](./scenario-protocols.md) | Six first-minute protocols (WHO/IFRC/TECC map) |
 | [sources.md](./sources.md) | Bibliography and links |
 
 ## How to use this folder

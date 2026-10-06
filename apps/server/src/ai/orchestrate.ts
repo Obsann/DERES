@@ -4,6 +4,7 @@ import {
   Certainty,
   ConsciousnessState,
   EmergencyType,
+  EscalationState,
   EventSource,
   ProtocolStepKind,
   type Incident,
@@ -342,6 +343,28 @@ export function applyExtraction(
   const protocol = ensureProtocol(builder, protocols, at);
   if (protocol) {
     applyProtocolTurn(builder, protocol, extraction, at);
+  } else {
+    const typed = builder.incident.state.emergencyType !== EmergencyType.UNKNOWN;
+    const wantsHelp = extraction.intent === LlmIntent.REQUEST_HELP;
+    if (
+      (typed || wantsHelp) &&
+      builder.incident.state.escalationStatus === EscalationState.NONE
+    ) {
+      builder.push(
+        applyCommand(
+          builder.incident,
+          {
+            kind: 'escalate',
+            to: EscalationState.ESCALATED,
+            reason: typed
+              ? `No published protocol for ${builder.incident.state.emergencyType}`
+              : 'Emergency is outside the published protocol',
+            source: EventSource.SYSTEM,
+          },
+          at,
+        ),
+      );
+    }
   }
 
   // A turn that established facts is a description, even if the model also set

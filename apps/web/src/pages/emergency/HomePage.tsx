@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import type { Language } from '@voicesos/shared';
 import { siteFrame } from '@/components/AppShell';
 import { MoleculeField } from '@/components/marketing/MoleculeField';
 import { Brand, Icon, type IconName } from '@/components/ui';
-import { EMERGENCY_NUMBERS } from '@/config/emergency';
-import { emergencyCopy } from '@/i18n/emergencyCopy';
+import { EMERGENCY_NUMBERS, emergencyCallHref } from '@/config/emergency';
+import { emergencyCopy, type EmergencyCopy } from '@/i18n/emergencyCopy';
 import { toUiErrorMessage } from '@/services/api';
 import { routes } from '@/routes/paths';
 import { useEmergencySession } from '@/state';
-import { landing } from './landingCopy';
+import { landingCopy, type LandingCopy } from './landingCopy';
 import { rememberedLanguage, useStartEmergency } from './useStartEmergency';
-
-const ambulance = EMERGENCY_NUMBERS.ambulance;
 
 /** E1 · Start. One obvious action; language is remembered after the first choice. */
 export function HomePage() {
@@ -20,6 +19,7 @@ export function HomePage() {
   const remembered = rememberedLanguage();
   const language = remembered ?? session.language;
   const copy = emergencyCopy(language);
+  const landing = landingCopy(language);
   const { start, isPending, error } = useStartEmergency();
 
   const onStart = () => {
@@ -41,17 +41,15 @@ export function HomePage() {
             <a
               href="#platform"
               className="hidden text-sm font-semibold text-[#6c7974] transition hover:text-[#122d25] lg:inline"
-              lang="en"
             >
               {landing.navPlatform}
             </a>
-            <a href="#how" className="hidden text-sm font-semibold text-[#6c7974] transition hover:text-[#122d25] lg:inline" lang="en">
+            <a href="#how" className="hidden text-sm font-semibold text-[#6c7974] transition hover:text-[#122d25] lg:inline">
               {landing.navHow}
             </a>
             <Link
               to={routes.responder.list}
               className="hidden text-sm font-semibold text-[#6c7974] transition hover:text-[#122d25] md:inline"
-              lang="en"
             >
               {landing.navResponders}
             </Link>
@@ -84,7 +82,7 @@ export function HomePage() {
             <span className="text-[#407a68]">{copy.wellGuideYou}</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg font-normal leading-relaxed text-[#52645e]">{copy.subhead}</p>
-          <p className="mt-4 max-w-xl text-base font-normal leading-relaxed text-[#6c7974]" lang="en">
+          <p className="mt-4 max-w-xl text-base font-normal leading-relaxed text-[#6c7974]">
             {landing.heroLead}
           </p>
           {error ? (
@@ -111,7 +109,6 @@ export function HomePage() {
             </button>
             <Link
               to={routes.responder.list}
-              lang="en"
               className="flex min-h-16 items-center justify-center rounded-2xl border border-[#d0d5cf] bg-white/80 px-6 text-sm font-semibold text-[#122d25] backdrop-blur-sm transition hover:border-[#1e5e4b] hover:bg-white sm:min-w-[12.5rem]"
             >
               {landing.secondaryCta}
@@ -120,11 +117,11 @@ export function HomePage() {
           <p className="mt-4 text-sm font-normal text-[#6c7974]">{copy.startCaption}</p>
         </div>
         <div className="reveal reveal-delay-2">
-          <ProductFrame />
+          <ProductFrame landing={landing} liveLabel={copy.live} guidanceValue={copy.stepNames['step-open-airway'] ?? landing.previewGuidance} />
         </div>
       </section>
 
-      <section className="relative z-10 border-y border-[#e4e6df] bg-white/80 backdrop-blur-sm" lang="en">
+      <section className="relative z-10 border-y border-[#e4e6df] bg-white/80 backdrop-blur-sm">
         <div className={`${siteFrame} py-12 md:py-14`}>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a8882]">{landing.trustLabel}</p>
           <div className="mt-8 grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
@@ -138,7 +135,27 @@ export function HomePage() {
         </div>
       </section>
 
-      <Reveal className={`${siteFrame} py-20 md:py-28`} lang="en">
+      <Reveal className={`${siteFrame} py-20 md:py-24`}>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#ba3b2a]">{landing.evidenceEyebrow}</p>
+        <h2 className="mt-4 max-w-3xl text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
+          {landing.evidenceTitle}
+        </h2>
+        <p className="mt-5 max-w-3xl text-base font-normal leading-relaxed text-[#5d6c66]">{landing.evidenceBody}</p>
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
+          {landing.evidence.map((item) => (
+            <div key={item.label} className="border-t border-[#d5ddd8] pt-6">
+              <p className="text-[clamp(2.1rem,2.8vw,2.85rem)] font-extrabold leading-none tracking-[-0.05em] text-[#122d25]">
+                {item.value}
+              </p>
+              <p className="mt-4 text-sm font-semibold text-[#122d25]">{item.label}</p>
+              <p className="mt-1 text-sm font-normal text-[#5d6c66]">{item.detail}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-10 max-w-3xl text-xs font-medium leading-relaxed text-[#7a8882]">{landing.evidenceSource}</p>
+      </Reveal>
+
+      <Reveal className={`${siteFrame} py-20 md:py-28`}>
         <div className="overflow-hidden rounded-[1.5rem] border border-[#e2e4dc] shadow-[0_24px_60px_rgba(18,45,37,0.06)]">
           <div className="grid md:grid-cols-2">
             <div className="bg-[#f7eee9] p-10 md:p-14 lg:p-16">
@@ -179,7 +196,7 @@ export function HomePage() {
         </div>
       </Reveal>
 
-      <Reveal id="platform" className={`${siteFrame} scroll-mt-28 pb-8 md:pb-12`} lang="en">
+      <Reveal id="platform" className={`${siteFrame} scroll-mt-28 pb-8 md:pb-12`}>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#ba3b2a]">{landing.solutionsEyebrow}</p>
         <h2 className="mt-4 max-w-3xl text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
           {landing.solutionsTitle}
@@ -198,7 +215,7 @@ export function HomePage() {
         </div>
       </Reveal>
 
-      <section className="mt-8 bg-[#122d25] text-white" lang="en">
+      <section className="mt-8 bg-[#122d25] text-white">
         <Reveal className={`${siteFrame} py-20 md:py-24`}>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#86c9b4]">{landing.impactEyebrow}</p>
           <h2 className="mt-4 max-w-3xl text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
@@ -222,7 +239,7 @@ export function HomePage() {
         </Reveal>
       </section>
 
-      <Reveal className={`${siteFrame} grid items-center gap-12 py-20 md:grid-cols-2 md:gap-20 md:py-28`} lang="en">
+      <Reveal className={`${siteFrame} grid items-center gap-12 py-20 md:grid-cols-2 md:gap-20 md:py-28`}>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#ba3b2a]">{landing.storyEyebrow}</p>
           <h2 className="mt-4 text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
@@ -231,23 +248,27 @@ export function HomePage() {
           <p className="mt-5 max-w-xl text-lg font-normal leading-relaxed text-[#52645e]">{landing.storyBody}</p>
         </div>
         <div className="landing-card p-8 md:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7a8882]">Usual path</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7a8882]">{landing.usualPath}</p>
           <ol className="mt-6 space-y-5">
-            {['Check response', `Call ambulance ${ambulance}`, 'Open airway', 'Check breathing', 'Chest compressions'].map(
-              (step, index) => (
-                <li key={step} className="flex items-center gap-4">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#122d25] text-sm font-bold text-white">
-                    {index + 1}
-                  </span>
-                  <span className="text-base font-semibold">{step}</span>
-                </li>
-              ),
-            )}
+            {[
+              copy.stepNames['step-check-response'],
+              copy.stepNames['step-call-ems'],
+              copy.stepNames['step-open-airway'],
+              copy.stepNames['step-check-breathing'],
+              copy.stepNames['step-cpr'],
+            ].map((step, index) => (
+              <li key={step} className="flex items-center gap-4">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#122d25] text-sm font-bold text-white">
+                  {index + 1}
+                </span>
+                <span className="text-base font-semibold">{step}</span>
+              </li>
+            ))}
           </ol>
         </div>
       </Reveal>
 
-      <section id="how" className="scroll-mt-28 border-y border-[#e4e6df] bg-white" lang="en">
+      <section id="how" className="scroll-mt-28 border-y border-[#e4e6df] bg-white">
         <Reveal className={`${siteFrame} py-20 md:py-28`}>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#ba3b2a]">{landing.stepsEyebrow}</p>
           <h2 className="mt-4 max-w-3xl text-[clamp(1.85rem,2.6vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.035em]">
@@ -265,7 +286,7 @@ export function HomePage() {
         </Reveal>
       </section>
 
-      <section className="bg-[#0e1f1a] text-white" lang="en">
+      <section className="bg-[#0e1f1a] text-white">
         <Reveal className={`${siteFrame} py-20 md:py-24`}>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#86c9b4]">{landing.statsEyebrow}</p>
           <div className="mt-12 grid gap-10 sm:grid-cols-2 xl:grid-cols-4">
@@ -280,7 +301,7 @@ export function HomePage() {
         </Reveal>
       </section>
 
-      <Reveal className={`${siteFrame} py-20 md:py-28`} lang="en">
+      <Reveal className={`${siteFrame} py-20 md:py-28`}>
         <div className="rounded-[1.5rem] bg-[#14362d] px-8 py-12 text-white shadow-[0_30px_80px_rgba(18,45,37,0.18)] md:px-14 md:py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#86c9b4]">{landing.ctaEyebrow}</p>
           <h2 className="mt-4 max-w-3xl text-[clamp(1.95rem,2.8vw,3.1rem)] font-extrabold leading-[1.1] tracking-[-0.04em]">
@@ -306,21 +327,78 @@ export function HomePage() {
         </div>
       </Reveal>
 
-      <footer className="border-t border-[#e4e6df] pb-12 pt-10">
-        <div className={`${siteFrame} flex flex-col gap-6 md:flex-row md:items-end md:justify-between`}>
-          <p className="max-w-2xl text-sm font-normal leading-relaxed text-[#78837e]" lang="en">
-            {landing.footerNote} {copy.protocolNote}
-          </p>
-          <Link
-            to={routes.responder.list}
-            className="text-xs font-semibold text-[#52645e] underline decoration-[#aab3ae] underline-offset-4 md:hidden"
-            lang="en"
-          >
-            {copy.responderAccess}
-          </Link>
-        </div>
-      </footer>
+      <SiteFooter copy={copy} landing={landing} language={language} />
     </main>
+  );
+}
+
+function SiteFooter({
+  copy,
+  landing,
+  language,
+}: {
+  copy: EmergencyCopy;
+  landing: LandingCopy;
+  language: Language;
+}) {
+  return (
+    <footer className="relative overflow-hidden bg-[#07130f] text-[#d7e4de]">
+      <div className="absolute inset-0 opacity-80">
+        <MoleculeField tone="dark" />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-r from-[#07130f] via-[#07130f]/80 to-[#07130f]/35" />
+      <div className={`${siteFrame} relative py-10 md:py-12`}>
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-md">
+            <Brand dark />
+            <p className="mt-4 text-xl font-semibold tracking-[-0.03em] text-white">{landing.footerTagline}</p>
+            <nav className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-[#b7c9c2]">
+              <a href="#platform" className="transition hover:text-white">
+                {landing.navPlatform}
+              </a>
+              <a href="#how" className="transition hover:text-white">
+                {landing.navHow}
+              </a>
+              <Link to={routes.responder.list} className="transition hover:text-white">
+                {landing.navResponders}
+              </Link>
+              <Link to={routes.emergency.language} className="transition hover:text-white" lang={language}>
+                {copy.languageName}
+              </Link>
+            </nav>
+          </div>
+
+          <div className="text-left">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#e88b80]">{landing.footerAmbulance}</p>
+            <a
+              href={emergencyCallHref}
+              className="mt-1 block text-[clamp(4.5rem,8vw,6.5rem)] font-extrabold leading-none tracking-[-0.07em] text-white transition hover:text-[#ffb3a6]"
+            >
+              {EMERGENCY_NUMBERS.ambulance}
+            </a>
+            <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-[#c5d9d0]">
+              <a href={emergencyCallHref} className="inline-flex items-center gap-2 hover:text-white">
+                {landing.footerCall}
+                <Icon name="phone" className="size-4" />
+              </a>
+              <span className="text-white/20">·</span>
+              <a href={`tel:${EMERGENCY_NUMBERS.fire}`} className="font-medium text-[#9bb3ab] hover:text-white">
+                {EMERGENCY_NUMBERS.fire} {landing.footerFire}
+              </a>
+              <span className="text-white/20">·</span>
+              <a href={`tel:${EMERGENCY_NUMBERS.police}`} className="font-medium text-[#9bb3ab] hover:text-white">
+                {EMERGENCY_NUMBERS.police} {landing.footerPolice}
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-5 md:flex-row md:items-center md:justify-between">
+          <p className="max-w-2xl text-[11px] leading-relaxed text-[#7f968e] md:text-xs">{landing.footerNote}</p>
+          <p className="shrink-0 text-[11px] font-medium text-[#9bb3ab]">{landing.footerRights}</p>
+        </div>
+      </div>
+    </footer>
   );
 }
 
@@ -377,16 +455,24 @@ function Reveal({
   );
 }
 
-function ProductFrame() {
+function ProductFrame({
+  landing,
+  liveLabel,
+  guidanceValue,
+}: {
+  landing: LandingCopy;
+  liveLabel: string;
+  guidanceValue: string;
+}) {
   const rows: { icon: IconName; label: string; value: string; tone?: 'warn' | 'ok' | 'muted' }[] = [
-    { icon: 'location', label: 'Location', value: 'Shared with responders', tone: 'ok' },
-    { icon: 'pulse', label: 'Breathing', value: 'Unknown', tone: 'warn' },
-    { icon: 'phone', label: 'Ambulance', value: `${ambulance} — call from the screen`, tone: 'ok' },
-    { icon: 'mic', label: 'Guidance', value: 'Open the airway', tone: 'muted' },
+    { icon: 'location', label: landing.previewLocation, value: landing.previewLocationValue, tone: 'ok' },
+    { icon: 'pulse', label: landing.previewBreathing, value: landing.previewBreathingValue, tone: 'warn' },
+    { icon: 'phone', label: landing.previewAmbulance, value: landing.previewAmbulanceValue, tone: 'ok' },
+    { icon: 'mic', label: landing.previewGuidance, value: guidanceValue, tone: 'muted' },
   ];
 
   return (
-    <aside className="relative w-full md:justify-self-end" lang="en" aria-hidden="true">
+    <aside className="relative w-full md:justify-self-end" aria-hidden="true">
       <div className="absolute -inset-10 rounded-full bg-[#86c9b4]/18 blur-3xl" />
       <div className="relative overflow-hidden rounded-2xl border border-[#d7ddd6] bg-white shadow-[0_32px_80px_rgba(18,45,37,0.16)]">
         <div className="flex items-center gap-2 border-b border-[#eceee8] bg-[#f7f6f1] px-4 py-3">
@@ -394,18 +480,18 @@ function ProductFrame() {
           <span className="size-2.5 rounded-full bg-[#e4c36a]" />
           <span className="size-2.5 rounded-full bg-[#7dcf9a]" />
           <span className="ml-3 flex-1 truncate rounded-md bg-white px-3 py-1 text-[11px] font-medium text-[#7a8882]">
-            deres.app · live incident
+            {landing.previewUrl}
           </span>
         </div>
         <div className="bg-[#122d25] text-white">
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#86c9b4]">Live incident intelligence</p>
-              <p className="mt-1 text-lg font-bold">Unresponsive adult</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#86c9b4]">{landing.previewEyebrow}</p>
+              <p className="mt-1 text-lg font-bold">{landing.previewTitle}</p>
             </div>
             <span className="flex items-center gap-2 rounded-full bg-[#1e5e4b] px-3 py-1 text-[11px] font-semibold text-[#9ee0cb]">
               <span className="size-1.5 rounded-full bg-[#6ee7b7]" />
-              Live
+              {liveLabel}
             </span>
           </div>
           <div className="space-y-3 p-5">
@@ -427,7 +513,7 @@ function ProductFrame() {
                         : 'bg-white/10 text-[#c5d9d0]'
                   }`}
                 >
-                  {row.tone === 'ok' ? 'Known' : row.tone === 'warn' ? 'Unknown' : 'Now'}
+                  {row.tone === 'ok' ? landing.previewKnown : row.tone === 'warn' ? landing.previewUnknown : landing.previewNow}
                 </span>
               </div>
             ))}

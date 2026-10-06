@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { unconsciousAdultProtocol } from '@voicesos/protocols';
+import { burnsProtocol, publishedProtocols, unconsciousAdultProtocol } from '@voicesos/protocols';
 import {
   BreathingState,
   Certainty,
   ConsciousnessState,
   EmergencyType,
+  EscalationState,
   Language,
 } from '@voicesos/shared';
 import { AiValidationError } from '../common/errors.js';
@@ -184,9 +185,32 @@ describe('LLM orchestration', () => {
 
     expect(result.incident.state.emergencyType).toBe(EmergencyType.BURN);
     expect(result.incident.state.currentProtocolId).toBeNull();
+    expect(result.incident.state.escalationStatus).toBe(EscalationState.ESCALATED);
     expect(result.source).toBe('safe_fallback');
     expect(result.reply).toBe(SAFE_PHRASES.unsupportedEmergency);
     expect(result.incident.state.actions).toHaveLength(0);
+  });
+
+  it('starts the burn protocol when burns are published, not the collapse path', async () => {
+    const result = await interpretTurn({
+      incident: openIncident(),
+      transcript: 'There is a bad burn on her arm',
+      protocols: publishedProtocols,
+      provider: new ScriptedLlmProvider([
+        extract({
+          emergencyType: EmergencyType.BURN,
+          emergencyTypeConfidence: 0.88,
+          intent: LlmIntent.REQUEST_HELP,
+        }),
+      ]),
+      at: AT,
+    });
+
+    expect(result.incident.state.emergencyType).toBe(EmergencyType.BURN);
+    expect(result.incident.state.currentProtocolId).toBe('protocol-burns');
+    expect(result.source).toBe('protocol');
+    expect(result.reply).toBe(burnsProtocol.steps[0]?.prompt[Language.ENGLISH]);
+    expect(result.reply.toLowerCase()).not.toContain('compress');
   });
 
   it('interprets a non-English utterance from structured extraction, not from model prose', async () => {
