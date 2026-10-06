@@ -4,6 +4,7 @@ import type {
   IncidentStatus,
   Language,
   MessageRole,
+  SceneStart,
   VoiceSessionPhase,
 } from '../enums/index.js';
 import type { Id } from './common.js';
@@ -168,7 +169,7 @@ export interface VoiceTurnResponse {
  * The response is a {@link VoiceTurnResponse}.
  */
 export type ButtonTurnRequest =
-  | { kind: 'start'; emergency: 'collapsed' }
+  | { kind: 'start'; emergency: SceneStart }
   | { kind: 'answer'; answer: 'yes' | 'no' | 'unsure' }
   | { kind: 'action'; status: 'confirmed' | 'unable' }
   | { kind: 'repeat' };

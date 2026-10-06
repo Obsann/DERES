@@ -11,6 +11,7 @@ export const EMERGENCY_LABEL: Record<EmergencyType, string> = {
   [EmergencyType.SUSPECTED_STROKE]: 'Suspected stroke',
   [EmergencyType.SEIZURE]: 'Seizure',
   [EmergencyType.SEVERE_ALLERGIC_REACTION]: 'Severe allergic reaction',
+  [EmergencyType.TRAUMATIC_INJURY]: 'Crash or injury',
   [EmergencyType.UNKNOWN]: 'Not yet known',
 };
 

@@ -37,8 +37,8 @@ clearer names below. **These are intentional, not drift:**
 1. **`EmergencyState.actions`** is one `ActionRecord[]` with `ActionStatus`.  
    Confirmed actions are entries with status `CONFIRMED`.
 2. **`Protocol.steps`** is one `ProtocolStep[]` discriminated by `ProtocolStepKind`.
-3. **`EmergencyType`** lists all candidate scenarios from the engineering spec.  
-   MVP only executes types that have a published protocol (Task 6).
+3. **`EmergencyType`** lists candidate scenarios plus `traumatic_injury` (crash / injury scenes).  
+   MVP only **guides** types that have a published protocol (Task 6). Other types are classified and escalated.
 4. **Timestamps are ISO-8601 strings** (`IsoDateTime`), never `Date`, in the shared layer.
 5. **IDs are opaque strings** (`Id`) so Mongo ObjectId or UUID both serialize cleanly.
 

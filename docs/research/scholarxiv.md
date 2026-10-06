@@ -34,6 +34,11 @@ Optional supporting:
 
 5. Trends and barriers of EMS use in Addis Ababa — [BMC Emerg Med 2019](https://bmcemergmed.biomedcentral.com/articles/10.1186/s12873-019-0242-5)
 6. Pre-hospital ambulance care for RTIs in Addis Ababa — [ECJ 2022](https://doi.org/10.4081/ecj.2022.10745)
+7. CEMO multimodal emotion on real emergency calls — [arXiv:2306.07115](https://arxiv.org/abs/2306.07115) *(abs opened)*
+8. MEDAS LLM emergency-advising accuracy ceiling — [arXiv:2511.08614](https://arxiv.org/abs/2511.08614) *(abs opened)*
+9. CPR-team communication / mutual situation awareness — [arXiv:1904.04010](https://arxiv.org/abs/1904.04010) *(PDF extract opened)*
+
+Do **not** add the unverified arXiv ID denylist in `sources.md`.
 
 ## MCP / Papers API (P1)
 

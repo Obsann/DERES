@@ -160,7 +160,7 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
 
   return (
     <ResponderShell>
-      <div className="mx-auto max-w-[1500px] px-5 py-6 sm:px-8">
+      <div className="mx-auto w-full max-w-[1680px] px-6 py-6 md:px-10 xl:px-16">
         <Link to={routes.responder.list} className="flex items-center gap-2 text-sm font-bold text-[#536672]">
           <Icon name="chevron" className="size-4 rotate-180" /> All live incidents
         </Link>
@@ -186,6 +186,32 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
             {arrived ? 'Responder arrived' : update.isPending ? 'Updating…' : 'Mark responder arrived'}
           </button>
         </div>
+
+        <section className="mt-6 rounded-xl border border-[#cbd5dc] bg-[#f4f7f6] p-5">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#5a7268]">Shared picture</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Scene</p>
+              <p className="mt-1 text-base font-extrabold">{EMERGENCY_LABEL[data.emergencyType]}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Breathing</p>
+              <p className="mt-1 text-base font-extrabold">{BREATHING[data.patient.breathing]}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Still unknown</p>
+              <p className="mt-1 text-base font-extrabold">
+                {data.uncertainty.length === 0 ? 'None listed' : `${data.uncertainty.length} field${data.uncertainty.length === 1 ? '' : 's'}`}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Last confirmed action</p>
+              <p className="mt-1 truncate text-base font-extrabold notranslate" translate="no">
+                {actions.find((action) => action.status === ActionStatus.CONFIRMED)?.instruction ?? 'None yet'}
+              </p>
+            </div>
+          </div>
+        </section>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
           <div className="space-y-6">

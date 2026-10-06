@@ -10,6 +10,7 @@ import { interpretTurn } from '../ai/orchestrate.js';
 import { safePhrases } from '../ai/phrases.js';
 import { currentStep, stepPrompt } from '../protocols/engine.js';
 import { publishedProtocols } from '../protocols/catalog.js';
+import { isPlaceCallStep } from '@voicesos/protocols';
 import type { LlmProvider } from '../ai/provider.js';
 import { AiValidationError, UpstreamUnavailableError, ValidationError } from '../common/errors.js';
 import { getIncidentById, insertConversationMessage, listConversationMessages } from '../database/persist.js';
@@ -151,7 +152,7 @@ export function toVoiceTurnResponse(result: VoiceTurnResult): VoiceTurnResponse 
     reply: prepareSpokenLine(result.reply),
     source: result.source,
     failure: result.failure,
-    capability: result.incident.state.currentStepId === 'step-call-ems' ? 'place_call' : null,
+    capability: isPlaceCallStep(result.incident.state.currentStepId) ? 'place_call' : null,
   };
 }
 

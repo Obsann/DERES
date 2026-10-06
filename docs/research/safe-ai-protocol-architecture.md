@@ -14,7 +14,9 @@ The LLM is a **language component**, not the medical authority.
 
 ## Why unrestricted LLM medical chat is unsafe (Research + Decision)
 
-**Research / industry consensus (general):** Large language models can hallucinate procedures, omit contraindications, and sound confident when uncertain. Using them as free-form “AI doctors” is inappropriate for emergency first response.
+**Research:** Large language models can hallucinate procedures, omit contraindications, and sound confident when uncertain. A 2025 multi-model study on medical emergency advising (MEDAS, [arXiv:2511.08614](https://arxiv.org/abs/2511.08614)) reported diagnostic accuracy of about 58–65% for five LLMs and about 70% for a super-learner — no single model above ~85%. Using them as free-form “AI doctors” is inappropriate for emergency first response.
+
+**Research (handoff):** Resuscitation-team field studies show unstructured talk causes role confusion and extra “no-flow” time; structured messages and check-back support mutual situation awareness ([arXiv:1904.04010](https://arxiv.org/abs/1904.04010)). Machine–human chatting-handoff work ([arXiv:2210.02862](https://arxiv.org/abs/2210.02862)) is a useful analogue: escalate to a professional rather than let the model improvise.
 
 **Decision for DERES:**
 

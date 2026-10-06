@@ -43,10 +43,10 @@ export function VoicePhaseIndicator({ phase, label, hint, lang, onMicPress }: Vo
   const shown = label ?? meta.label;
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:gap-4">
       <button
         type="button"
-        className={`voice-control relative grid size-28 place-items-center rounded-full border-2 sm:size-32 ${
+        className={`voice-control relative grid size-20 shrink-0 place-items-center rounded-full border-2 md:size-16 xl:size-20 ${
           listening
             ? 'is-listening border-[#86e9c6] bg-[#86e9c6] text-[#07130f]'
             : error
@@ -57,17 +57,19 @@ export function VoicePhaseIndicator({ phase, label, hint, lang, onMicPress }: Vo
         disabled={busy || !onMicPress}
         aria-label={meta.action}
       >
-        {listening ? <span className="voice-ring absolute inset-[-12px] rounded-full border-2 border-[#86e9c6]/60" /> : null}
-        <Icon name={meta.icon} className="size-10 sm:size-12" />
+        {listening ? <span className="voice-ring absolute inset-[-10px] rounded-full border-2 border-[#86e9c6]/60" /> : null}
+        <Icon name={meta.icon} className="size-8 md:size-7 xl:size-8" />
       </button>
-      <p className="mt-4 text-center text-sm font-extrabold text-white" role="status" aria-live="polite" lang={lang}>
-        {shown}
-      </p>
-      {hint ? (
-        <p className="mt-1 max-w-[14rem] text-center text-xs font-medium text-white/50" lang={lang}>
-          {hint}
+      <div className="text-center md:text-left">
+        <p className="text-sm font-extrabold text-white" role="status" aria-live="polite" lang={lang}>
+          {shown}
         </p>
-      ) : null}
+        {hint ? (
+          <p className="mt-1 max-w-[16rem] text-xs font-medium text-white/50" lang={lang}>
+            {hint}
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }

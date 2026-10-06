@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Language } from '@voicesos/shared';
+import { siteFrame } from '@/components/AppShell';
 import { Brand, Icon } from '@/components/ui';
 import { useProtocolsQuery } from '@/hooks';
 import { emergencyCopy } from '@/i18n/emergencyCopy';
@@ -32,30 +33,30 @@ export function LanguagePage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f4f1e9] px-5 py-[max(24px,env(safe-area-inset-top))] text-[#122d25] sm:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-48px)] max-w-3xl flex-col">
+    <main className="min-h-dvh w-full bg-[#f4f1e9] text-[#122d25]" lang={current}>
+      <div className={`${siteFrame} flex min-h-dvh flex-col py-6 md:py-8`}>
         <div className="flex items-center justify-between">
           <Brand />
           <Link
             to={routes.home}
-            className="grid size-12 place-items-center rounded-full border border-[#c6cbc6]"
+            className="grid size-11 place-items-center rounded-full border border-[#c6cbc6]"
             aria-label={chrome.returnStart}
           >
             <Icon name="x" />
           </Link>
         </div>
-        <section className="flex flex-1 flex-col justify-center py-14">
+        <section className="flex flex-1 flex-col justify-center py-10 md:py-16">
           <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#ba3b2a]">{chrome.beforeBegin}</p>
-          <h1 className="mt-4 text-[clamp(1.85rem,4vw,2.75rem)] font-extrabold leading-[1.05] tracking-[-0.04em]">
+          <h1 className="mt-3 max-w-3xl text-[clamp(2rem,3vw,3.25rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">
             {chrome.chooseLanguage}
           </h1>
-          <p className="mt-4 text-base font-medium text-[#60706a]">{chrome.languageLocked}</p>
+          <p className="mt-3 max-w-xl text-base font-medium text-[#60706a]">{chrome.languageLocked}</p>
           {error ? (
             <p className="mt-4 text-sm font-bold text-[#ba3b2a]" role="alert">
               {toUiErrorMessage(error)}
             </p>
           ) : null}
-          <div className="mt-10 grid gap-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
             {languages.map((language) => {
               const copy = emergencyCopy(language);
               const selected = language === current;
@@ -67,13 +68,13 @@ export function LanguagePage() {
                   disabled={isPending}
                   aria-pressed={selected}
                   onClick={() => choose(language)}
-                  className="group flex min-h-24 items-center justify-between rounded-2xl border-2 border-[#bcc5bf] bg-white px-6 text-left transition hover:border-[#1e5e4b] disabled:opacity-70 sm:min-h-28 sm:px-8 aria-pressed:border-[#1e5e4b]"
+                  className="group flex min-h-20 items-center justify-between rounded-2xl border-2 border-[#bcc5bf] bg-white px-5 text-left transition hover:border-[#1e5e4b] disabled:opacity-70 md:min-h-32 md:flex-col md:items-start md:justify-between md:p-6 aria-pressed:border-[#1e5e4b]"
                 >
                   <span>
-                    <span className="block text-xl font-extrabold sm:text-2xl">{copy.languageName}</span>
+                    <span className="block text-xl font-extrabold md:text-2xl">{copy.languageName}</span>
                     <span className="mt-1 block text-sm font-medium text-[#73807b]">{copy.continueInLanguage}</span>
                   </span>
-                  <span className="grid size-11 place-items-center rounded-full bg-[#e9eee9] text-[#1c5b48] transition group-hover:bg-[#1c5b48] group-hover:text-white">
+                  <span className="grid size-10 place-items-center rounded-full bg-[#e9eee9] text-[#1c5b48] transition group-hover:bg-[#1c5b48] group-hover:text-white md:mt-8">
                     <Icon name="arrow" />
                   </span>
                 </button>

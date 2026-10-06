@@ -114,7 +114,7 @@ Rendered as a `Banner` directly above the instruction card; the card stays visib
 | Silence / timeout | info · "Are you still there?" |
 | Voice / AI unavailable | warning · "Voice help is having trouble. Follow the steps on screen." |
 | Offline | warning · "Connection lost — reconnecting. Keep following the last instruction." |
-| Unsupported emergency | Replace card with `kind=escalation` card: "I can only guide you for someone who has collapsed. Call emergency services now." |
+| Unsupported emergency | Replace card with `kind=escalation` card: "Call emergency services now. Tell them what happened." |
 | Child / infant | Replace card with the protocol's `escalate-child` instruction |
 
 ### E4 · Timeline — `/emergency/:id/timeline`

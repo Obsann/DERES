@@ -31,7 +31,7 @@ Hospital-based cross-sectional study of trauma patients presenting to Addis Abab
 | Arrival within one hour from scene | 56.1% | same |
 | Ambulance as transport from scene | 22.7% (taxi 32.4% most common) | same |
 
-**Product implication (Decision):** Relatives and bystanders are already first responders in practice. The limiting factor is often **knowledge**, which matches a guided, protocol-controlled assistant better than “call an ambulance only.”
+**Product implication (Decision):** Relatives and bystanders are already first responders in practice. The limiting factor is often **knowledge**, which matches a guided, protocol-controlled assistant better than “call an ambulance only.” These four figures are the only Ethiopia scene-care numbers we put on the public landing page. Do not add unverified arXiv IDs beside them.
 
 ### Broader EMS context (Research)
 
@@ -48,7 +48,7 @@ Hospital-based cross-sectional study of trauma patients presenting to Addis Abab
 | Secondary | Emergency responder using summary, timeline, uncertainty, handoff |
 | Future (out of MVP) | Schools, workplaces, security orgs, transport, events, humanitarian orgs |
 
-**MVP emergency contexts (Decision):** one carefully scoped protocol scenario first (engineering spec §10 candidates: unconscious/collapse, severe bleeding, choking, burns, suspected stroke, seizure, severe allergic reaction). Final pick requires authoritative first-aid source (Task 6).
+**MVP emergency contexts (Decision):** Name the scene first (collapse, crash/injury, possible stroke, or other). Only collapse has a published guided protocol (engineering spec §10). Other types are recorded for handoff and escalated to 907 — they do not inherit CPR. Additional guided protocols require an authoritative first-aid source (Task 6).
 
 ## 4. Exact product gap (Decision, grounded in Research)
 

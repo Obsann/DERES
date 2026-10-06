@@ -20,7 +20,7 @@ export const SAFE_PHRASES_BY_LANGUAGE: Record<Language, SafePhraseSet> = {
   [Language.ENGLISH]: {
     cannotInvent: 'I cannot tell you to do that.',
     unsupportedEmergency:
-      'I can only guide you for an unresponsive adult. Call emergency services now for any other emergency.',
+      'I cannot guide this emergency with a published first-aid protocol. Call emergency services now. Tell them what happened and where you are.',
     stayWithThem: 'Stay with them and call emergency services if you have not already.',
     sayAgain: 'I need you to say that again. Call emergency services if someone is unresponsive.',
     noConnection: 'I have no connection. Use the buttons, or try speaking again in a moment.',
@@ -28,7 +28,7 @@ export const SAFE_PHRASES_BY_LANGUAGE: Record<Language, SafePhraseSet> = {
   [Language.AMHARIC]: {
     cannotInvent: 'ያንን እንዲያደርጉ ልነግርዎ አልችልም።',
     unsupportedEmergency:
-      'መምራት የምችለው ምላሽ ለማይሰጥ አዋቂ ሰው ብቻ ነው። ለሌላ ማንኛውም ድንገተኛ አደጋ አሁኑኑ ወደ ድንገተኛ አገልግሎት ይደውሉ።',
+      'ለዚህ ድንገተኛ የታተመ የመጀመሪያ እርዳታ ፕሮቶኮል የለኝም። አሁኑኑ ወደ ድንገተኛ አገልግሎት ይደውሉ። ምን እንደሆነ እና የት እንዳሉ ይንገሩ።',
     stayWithThem: 'ከአጠገባቸው ይቆዩ፤ እስካሁን ካልደወሉ ወደ ድንገተኛ አገልግሎት ይደውሉ።',
     sayAgain: 'እባክዎ እንደገና ይናገሩ። አንድ ሰው ምላሽ የማይሰጥ ከሆነ ወደ ድንገተኛ አገልግሎት ይደውሉ።',
     noConnection: 'ግንኙነት የለኝም። ቁልፎቹን ይጠቀሙ፣ ወይም ትንሽ ቆይተው እንደገና ይናገሩ።',
@@ -36,7 +36,7 @@ export const SAFE_PHRASES_BY_LANGUAGE: Record<Language, SafePhraseSet> = {
   [Language.AFAAN_OROMO]: {
     cannotInvent: "Waan sana akka gootu sitti himuu hin danda'u.",
     unsupportedEmergency:
-      "Ani kan si qajeelchuu danda'u ga'eessa deebii hin kennineef qofa. Balaa tasaa kan biraatiif amma tajaajila balaa tasaatiif bilbili.",
+      "Pirotokoolii gargaarsa jalqabaa maxxanfame balaa tasaa kanaaf hin qabu. Amma tajaajila balaa tasaatiif bilbili. Maaltu ta'e fi eessa akka jirtu himi.",
     stayWithThem: 'Isaan bira turi; yoo hanga ammaatti hin bilbilin, tajaajila balaa tasaatiif bilbili.',
     sayAgain: "Maaloo irra deebi'ii dubbadhu. Namni deebii hin kennu yoo ta'e, tajaajila balaa tasaatiif bilbili.",
     noConnection: "Quunnamtiin hin jiru. Tuqaawwan fayyadami, ykn booda irra deebi'ii dubbadhu.",

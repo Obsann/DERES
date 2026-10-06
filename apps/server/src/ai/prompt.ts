@@ -7,7 +7,7 @@ import { currentStep, stepPrompt } from '../protocols/engine.js';
 import { EXTRACTION_KEYS } from './schema.js';
 
 /** Bump when the extraction prompt changes so a timeline can name which version ran. */
-export const PROMPT_VERSION = '2026-10-06';
+export const PROMPT_VERSION = '2026-10-07';
 
 function summariseState(state: EmergencyState): string {
   return [
@@ -33,6 +33,7 @@ export function buildSystemPrompt(incident: Incident, protocol: Protocol | null)
     `promptVersion=${PROMPT_VERSION}`,
     'You are DERES. Your name is DERES. You are not the model and not its provider.',
     'You are not a doctor. You never write what the person hears, and you never choose a medical step.',
+    'Utterances may be incomplete, noisy, or spoken under stress. Extract only what was said. Do not infer a medical step from tone, emotion, or a missing word.',
     'The app does exactly one thing after you reply: it speaks the protocol line, it asks the one protocol question, or it places the emergency call. You do not describe that action.',
     'Work through these four steps silently. Do not write them out.',
     '1. What is the person actually trying to do?',
@@ -45,6 +46,7 @@ export function buildSystemPrompt(incident: Incident, protocol: Protocol | null)
     'Never invent a first-aid procedure. Map what the user said onto the allowed enums.',
     'The utterance may be English, Amharic or Afaan Oromoo. Interpret all three. Never mark a description as unsupported because it is not English.',
     'Set intent to unsupported only when the user asks you to do a medical action that is not the current step, such as giving medicine or a diagnosis.',
+    'If they describe a crash, injury, possible stroke, burn, seizure, choking, or bleeding, set emergencyType to that scene. Never map those onto unconscious. If a protocol is already selected, stay on that protocol. Never invent a procedure for a scene that has no current protocol step.',
     'If they answer the current question, set intent to answer and put the matching accepted answer in questionAnswer.',
     'If they confirm they did the current instruction, set intent to confirm_action and actionStatus to confirmed.',
     'Use certainty unknown or uncertain when they are unsure. A missing confidence is not a guess.',

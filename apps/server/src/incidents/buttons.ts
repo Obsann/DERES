@@ -2,9 +2,10 @@ import {
   BreathingState,
   Certainty,
   ConsciousnessState,
-  EmergencyType,
   MessageRole,
   ProtocolStepKind,
+  SCENE_EMERGENCY_TYPE,
+  SceneStart,
   type ButtonTurnRequest,
   type ProtocolStep,
 } from '@voicesos/shared';
@@ -27,9 +28,13 @@ const YES_NO: Record<string, { yes: string; no: string }> = {
 export function parseButtonTurn(body: unknown): ButtonTurnRequest {
   const record = body !== null && typeof body === 'object' ? (body as Record<string, unknown>) : {};
   switch (record['kind']) {
-    case 'start':
-      if (record['emergency'] === 'collapsed') return { kind: 'start', emergency: 'collapsed' };
+    case 'start': {
+      const emergency = record['emergency'];
+      if (typeof emergency === 'string' && (Object.values(SceneStart) as string[]).includes(emergency)) {
+        return { kind: 'start', emergency: emergency as (typeof SceneStart)[keyof typeof SceneStart] };
+      }
       break;
+    }
     case 'answer':
       if (record['answer'] === 'yes' || record['answer'] === 'no' || record['answer'] === 'unsure') {
         return { kind: 'answer', answer: record['answer'] };
@@ -56,10 +61,13 @@ function answerExtraction(step: ProtocolStep | null, answer: 'yes' | 'no' | 'uns
     return emptyExtraction({ intent: LlmIntent.ANSWER, certainty: Certainty.UNKNOWN });
   }
   const mapping = step.updatesField ? YES_NO[step.updatesField] : undefined;
-  if (!mapping) {
-    throw new ProtocolViolationError('This question cannot be answered with yes or no', { stepId: step.id });
+  if (mapping) {
+    return emptyExtraction({ intent: LlmIntent.ANSWER, certainty: Certainty.KNOWN, questionAnswer: mapping[answer] });
   }
-  return emptyExtraction({ intent: LlmIntent.ANSWER, certainty: Certainty.KNOWN, questionAnswer: mapping[answer] });
+  if (step.acceptedAnswers.includes('yes') && step.acceptedAnswers.includes('no')) {
+    return emptyExtraction({ intent: LlmIntent.ANSWER, certainty: Certainty.KNOWN, questionAnswer: answer });
+  }
+  throw new ProtocolViolationError('This question cannot be answered with yes or no', { stepId: step.id });
 }
 
 /** The server, not the client, turns a press into protocol facts. */
@@ -68,16 +76,28 @@ export function buttonExtraction(
   step: ProtocolStep | null,
 ): { extraction: LlmExtraction; label: string } {
   switch (press.kind) {
-    case 'start':
+    case 'start': {
+      const emergencyType = SCENE_EMERGENCY_TYPE[press.emergency];
+      const labels: Record<(typeof SceneStart)[keyof typeof SceneStart], string> = {
+        [SceneStart.COLLAPSED]: 'Someone has collapsed',
+        [SceneStart.CRASH]: 'Crash or injury',
+        [SceneStart.STROKE]: 'Possible stroke',
+        [SceneStart.CHOKING]: 'Choking',
+        [SceneStart.BLEEDING]: 'Severe bleeding',
+        [SceneStart.BURNS]: 'Burn',
+        [SceneStart.OTHER]: 'A different emergency',
+      };
       return {
         extraction: emptyExtraction({
           intent: LlmIntent.REQUEST_HELP,
           certainty: Certainty.KNOWN,
-          emergencyType: EmergencyType.UNCONSCIOUS,
-          emergencyTypeConfidence: 1,
+          emergencyType,
+          emergencyTypeConfidence: emergencyType ? 1 : 0,
+          observations: emergencyType ? [] : ['User reported a different emergency — not collapse'],
         }),
-        label: 'Someone has collapsed',
+        label: labels[press.emergency],
       };
+    }
     case 'answer':
       return {
         extraction: answerExtraction(step, press.answer),

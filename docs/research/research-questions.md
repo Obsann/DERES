@@ -6,11 +6,11 @@ From `task.md` Phase 1. Each question must have a status and a pointer into the 
 |---|---|---|---|
 | Bystander emergency response behavior | **Addressed (initial)** | `problem-evidence.md` | Addis Ababa scene-care provider mix |
 | First-aid knowledge gaps | **Addressed (initial)** | `problem-evidence.md` | 61.2% lack of knowledge among non-helpers |
-| Voice interaction under cognitive load | **Partial** | `voice-interaction.md` | Product Decision + labeled Hypothesis; UX to validate |
+| Voice interaction under cognitive load | **Partial** | `voice-interaction.md` | CEMO (arXiv:2306.07115) supports stressed emergency speech; Ethiopia HCI still Hypothesis |
 | Multilingual emergency communication | **Partial** | `multilingual-emergency.md` | Architecture Decision; quality gate open |
-| Safe LLM + protocol architectures | **Addressed (design)** | `safe-ai-protocol-architecture.md` | Engineering Decision; implement Tasks 5–8 |
+| Safe LLM + protocol architectures | **Addressed (design)** | `safe-ai-protocol-architecture.md` | MEDAS accuracy ceiling (arXiv:2511.08614); Tasks 5–8 |
 | Structured emergency-state representation | **Addressed (design)** | Shared types + this trail | Implemented in `@voicesos/shared` |
-| Conversation-to-handoff transformation | **Partial** | Spec §15 / Task 11–25 | Schema Decision done; generation/tests pending |
+| Conversation-to-handoff transformation | **Partial** | Spec §15 / Task 11–25 | CPR comms (arXiv:1904.04010) supports shared picture; accuracy still Hypothesis |
 | Uncertainty handling | **Addressed (design)** | Shared `Certainty` / handoff rules | Runtime enforcement = Tasks 4, 8, 11 |
 | Connectivity limitations | **Partial** | Spec §12; Task 26 | Risk accepted; MVP graceful failure, not offline AI |
 

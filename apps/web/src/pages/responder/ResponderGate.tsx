@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Icon } from '@/components/ui';
+import { LogoMark } from '@/components/ui';
 import { authApi, isApiClientError, toUiErrorMessage } from '@/services/api';
 import { responderSession } from '@/services/auth/responderToken';
 import { ResponderShell } from './ResponderShell';
@@ -21,7 +21,7 @@ function SignIn() {
 
   return (
     <ResponderShell>
-      <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-6xl items-center px-5 py-12 lg:grid-cols-2 lg:gap-24">
+      <div className="mx-auto grid min-h-[calc(100vh-64px)] w-full max-w-[1680px] items-center px-6 py-12 md:px-10 lg:grid-cols-2 lg:gap-20 xl:px-16">
         <section>
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#087a65]">Professional access</p>
           <h1 className="mt-4 text-3xl font-extrabold leading-[1.05] tracking-[-0.04em] sm:text-4xl">Live incident handoff.</h1>
@@ -33,8 +33,8 @@ function SignIn() {
           onSubmit={submit}
           className="mt-10 rounded-2xl border border-[#cbd5dc] bg-white p-6 shadow-[0_16px_45px_rgba(29,54,72,0.08)] sm:p-8 lg:mt-0"
         >
-          <Icon name="shield" className="size-9 text-[#087a65]" />
-          <h2 className="mt-5 text-2xl font-extrabold tracking-[-0.03em]">Join with team invite</h2>
+          <LogoMark className="h-16 w-auto" />
+          <h2 className="mt-4 text-2xl font-extrabold tracking-[-0.03em]">Join with team invite</h2>
           <p className="mt-2 text-sm leading-relaxed text-[#697985]">Use the invite code shared by your response lead.</p>
           {signIn.isError ? (
             <p className="mt-4 text-sm font-bold text-[#aa281f]" role="alert">

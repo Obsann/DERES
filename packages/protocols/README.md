@@ -5,9 +5,11 @@ engine: `apps/server/src/protocols` decides what is permitted.
 
 **Task:** 6 (MVP emergency protocol).
 
-The MVP publishes one scenario: an unresponsive adult. Guidance is taken
-from the European Resuscitation Council 2021 Basic Life Support pathway
-for lay rescuers. Pediatric, choking, bleeding, and other emergencies are
-out of scope until they have their own sourced protocol.
+The MVP publishes one **guided** scenario: an unresponsive adult. Guidance is
+taken from the European Resuscitation Council 2021 Basic Life Support pathway
+for lay rescuers. A crash, suspected stroke, choking, bleeding, and other
+scenes can be **named** so responders see the right picture, but they are out
+of guided scope until they have their own sourced protocol. They must not
+reuse the collapse procedure.
 
 A protocol without source metadata cannot be published.

@@ -349,5 +349,3 @@ export const unconsciousAdultProtocol: Protocol = {
   createdAt: CREATED_AT,
   updatedAt: CREATED_AT,
 };
-
-export const publishedProtocols: Protocol[] = [unconsciousAdultProtocol];

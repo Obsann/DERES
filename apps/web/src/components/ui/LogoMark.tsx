@@ -1,22 +1,20 @@
-/** The DERES mark: Ethiopic ድ on the emergency square. */
+export const LOGO_SRC = '/logo.png';
+export const LOGO_MARK_SRC = '/icon.png';
+
+/** Official DERES lockup, or the shield mark when `compact` is set. */
 export function LogoMark({
-  className = 'grid size-10 place-items-center rounded-xl bg-[#122d25] text-xl font-black leading-none text-white',
-  dark = false,
+  className = 'h-14 w-auto',
+  compact = false,
 }: {
   className?: string;
-  dark?: boolean;
+  compact?: boolean;
 }) {
   return (
-    <span
-      className={
-        className ||
-        `grid size-10 place-items-center rounded-xl text-xl font-black leading-none ${
-          dark ? 'bg-[#f35d43] text-[#07130f]' : 'bg-[#122d25] text-white'
-        }`
-      }
+    <img
+      src={compact ? LOGO_MARK_SRC : LOGO_SRC}
+      alt=""
+      className={`object-contain ${className}`}
       aria-hidden="true"
-    >
-      ድ
-    </span>
+    />
   );
 }

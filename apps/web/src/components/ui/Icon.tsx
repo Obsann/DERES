@@ -52,6 +52,25 @@ const icons = {
   repeat: (
     <path d="M4 12a8 8 0 0 1 13.7-5.7L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.7L4 15.5M4 20v-4.5h4.5" />
   ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3.2 1.8" />
+    </>
+  ),
+  users: (
+    <>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+      <circle cx="9.5" cy="7" r="3" />
+      <path d="M22 21v-2a3.8 3.8 0 0 0-3-3.7M16.5 3.2a3 3 0 0 1 0 5.6" />
+    </>
+  ),
+  building: (
+    <>
+      <path d="M4 21V8.5L12 4l8 4.5V21" />
+      <path d="M9 21v-5h6v5M9 10h.01M12 10h.01M15 10h.01M9 14h.01M12 14h.01M15 14h.01" />
+    </>
+  ),
 } as const satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof icons;
