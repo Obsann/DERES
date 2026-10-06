@@ -22,8 +22,10 @@ export interface AppConfig {
   serviceName: string;
   version: string;
   port: number;
-  /** Allowed browser origin for CORS. */
+  /** Primary browser origin (first value in CLIENT_URL). */
   clientUrl: string;
+  /** Allowed browser origins for CORS and Socket.IO (comma-separated CLIENT_URL). */
+  clientOrigins: string[];
   /** MongoDB connection string; required in production. */
   mongoUri: string | null;
   /** Null until an LLM provider is chosen (task.md Phase 6). */
@@ -69,6 +71,13 @@ function readOptional(name: string): string | null {
   return raw === undefined || raw.trim() === '' ? null : raw.trim();
 }
 
+function parseOrigins(raw: string): string[] {
+  return raw
+    .split(',')
+    .map((value) => value.trim().replace(/\/$/, ''))
+    .filter((value) => value.length > 0);
+}
+
 /**
  * Reads and validates the environment once at startup.
  *
@@ -87,7 +96,8 @@ export function loadConfig(): AppConfig {
     serviceName: 'voicesos-server',
     version: process.env['npm_package_version'] ?? '0.1.0',
     port: readPort('PORT', 4000),
-    clientUrl: readOptional('CLIENT_URL') ?? 'http://localhost:5173',
+    clientUrl: parseOrigins(readOptional('CLIENT_URL') ?? 'http://localhost:5173')[0] ?? 'http://localhost:5173',
+    clientOrigins: parseOrigins(readOptional('CLIENT_URL') ?? 'http://localhost:5173'),
     mongoUri: readOptional('MONGODB_URI'),
     llmApiKey: readOptional('LLM_API_KEY'),
     llmBaseUrl: readOptional('LLM_BASE_URL') ?? 'https://api.openai.com/v1',

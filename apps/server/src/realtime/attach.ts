@@ -92,7 +92,7 @@ export function attachRealtime(httpServer: HttpServer, options: AttachRealtimeOp
 
   const io: IncidentIo = new Server(httpServer, {
     cors: {
-      origin: config.clientUrl,
+      origin: config.clientOrigins,
       credentials: true,
     },
     // A dropped dashboard reconnects without a full handshake for two minutes.

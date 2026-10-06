@@ -17,6 +17,10 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "build:shared": "npm run build --workspace @voicesos/shared && npm run build --workspace @voicesos/protocols",
+    "build:server": "npm run build:shared && npm run build --workspace @voicesos/server",
+    "build:web": "npm run build:shared && npm run build --workspace @voicesos/web",
+    "start:server": "npm start --workspace @voicesos/server"
   }
 }

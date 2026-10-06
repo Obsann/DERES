@@ -37,7 +37,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
   app.use(helmet());
   app.use(
     cors({
-      origin: config.clientUrl,
+      origin: config.clientOrigins,
       credentials: true,
     }),
   );
