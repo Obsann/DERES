@@ -21,7 +21,7 @@ export function FactList({ facts, emptyLabel = 'Nothing recorded yet' }: { facts
           className={`d-fact${fact.certainty === Certainty.UNKNOWN ? ' d-fact--unknown' : ''}`}
         >
           <span className="d-fact__label">{fact.label}</span>
-          <span className="d-fact__value">
+          <span className="d-fact__value notranslate" translate="no">
             {fact.value}
             {fact.establishedAt ? (
               <time className="d-fact__time" dateTime={fact.establishedAt}>

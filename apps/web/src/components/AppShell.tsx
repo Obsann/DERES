@@ -1,59 +1,22 @@
 import type { ReactNode } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { routes } from '@/routes/paths';
 
-const linkStyle = ({ isActive }: { isActive: boolean }) => ({
-  padding: '0.35rem 0.65rem',
-  borderRadius: '0.35rem',
-  textDecoration: 'none',
-  background: isActive ? '#1f3d32' : 'transparent',
-  color: isActive ? '#f3f1eb' : 'inherit',
-});
-
 /**
- * Temporary navigation so the team can click through every primary route.
- * Samuel's design system will replace this chrome in Tasks 31–33.
+ * Bystander screens own their chrome (Brand + Call 907). Responder screens
+ * use ResponderShell. This wrapper only locks emergency copy against Translate.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  // No global navigation in the bystander flow: one screen, one task.
-  if (pathname === routes.home || pathname.startsWith('/emergency')) {
-    return <div style={{ minHeight: '100vh' }}>{children}</div>;
+  const bystander = pathname === routes.home || pathname.startsWith('/emergency');
+
+  if (bystander) {
+    return (
+      <div className="notranslate min-h-dvh" translate="no">
+        {children}
+      </div>
+    );
   }
-  return (
-    <div style={{ minHeight: '100vh' }}>
-      <header
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.5rem',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.75rem 1.25rem',
-          borderBottom: '1px solid rgba(20, 32, 26, 0.12)',
-          background: '#ebe7de',
-        }}
-      >
-        <strong>DERES</strong>
-        <nav style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }} aria-label="Primary">
-          <NavLink to={routes.home} style={linkStyle} end>
-            Start
-          </NavLink>
-          <NavLink to={routes.emergency.language} style={linkStyle}>
-            Language
-          </NavLink>
-          <NavLink to={routes.emergency.session} style={linkStyle}>
-            Session
-          </NavLink>
-          <NavLink to={routes.responder.list} style={linkStyle}>
-            Responder
-          </NavLink>
-          <NavLink to={routes.design} style={linkStyle}>
-            UI kit
-          </NavLink>
-        </nav>
-      </header>
-      {children}
-    </div>
-  );
+
+  return <>{children}</>;
 }

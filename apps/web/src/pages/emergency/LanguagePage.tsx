@@ -1,13 +1,12 @@
-import type { CSSProperties } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Language } from '@voicesos/shared';
-import { Banner, Button } from '@/components/ui';
+import { Brand, Icon } from '@/components/ui';
 import { useProtocolsQuery } from '@/hooks';
 import { emergencyCopy } from '@/i18n/emergencyCopy';
 import { toUiErrorMessage } from '@/services/api';
 import { routes } from '@/routes/paths';
 import { useEmergencySession } from '@/state';
-import { rememberLanguage, useStartEmergency } from './useStartEmergency';
+import { rememberedLanguage, rememberLanguage, useStartEmergency } from './useStartEmergency';
 
 const ALL_LANGUAGES = [Language.ENGLISH, Language.AMHARIC, Language.AFAAN_OROMO];
 
@@ -19,8 +18,9 @@ export function LanguagePage() {
   const session = useEmergencySession();
   const protocols = useProtocolsQuery();
   const { start, isPending, error } = useStartEmergency();
+  const current = rememberedLanguage() ?? session.language;
+  const chrome = emergencyCopy(current);
 
-  // Offer what the protocol supports; fall back to all three if the catalog is unreachable.
   const supported = protocols.data?.flatMap((protocol) => protocol.languages) ?? ALL_LANGUAGES;
   const languages = ALL_LANGUAGES.filter((language) => supported.includes(language));
 
@@ -32,30 +32,55 @@ export function LanguagePage() {
   };
 
   return (
-    <main className="d-emergency-layout d-stack" style={{ '--d-stack-gap': 'var(--d-space-5)' } as CSSProperties}>
-      <h1 style={{ margin: 0, fontSize: 'var(--d-text-xl)' }}>
-        {languages.map((language) => (
-          <span key={language} lang={language} style={{ display: 'block' }}>
-            {emergencyCopy(language).chooseLanguage}
-          </span>
-        ))}
-      </h1>
-
-      {error ? <Banner tone="warning" title={toUiErrorMessage(error)} /> : null}
-
-      <div className="d-stack" style={{ '--d-stack-gap': 'var(--d-space-3)' } as CSSProperties}>
-        {languages.map((language) => (
-          <Button
-            key={language}
-            variant={language === session.language ? 'primary' : 'secondary'}
-            size="lg"
-            block
-            disabled={isPending}
-            onClick={() => choose(language)}
+    <main className="min-h-screen bg-[#f4f1e9] px-5 py-[max(24px,env(safe-area-inset-top))] text-[#122d25] sm:px-8">
+      <div className="mx-auto flex min-h-[calc(100vh-48px)] max-w-3xl flex-col">
+        <div className="flex items-center justify-between">
+          <Brand />
+          <Link
+            to={routes.home}
+            className="grid size-12 place-items-center rounded-full border border-[#c6cbc6]"
+            aria-label={chrome.returnStart}
           >
-            <span lang={language}>{emergencyCopy(language).languageName}</span>
-          </Button>
-        ))}
+            <Icon name="x" />
+          </Link>
+        </div>
+        <section className="flex flex-1 flex-col justify-center py-14">
+          <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#ba3b2a]">{chrome.beforeBegin}</p>
+          <h1 className="mt-4 text-[clamp(1.85rem,4vw,2.75rem)] font-extrabold leading-[1.05] tracking-[-0.04em]">
+            {chrome.chooseLanguage}
+          </h1>
+          <p className="mt-4 text-base font-medium text-[#60706a]">{chrome.languageLocked}</p>
+          {error ? (
+            <p className="mt-4 text-sm font-bold text-[#ba3b2a]" role="alert">
+              {toUiErrorMessage(error)}
+            </p>
+          ) : null}
+          <div className="mt-10 grid gap-3">
+            {languages.map((language) => {
+              const copy = emergencyCopy(language);
+              const selected = language === current;
+              return (
+                <button
+                  key={language}
+                  type="button"
+                  lang={language}
+                  disabled={isPending}
+                  aria-pressed={selected}
+                  onClick={() => choose(language)}
+                  className="group flex min-h-24 items-center justify-between rounded-2xl border-2 border-[#bcc5bf] bg-white px-6 text-left transition hover:border-[#1e5e4b] disabled:opacity-70 sm:min-h-28 sm:px-8 aria-pressed:border-[#1e5e4b]"
+                >
+                  <span>
+                    <span className="block text-xl font-extrabold sm:text-2xl">{copy.languageName}</span>
+                    <span className="mt-1 block text-sm font-medium text-[#73807b]">{copy.continueInLanguage}</span>
+                  </span>
+                  <span className="grid size-11 place-items-center rounded-full bg-[#e9eee9] text-[#1c5b48] transition group-hover:bg-[#1c5b48] group-hover:text-white">
+                    <Icon name="arrow" />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
       </div>
     </main>
   );

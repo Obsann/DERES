@@ -1,23 +1,25 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 
-export type ButtonVariant = 'emergency' | 'primary' | 'secondary' | 'quiet';
+export type ButtonVariant = 'emergency' | 'primary' | 'secondary' | 'negative' | 'quiet';
 export type ButtonSize = 'md' | 'lg' | 'xl';
 
 interface CommonProps {
   variant?: ButtonVariant;
   size?: ButtonSize;
   block?: boolean;
+  pill?: boolean;
   icon?: IconName;
   children: ReactNode;
 }
 
-function classes({ variant = 'primary', size = 'md', block }: CommonProps): string {
+function classes({ variant = 'primary', size = 'md', block, pill }: CommonProps): string {
   return [
     'd-button',
     `d-button--${variant}`,
     size === 'md' ? '' : `d-button--${size}`,
     block ? 'd-button--block' : '',
+    pill ? 'd-button--pill' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -31,13 +33,16 @@ export function Button({
   variant,
   size,
   block,
+  pill,
   icon,
   children,
   type = 'button',
+  className,
   ...rest
 }: CommonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
+  const base = classes({ variant, size, block, pill, children });
   return (
-    <button type={type} className={classes({ variant, size, block, children })} {...rest}>
+    <button type={type} className={className ? `${base} ${className}` : base} {...rest}>
       {icon ? <Icon name={icon} /> : null}
       <span>{children}</span>
     </button>
@@ -49,12 +54,15 @@ export function ButtonLink({
   variant,
   size,
   block,
+  pill,
   icon,
   children,
+  className,
   ...rest
 }: CommonProps & AnchorHTMLAttributes<HTMLAnchorElement>) {
+  const base = classes({ variant, size, block, pill, children });
   return (
-    <a className={classes({ variant, size, block, children })} {...rest}>
+    <a className={className ? `${base} ${className}` : base} {...rest}>
       {icon ? <Icon name={icon} /> : null}
       <span>{children}</span>
     </a>

@@ -1,0 +1,54 @@
+import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { TranslateSlot } from '@/components/TranslateSlot';
+import { routes } from '@/routes/paths';
+import { responderSession } from '@/services/auth/responderToken';
+import { useResponderSession } from './format';
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'R';
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
+export function ResponderShell({ children }: { children: ReactNode }) {
+  const session = useResponderSession();
+  const name = session?.user.displayName || session?.user.email || 'Responder';
+
+  return (
+    <main className="min-h-screen bg-[#eef2f5] text-[#12202d]">
+      <header className="border-b border-[#ccd5dc] bg-[#142737] text-white">
+        <div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between px-5 sm:px-8">
+          <Link to={routes.responder.list} className="flex items-center gap-3 text-left">
+            <span className="grid size-8 place-items-center rounded-lg bg-[#55d1b1] font-black text-[#10251f]">ድ</span>
+            <span className="font-extrabold tracking-[0.04em]">
+              DERES <span className="font-medium text-white/50">RESPONDER</span>
+            </span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <TranslateSlot />
+            {session ? (
+              <>
+                <span className="hidden text-xs font-bold text-white/55 sm:block">{name}</span>
+                <span className="grid size-9 place-items-center rounded-full bg-[#294359] text-xs font-extrabold">
+                  {initials(name)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => responderSession.clear()}
+                  className="hidden text-xs font-bold text-white/55 underline decoration-white/25 underline-offset-4 sm:block"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : null}
+          </div>
+        </div>
+      </header>
+      {children}
+    </main>
+  );
+}
