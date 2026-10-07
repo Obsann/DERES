@@ -54,6 +54,7 @@ Leave `PORT` unset. Render injects it.
 |---|---|
 | `VITE_API_URL` | Render origin, no trailing slash, e.g. `https://deres-api.onrender.com` |
 | `VITE_VOXIDE_PUBLIC_KEY` | `vox_pub_…` from the Voxide dashboard |
+| `VITE_MAPS_API_KEY` | Google Maps JavaScript API key (restrict by HTTP referrer to the Vercel host) |
 
 4. Deploy.
 5. Put the `https://….vercel.app` URL into Render `CLIENT_URL` and **Manual Deploy** the API.
