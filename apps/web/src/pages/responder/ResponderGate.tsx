@@ -23,10 +23,10 @@ function SignIn() {
     <ResponderShell>
       <div className="mx-auto grid min-h-[calc(100vh-64px)] w-full max-w-[1680px] items-center px-6 py-12 md:px-10 lg:grid-cols-2 lg:gap-20 xl:px-16">
         <section>
-          <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#087a65]">907 response</p>
-          <h1 className="mt-4 text-3xl font-extrabold leading-[1.05] tracking-[-0.04em] sm:text-4xl">Live incident handoff.</h1>
+          <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#087a65]">Professional access</p>
+          <h1 className="mt-4 text-3xl font-extrabold leading-[1.05] tracking-[-0.04em] sm:text-4xl">You are the help that arrived.</h1>
           <p className="mt-6 max-w-md text-lg leading-relaxed text-[#5c6c78]">
-            This is the picture a crew sees on the way: where the scene is, whether the patient is responding and breathing, whether 907 was confirmed, and what the bystander has already done.
+            Enter the code on the bystander’s phone. You will see what happened before you got there — not a list of other patients, and you do not call 907 from here.
           </p>
         </section>
         <form
@@ -75,7 +75,7 @@ function SignIn() {
             disabled={signIn.isPending}
             className="mt-4 min-h-14 w-full rounded-xl bg-[#0a5c4e] px-5 text-base font-extrabold text-white disabled:opacity-70"
           >
-            {signIn.isPending ? 'Signing in…' : 'Open the live board'}
+            {signIn.isPending ? 'Signing in…' : 'Continue'}
           </button>
           <p className="mt-5 text-xs leading-relaxed text-[#81909a]">
             Restricted to invited emergency response personnel. Activity is logged.

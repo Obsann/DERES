@@ -90,12 +90,12 @@ function warnings(incident: Incident): HandoffWarning[] {
   if (state.escalationStatus === EscalationState.ESCALATED) {
     items.push({
       severity: WarningSeverity.CRITICAL,
-      message: 'Scene is escalated — 907 or on-scene help is involved or underway',
+      message: 'DERES marked this scene urgent before you arrived',
     });
   } else if (state.escalationStatus === EscalationState.RECOMMENDED) {
     items.push({
       severity: WarningSeverity.CRITICAL,
-      message: '907 has been recommended',
+      message: 'The bystander was told to call 907',
     });
   }
 
@@ -125,16 +125,22 @@ function warnings(incident: Incident): HandoffWarning[] {
     (action) => action.stepId?.includes('call-ems') || /call emergency|907/i.test(action.instruction),
   );
   if (!emsCall) {
-    items.push({ severity: WarningSeverity.CRITICAL, message: '907 call has not been started' });
+    items.push({
+      severity: WarningSeverity.IMPORTANT,
+      message: 'The bystander has not called 907 yet',
+    });
   } else if (emsCall.status !== ActionStatus.CONFIRMED) {
-    items.push({ severity: WarningSeverity.CRITICAL, message: '907 call has not been confirmed' });
+    items.push({
+      severity: WarningSeverity.IMPORTANT,
+      message: 'The bystander has not confirmed that 907 was called',
+    });
   }
 
   const outstanding = state.actions.filter((action) => action.status === ActionStatus.GIVEN);
   if (outstanding.length > 0) {
     items.push({
       severity: WarningSeverity.IMPORTANT,
-      message: `${outstanding.length} instruction(s) given but not confirmed`,
+      message: `The bystander has not confirmed ${outstanding.length} instruction(s) DERES already gave them`,
     });
   }
 
