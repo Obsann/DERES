@@ -28,7 +28,7 @@ export function ResponderShell({ children }: { children: ReactNode }) {
               <LogoMark compact className="h-8 w-8" />
             </span>
             <span className="truncate font-extrabold tracking-[0.04em]">
-              DERES <span className="font-semibold text-white/80">907 HANDOFF</span>
+              DERES <span className="font-semibold text-white/80">CREW</span>
             </span>
           </Link>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">

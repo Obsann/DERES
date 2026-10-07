@@ -34,10 +34,10 @@ function SceneLookup() {
     <ResponderShell>
       <div className="mx-auto grid min-h-[calc(100vh-64px)] w-full max-w-[1680px] items-center px-6 py-12 md:px-10 lg:grid-cols-2 lg:gap-20 xl:px-16">
         <section>
-          <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#087a65]">907 handoff</p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">Open the scene in front of you.</h1>
+          <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#087a65]">On-scene lookup</p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">Open the patient in front of you.</h1>
           <p className="mt-4 max-w-xl text-sm font-medium leading-relaxed text-[#60717e]">
-            Ask the bystander for the four-character code on their phone. You will only see that patient — not every live emergency.
+            Ask the bystander for the four-character code on their phone. You only see that scene: what DERES already established, and what they have already done.
           </p>
         </section>
         <form
@@ -73,7 +73,7 @@ function SceneLookup() {
             disabled={!ready || lookup.isPending}
             className="mt-6 min-h-14 w-full rounded-xl bg-[#0a5c4e] px-5 text-base font-extrabold text-white disabled:opacity-50"
           >
-            {lookup.isPending ? 'Opening scene…' : 'Open this patient'}
+            {lookup.isPending ? 'Opening…' : 'Open this briefing'}
           </button>
         </form>
       </div>

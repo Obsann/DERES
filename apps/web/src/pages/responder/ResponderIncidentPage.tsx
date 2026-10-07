@@ -16,7 +16,6 @@ import {
 } from '@voicesos/shared';
 import { IncidentMap } from '@/components/maps/IncidentMap';
 import { Icon } from '@/components/ui';
-import { emergencyCallHref, EMERGENCY_NUMBERS } from '@/config/emergency';
 import { useResponderRealtime, useUpdateIncidentMutation } from '@/hooks';
 import { incidentsApi, queryKeys } from '@/services/api';
 import { routes } from '@/routes/paths';
@@ -43,7 +42,7 @@ function time(iso: string): string {
 }
 
 function elapsed(iso: string, now: number): string {
-  return `${elapsedClock(iso, now)} on scene clock`;
+  return `${elapsedClock(iso, now)} since this started`;
 }
 
 function locationLine(handoff: Handoff): { title: string; detail: string; shared: boolean; maps: string | null } {
@@ -61,7 +60,7 @@ function locationLine(handoff: Handoff): { title: string; detail: string; shared
       : null;
   return {
     title,
-    detail: [coords, accuracy].filter(Boolean).join(' · ') || 'Shared with responders',
+    detail: [coords, accuracy].filter(Boolean).join(' · ') || 'Shared from the bystander’s phone',
     shared: true,
     maps,
   };
@@ -188,7 +187,7 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
             <div className="flex items-center gap-3">
               <span className={`size-3 rounded-full ${escalated ? 'animate-pulse bg-[#cf382f]' : 'bg-[#15836d]'}`} />
               <p className={`text-xs font-extrabold uppercase tracking-[0.14em] ${escalated ? 'text-[#b32f28]' : 'text-[#087a65]'}`}>
-                {escalated ? 'Escalated · Live' : arrived ? 'Crew on scene' : 'Active · Live'}
+                {arrived ? 'You have this patient' : escalated ? 'Urgent · DERES still guiding' : 'DERES still guiding'}
               </p>
             </div>
             <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">{EMERGENCY_LABEL[data.emergencyType]}</h1>
@@ -196,28 +195,18 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
               Scene {incident.data?.accessCode ?? caseId(incidentId)} · {elapsed(data.startedAt, now)}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {ems !== 'confirmed' ? (
-              <a
-                href={emergencyCallHref}
-                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#b3261e] px-4 text-sm font-extrabold text-white"
-              >
-                Call {EMERGENCY_NUMBERS.ambulance}
-              </a>
-            ) : null}
-            <button
-              type="button"
-              disabled={arrived || update.isPending}
-              onClick={markArrived}
-              className="min-h-11 rounded-lg border border-[#8a9aa6] bg-white px-4 text-sm font-extrabold text-[#12202d] disabled:opacity-50"
-            >
-              {arrived ? 'On scene' : update.isPending ? 'Updating…' : 'On scene'}
-            </button>
-          </div>
+          <button
+            type="button"
+            disabled={arrived || update.isPending}
+            onClick={markArrived}
+            className="min-h-11 rounded-lg border border-[#8a9aa6] bg-white px-4 text-sm font-extrabold text-[#12202d] disabled:opacity-50"
+          >
+            {arrived ? 'Handover recorded' : update.isPending ? 'Recording…' : 'I have this patient'}
+          </button>
         </div>
 
         <section className="mt-6 rounded-xl border border-[#cbd5dc] bg-[#f4f7f6] p-5">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#5a7268]">What the crew needs first</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#5a7268]">What happened before you arrived</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Patient</p>
@@ -226,7 +215,7 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">907</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Bystander 907 call</p>
               <p className="mt-1 text-base font-extrabold">{EMS_LABEL[ems]}</p>
             </div>
             <div>
@@ -343,26 +332,28 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
                   rel="noreferrer"
                   className="mt-4 flex min-h-11 w-full items-center justify-center rounded-lg bg-[#142737] text-sm font-extrabold text-white"
                 >
-                  Drive to scene
+                  View map
                 </a>
               ) : null}
             </section>
             <section className="rounded-xl border border-[#cbd5dc] bg-white p-5">
-              <h2 className="font-extrabold">On the line</h2>
+              <h2 className="font-extrabold">Bystander’s phone</h2>
               <div className="mt-4 flex items-center justify-between text-sm">
-                <span className="text-[#647681]">Bystander phone</span>
-                <span className={`font-extrabold ${live ? 'text-[#087a65]' : 'text-[#835f14]'}`}>{live ? 'On the line' : 'Unknown'}</span>
+                <span className="text-[#647681]">DERES on their phone</span>
+                <span className={`font-extrabold ${live ? 'text-[#087a65]' : 'text-[#835f14]'}`}>
+                  {live ? 'Still connected' : 'Unknown'}
+                </span>
               </div>
               <div className="mt-3 flex items-center justify-between text-sm">
-                <span className="text-[#647681]">Language</span>
+                <span className="text-[#647681]">Language they used</span>
                 <span className="font-extrabold">{spokenLanguage ? LANGUAGE_LABEL[spokenLanguage] : 'Unknown'}</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-sm">
-                <span className="text-[#647681]">Guidance now</span>
-                <span className="font-extrabold">{data.currentStepLabel ?? 'Not started'}</span>
+                <span className="text-[#647681]">What DERES is telling them</span>
+                <span className="max-w-[12rem] text-right font-extrabold">{data.currentStepLabel ?? 'Nothing right now'}</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-sm">
-                <span className="text-[#647681]">Protocol</span>
+                <span className="text-[#647681]">Protocol DERES used</span>
                 <span className="font-extrabold">{data.currentProtocolName ?? 'Not started'}</span>
               </div>
             </section>

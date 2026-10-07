@@ -138,7 +138,7 @@ export function emsCallStatus(actions: ActionRecord[]): EmsCallStatus {
 }
 
 export const EMS_LABEL: Record<EmsCallStatus, string> = {
-  confirmed: '907 confirmed',
-  asked: '907 asked — not confirmed',
-  not_called: '907 not called yet',
+  confirmed: 'Bystander called 907',
+  asked: 'Told to call 907 — not confirmed',
+  not_called: 'Bystander has not called 907',
 };
