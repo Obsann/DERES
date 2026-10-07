@@ -119,7 +119,8 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
     const lines = voiceLoopCopy(language);
     const greeted = await speak(lines.greeting, language);
     if (!greeted) setShownText(lines.greeting);
-    await speak(lines.permission, language);
+    const permitted = await speak(lines.permission, language);
+    if (!permitted && greeted) setShownText(lines.permission);
   }, [language, setShownText]);
 
   /** Listen → server STT and protocol → speak, until the person goes quiet or taps off. */
