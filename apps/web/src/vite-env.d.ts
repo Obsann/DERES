@@ -8,6 +8,8 @@ interface ImportMetaEnv {
   readonly VITE_EMERGENCY_NUMBER?: string;
   /** `auto` (default), `voxide`, or `server` (push-to-talk, transcribed by the server's Voxide key). */
   readonly VITE_VOICE_ENGINE?: 'auto' | 'voxide' | 'server';
+  /** Google Maps JavaScript API key for the responder location map. Restrict by HTTP referrer. */
+  readonly VITE_MAPS_API_KEY?: string;
 }
 
 interface ImportMeta {

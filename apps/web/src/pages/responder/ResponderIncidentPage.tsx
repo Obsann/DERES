@@ -13,6 +13,7 @@ import {
   type Handoff,
   type HandoffFact,
 } from '@voicesos/shared';
+import { IncidentMap } from '@/components/maps/IncidentMap';
 import { Icon } from '@/components/ui';
 import { useResponderRealtime, useUpdateIncidentMutation } from '@/hooks';
 import { incidentsApi, queryKeys } from '@/services/api';
@@ -295,11 +296,12 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
                   {place.shared ? 'Shared' : 'Unknown'}
                 </span>
               </div>
-              <div className="mt-4 flex min-h-44 items-center justify-center rounded-lg bg-[#dce8e8] map-grid">
-                <span className="grid size-12 place-items-center rounded-full bg-[#087a65] text-white shadow-lg">
-                  <Icon name="location" />
-                </span>
-              </div>
+              <IncidentMap
+                latitude={data.location?.latitude ?? null}
+                longitude={data.location?.longitude ?? null}
+                accuracyMeters={data.location?.accuracyMeters}
+                title={place.title}
+              />
               <p className="mt-4 text-sm font-extrabold notranslate" translate="no">
                 {place.title}
               </p>
