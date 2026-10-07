@@ -37,8 +37,8 @@ interface VoicePhaseIndicatorProps {
 /** Mic button plus the phase in words. The phase is never conveyed by color alone. */
 export function VoicePhaseIndicator({ phase, label, hint, lang, onMicPress }: VoicePhaseIndicatorProps) {
   const meta = phaseMeta[phase];
-  const busy = phase === VoiceSessionPhase.PROCESSING;
   const listening = phase === VoiceSessionPhase.LISTENING;
+  const speaking = phase === VoiceSessionPhase.SPEAKING;
   const error = phase === VoiceSessionPhase.ERROR;
   const shown = label ?? meta.label;
 
@@ -49,12 +49,14 @@ export function VoicePhaseIndicator({ phase, label, hint, lang, onMicPress }: Vo
         className={`voice-control relative grid size-20 shrink-0 place-items-center rounded-full border-2 md:size-16 xl:size-20 ${
           listening
             ? 'is-listening border-[#86e9c6] bg-[#86e9c6] text-[#07130f]'
-            : error
-              ? 'border-[#ff866f] bg-[#361915] text-[#ffad9e]'
-              : 'border-white/30 bg-white text-[#07130f]'
+            : speaking
+              ? 'border-[#86e9c6] bg-white text-[#07130f]'
+              : error
+                ? 'border-[#ff866f] bg-[#361915] text-[#ffad9e]'
+                : 'border-white/30 bg-white text-[#07130f]'
         }`}
         onClick={onMicPress}
-        disabled={busy || !onMicPress}
+        disabled={!onMicPress}
         aria-label={meta.action}
       >
         {listening ? <span className="voice-ring absolute inset-[-10px] rounded-full border-2 border-[#86e9c6]/60" /> : null}

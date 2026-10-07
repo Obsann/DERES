@@ -101,6 +101,42 @@ describe('applyButtonGuide', () => {
     expect(result.reply.toLowerCase()).toContain('chok');
   });
 
+  it('has Amharic and Afaan Oromoo speech for every protocol step', () => {
+    for (const protocol of protocols) {
+      expect(protocol.languages).toEqual(
+        expect.arrayContaining([Language.ENGLISH, Language.AMHARIC, Language.AFAAN_OROMO]),
+      );
+      for (const step of protocol.steps) {
+        expect(step.prompt[Language.ENGLISH]?.trim().length).toBeGreaterThan(8);
+        expect(step.prompt[Language.AMHARIC]?.trim().length).toBeGreaterThan(8);
+        expect(step.prompt[Language.AFAAN_OROMO]?.trim().length).toBeGreaterThan(8);
+      }
+    }
+  });
+
+  it('opens each scene in Amharic and Afaan Oromoo', () => {
+    const scenes = ['collapsed', 'stroke', 'choking', 'bleeding', 'burns', 'crash'] as const;
+    for (const emergency of scenes) {
+      for (const language of [Language.AMHARIC, Language.AFAAN_OROMO]) {
+        const result = applyButtonGuide(
+          initialIncident({ id: `${emergency}-${language}`, sessionId: 's', language, at: AT }),
+          { kind: 'start', emergency },
+          protocols,
+          AT,
+        );
+        expect(result.source).toBe('protocol');
+        expect(result.reply.trim().length).toBeGreaterThan(8);
+        const english = applyButtonGuide(
+          initialIncident({ id: `${emergency}-en`, sessionId: 's', language: Language.ENGLISH, at: AT }),
+          { kind: 'start', emergency },
+          protocols,
+          AT,
+        );
+        expect(result.reply).not.toBe(english.reply);
+      }
+    }
+  });
+
   it('escalates something else without a protocol', () => {
     const result = applyButtonGuide(
       initialIncident({ id: 'other', sessionId: 'other', language: Language.ENGLISH, at: AT }),

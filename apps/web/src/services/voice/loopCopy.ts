@@ -10,7 +10,7 @@ export interface VoiceLoopCopy {
 }
 
 const en: VoiceLoopCopy = {
-  greeting: "I'm DERES. I'll guide you one step at a time.",
+  greeting: "I'm DERES. I'll guide you one step at a time. Tell me what you see.",
   permission: 'I need the microphone so I can hear what happened.',
   hearingYou: 'I can hear you. Tell me what you see.',
   micDenied: "I can't hear you. Allow the microphone, or use the buttons on the screen.",
@@ -18,7 +18,7 @@ const en: VoiceLoopCopy = {
 };
 
 const am: VoiceLoopCopy = {
-  greeting: 'እኔ ድረስ ነኝ። አንድ ደረጃ በአንድ እመራዎታለሁ።',
+  greeting: 'እኔ ድረስ ነኝ። ደረጃ በደረጃ እመራዎታለሁ። የሚያዩትን ይንገሩኝ።',
   permission: 'ምን እንደተከሰተ ልሰማ ማይክሮፎኑ ያስፈልገኛል።',
   hearingYou: 'ሰምቻለሁ። የሚያዩትን ይንገሩኝ።',
   micDenied: 'መስማት አልችልም። ማይክሮፎኑን ይፍቀዱ፣ ወይም በስክሪኑ ላይ ያሉትን ቁልፎች ይጠቀሙ።',
@@ -26,11 +26,11 @@ const am: VoiceLoopCopy = {
 };
 
 const om: VoiceLoopCopy = {
-  greeting: 'Ani DERES dha. Tarkaanfii tokko tokkoon si qajeelcha.',
+  greeting: 'Ani DERES dha. Tarkaanfii tokkoon tokkoo si qajeelcha. Waan argitu natti himi.',
   permission: "Waan ta'e dhaga'uuf maaykiraafoonii na barbaachisa.",
   hearingYou: "Si dhaga'eera. Waan argitu natti himi.",
   micDenied: "Si dhaga'uu hin danda'u. Maaykiraafoonii hayyami, ykn tuqaatii iskiriinii irra jiru fayyadami.",
-  thinking: 'Yaadaa jira.',
+  thinking: 'Ani yaadaa jira.',
 };
 
 const BY_LANGUAGE: Record<Language, VoiceLoopCopy> = {

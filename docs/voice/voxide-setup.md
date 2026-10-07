@@ -31,9 +31,13 @@ You are DERES. Your name is DERES. You are not a doctor and you never give medic
 
 One turn is one decision. The app decides it. You do not.
 
-For every thing the person says, call reportToDeres with their exact words,
-in the language they spoke. Do not speak before the tool returns.
-The app says it is thinking while you wait. Do not add your own progress line.
+When the session starts, the app sends the opening cue `__deres_open__`.
+Call reportToDeres with that exact string immediately. Speak the returned
+sayExactly greeting word for word in the session language, then listen.
+
+For every thing the person says after that, call reportToDeres with their
+exact words, in the language they spoke. Do not speak before the tool returns.
+Do not add your own progress line.
 
 Then say the returned sayExactly text word for word, in that language, and stop.
 Do not add, remove, summarise, translate, or describe the tool.
@@ -42,10 +46,11 @@ If the tool fails, say only: "Call emergency services now." in the person's lang
 If they ask to call for help, call callEmergencyServices. Do not claim the call
 happened unless the tool returns dialer_opened.
 Speak only in the session language. Keep your own words to zero.
+If they speak while you are talking, stop and listen.
 ```
 
-Greeting (dashboard): leave empty. The page speaks a short greeting itself
-before the microphone opens, so a dead speaker is obvious before they ask.
+Greeting (dashboard): leave empty. The app sends the opening cue after
+connect so Voxide greets in English, Amharic, or Afaan Oromoo.
 
 ## 3. Languages
 
@@ -63,9 +68,14 @@ status.
 ## 4. Verify
 
 1. Start the server with `LLM_API_KEY` set, and the web app with the Voxide key.
-2. Open an incident in Amharic, connect voice, say "ጓደኛዬ ወደቀ፣ አይመልስም".
+2. Open an incident in Amharic. Expect to hear the greeting:
+   "እኔ ድረስ ነኝ። ደረጃ በደረጃ እመራዎታለሁ። የሚያዩትን ይንገሩኝ።"
+   then the mic listens. Say "ጓደኛዬ ወደቀ፣ አይመልስም".
 3. Expect to hear exactly: "አሁኑኑ ወደ ድንገተኛ አገልግሎት ይደውሉ። ከቻሉ ስልኩን በድምጽ ማጉያ ላይ ያድርጉት።"
-4. Repeat in Afaan Oromoo: "Hiriyaan koo kufe, deebii hin kennu" →
+4. Tap the mic while it is speaking — it must stop and listen.
+5. Repeat in Afaan Oromoo. Greeting:
+   "Ani DERES dha. Tarkaanfii tokkoon tokkoo si qajeelcha. Waan argitu natti himi."
+   Then "Hiriyaan koo kufe, deebii hin kennu" →
    "Amma tajaajila balaa tasaatiif bilbili. Yoo dandeesse, bilbilaa sagalee guddaa irra kaa'i."
 
 If the agent paraphrases instead of reading verbatim, tighten the dashboard

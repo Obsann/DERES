@@ -8,7 +8,6 @@ import {
 import { emergencyCallHref } from '@/config/emergency';
 import { incidentsApi } from '@/services/api';
 import { voiceLoopCopy } from '@/services/voice/loopCopy';
-import { speak } from '@/services/voice/speech';
 
 /** BCP-47 tags Voxide (Gemini Live) uses for speech in each DERES language. */
 export const VOXIDE_LANGUAGE: Record<Language, string> = {
@@ -16,6 +15,16 @@ export const VOXIDE_LANGUAGE: Record<Language, string> = {
   [Language.AMHARIC]: 'am-ET',
   [Language.AFAAN_OROMO]: 'om-ET',
 };
+
+/**
+ * Host-only cue after connect. Voxide speaks the greeting from `sayExactly`.
+ * Never sent to the protocol LLM.
+ */
+export const VOXIDE_OPENING_CUE = '__deres_open__';
+
+export function isVoxideOpeningCue(utterance: unknown): boolean {
+  return typeof utterance === 'string' && utterance.trim() === VOXIDE_OPENING_CUE;
+}
 
 let client: VoxideClient | null | undefined;
 
@@ -43,28 +52,29 @@ export interface DeresVoiceBinding {
  */
 export function bindDeresSession(voxide: VoxideClient, binding: DeresVoiceBinding): void {
   const speechLanguage = VOXIDE_LANGUAGE[binding.language];
+  const lines = voiceLoopCopy(binding.language);
   voxide.setLanguage(speechLanguage);
   voxide.enableMultilingual({ mode: 'strict', supported: [speechLanguage] });
 
   voxide.register({
     reportToDeres: {
       description:
-        'Call this for every thing the person says. Pass their exact words and do not speak your own sentence first. The app says "I am thinking" while you wait. When this returns, speak sayExactly word for word and then stop. Do not add, translate, or describe this tool.',
+        'Call this for every thing the person says, and when the app sends the opening cue __deres_open__. Pass the exact string. Do not speak your own sentence first. When this returns, speak sayExactly word for word in the session language and then listen. Do not add, translate, or describe this tool.',
       params: {
         utterance: {
           type: 'string',
           required: true,
-          description: "The user's exact words, in the language they spoke.",
+          description: "The user's exact words, or the opening cue __deres_open__.",
         },
       },
       handler: async ({ utterance }: Record<string, unknown>) => {
-        const lines = voiceLoopCopy(binding.language);
-        const thinking = speak(lines.thinking, binding.language);
+        if (isVoxideOpeningCue(utterance)) {
+          return { sayExactly: lines.greeting, language: speechLanguage };
+        }
         const turn = await incidentsApi.voiceTurn(binding.incidentId, {
           transcript: typeof utterance === 'string' ? utterance : '',
           language: binding.language,
         });
-        await thinking;
         binding.onTurn(turn);
         return { sayExactly: turn.reply, language: speechLanguage };
       },
@@ -82,8 +92,9 @@ export function bindDeresSession(voxide: VoxideClient, binding: DeresVoiceBindin
   voxide.bindState(() => ({
     app: 'DERES emergency first-aid guidance',
     language: speechLanguage,
+    openingLine: lines.greeting,
     currentInstruction: binding.getCurrentInstruction(),
-    rule: 'You are DERES. Never give medical advice of your own. Only speak text returned by reportToDeres.',
+    rule: 'You are DERES. Never give medical advice of your own. Only speak text returned by reportToDeres as sayExactly. After the greeting, listen.',
   }));
 }
 
