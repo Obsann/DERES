@@ -102,7 +102,7 @@ const ambulance = EMERGENCY_NUMBERS.ambulance;
 const en: EmergencyCopy = {
   languageName: 'English',
   headline: 'Stay with them.',
-  subhead: 'Clear, spoken first-aid steps while emergency help is on the way.',
+  subhead: 'Spoken, protocol-locked first-aid guidance while emergency services are en route.',
   startEmergency: 'Start emergency',
   changeLanguage: 'Change language',
   chooseLanguage: 'Choose your language',
@@ -237,7 +237,7 @@ const en: EmergencyCopy = {
 const am: EmergencyCopy = {
   languageName: 'አማርኛ',
   headline: 'ከአጠገባቸው ይቆዩ።',
-  subhead: 'እርዳታ በመንገድ ላይ እያለ ግልጽ የመጀመሪያ እርዳታ ደረጃዎች በድምጽ ይሰጣሉ።',
+  subhead: 'የድንገተኛ አገልግሎት በመንገድ ላይ እያለ በታተመ ፕሮቶኮል የተዘጋ የድምጽ የመጀመሪያ እርዳታ መመሪያ ይሰጣል።',
   startEmergency: 'ድንገተኛ ጀምር',
   changeLanguage: 'ቋንቋ ቀይር',
   chooseLanguage: 'ቋንቋዎን ይምረጡ',
@@ -372,7 +372,7 @@ const am: EmergencyCopy = {
 const om: EmergencyCopy = {
   languageName: 'Afaan Oromoo',
   headline: 'Isaan bira turi.',
-  subhead: "Gargaarsi karaa irratti jiru yeroo, tarkaanfiiwwan gargaarsa jalqabaa ifa ta'an sagaleedhaan siin kenna.",
+  subhead: 'Yeroo tajaajilli balaa tasaa karaa irratti jirutti, qajeelfama gargaarsa jalqabaa sagaleedhaan, pirotokoolii maxxanfame irratti cufame, kenna.',
   startEmergency: 'Balaa jalqabi',
   changeLanguage: 'Afaan jijjiiri',
   chooseLanguage: 'Afaan kee filadhu',

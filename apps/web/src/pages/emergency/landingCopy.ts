@@ -73,7 +73,7 @@ const en: LandingCopy = {
   navHow: 'How it works',
   navResponders: 'For responders',
   heroLead:
-    'Protect the person in front of you with spoken first-aid steps and a live picture for 907 responders — in English, Amharic, and Afaan Oromoo.',
+    'DERES provides protocol-locked spoken first-aid guidance during the first minutes of an emergency, in English, Amharic, and Afaan Oromoo, together with a live incident record for 907 responders.',
   secondaryCta: 'Responder access',
   trustLabel: 'Built for the first minutes on scene',
   trust: [
@@ -219,7 +219,7 @@ const am: LandingCopy = {
   navHow: 'እንዴት እንደሚሰራ',
   navResponders: 'ለአዳኞች',
   heroLead:
-    'በፊትዎ ላለው ሰው በድምጽ የመጀመሪያ እርዳታ ደረጃዎችን እና ለ 907 አዳኞች የቀጥታ ሁኔታን ይስጡ — በእንግሊዘኛ፣ በአማርኛ እና በአፋን ኦሮሞ።',
+    'ድረስ በድንገተኛ አደጋ የመጀመሪያ ደቂቃዎች በታተመ ፕሮቶኮል የተዘጋ የድምጽ የመጀመሪያ እርዳታ መመሪያ ይሰጣል — በእንግሊዘኛ፣ በአማርኛ እና በአፋን ኦሮሞ — ለ 907 አዳኞችም የቀጥታ የአደጋ መዝገብ ያቀርባል።',
   secondaryCta: 'የአዳኝ መግቢያ',
   trustLabel: 'ለመጀመሪያዎቹ ደቂቃዎች የተሰራ',
   trust: [
@@ -365,7 +365,7 @@ const om: LandingCopy = {
   navHow: 'Akkamitti hojjeta',
   navResponders: 'Gargaartotaaf',
   heroLead:
-    'Nama fuula kee duraa jiru tarkaanfiiwwan gargaarsa jalqabaa sagaleedhaan fi haala kallattii gargaartota 907 tiif eegi — Afaan Ingilizii, Amaaraa fi Afaan Oromootiin.',
+    'DERES daqiiqaa jalqabaa balaa tasaa keessatti qajeelfama gargaarsa jalqabaa sagaleedhaan, pirotokoolii maxxanfame irratti cufame, kenna — Afaan Ingilizii, Amaaraa fi Afaan Oromootiin — akkasumas galmee balaa kallattii gargaartota 907 tiif dhiheessa.',
   secondaryCta: 'Seensa gargaaraa',
   trustLabel: 'Daqiiqaa jalqabaa irratti hojjetame',
   trust: [
