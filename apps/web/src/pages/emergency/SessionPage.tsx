@@ -351,6 +351,7 @@ function CompleteScreen({
   language,
   steps,
   showHandoff,
+  accessCode,
   onToggleHandoff,
   onHome,
 }: {
@@ -358,6 +359,7 @@ function CompleteScreen({
   language: string;
   steps: { id: string; state: StepState }[];
   showHandoff: boolean;
+  accessCode: string;
   onToggleHandoff: () => void;
   onHome: () => void;
 }) {
@@ -372,6 +374,10 @@ function CompleteScreen({
           <p className="mt-6 text-sm font-extrabold uppercase tracking-[0.18em] text-[#16775a]">{copy.helpArrived}</p>
           <h1 className="mt-3 text-[clamp(2.1rem,3.2vw,3.25rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">{copy.stayedWithThem}</h1>
           <p className="mt-5 max-w-xl text-base font-medium leading-relaxed text-[#48675d] md:text-lg">{copy.handoffHint}</p>
+          <div className="mt-6 max-w-sm rounded-2xl border border-[#9dbcb0] bg-white px-5 py-4 notranslate" translate="no">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#16775a]">{copy.sceneCodeTell}</p>
+            <p className="mt-2 text-4xl font-extrabold tracking-[0.28em] text-[#0d2c22]">{accessCode}</p>
+          </div>
           {showHandoff ? (
             <ol className="mt-8 space-y-3">
               {steps.map((step) => (
@@ -506,6 +512,7 @@ export function SessionPage() {
         language={language}
         steps={steps}
         showHandoff={showHandoff}
+        accessCode={incident.data.accessCode}
         onToggleHandoff={() => setShowHandoff((open) => !open)}
         onHome={startOver}
       />
@@ -561,7 +568,15 @@ export function SessionPage() {
         <section className="flex min-h-dvh flex-col px-6 py-6 md:px-10 md:py-8 xl:px-16">
           <header className="flex items-center justify-between gap-4">
             <Brand dark />
-            <Call907 label={copy.callShort} />
+            <div className="flex items-center gap-3">
+              {incident.data.accessCode ? (
+                <div className="hidden rounded-lg border border-white/20 px-3 py-1.5 text-right notranslate sm:block" translate="no">
+                  <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/55">{copy.sceneCodeLabel}</p>
+                  <p className="text-sm font-extrabold tracking-[0.22em]">{incident.data.accessCode}</p>
+                </div>
+              ) : null}
+              <Call907 label={copy.callShort} />
+            </div>
           </header>
 
           <div className="mt-7 flex items-center gap-3 lg:mt-10">
@@ -641,6 +656,11 @@ export function SessionPage() {
             </span>
           </div>
           <div className="mt-9 space-y-6">
+            <StatusRow
+              icon="phone"
+              label={copy.sceneCodeTell}
+              value={incident.data.accessCode}
+            />
             <StatusRow
               icon="phone"
               label={copy.emsService}

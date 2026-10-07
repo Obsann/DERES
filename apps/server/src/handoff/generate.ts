@@ -88,9 +88,15 @@ function warnings(incident: Incident): HandoffWarning[] {
   const { state } = incident;
 
   if (state.escalationStatus === EscalationState.ESCALATED) {
-    items.push({ severity: WarningSeverity.CRITICAL, message: 'Incident is escalated; professional help is involved or underway' });
+    items.push({
+      severity: WarningSeverity.CRITICAL,
+      message: 'Scene is escalated — 907 or on-scene help is involved or underway',
+    });
   } else if (state.escalationStatus === EscalationState.RECOMMENDED) {
-    items.push({ severity: WarningSeverity.CRITICAL, message: 'Professional help has been recommended' });
+    items.push({
+      severity: WarningSeverity.CRITICAL,
+      message: '907 has been recommended',
+    });
   }
 
   if (state.emergencyType === EmergencyType.UNKNOWN) {
@@ -99,12 +105,29 @@ function warnings(incident: Incident): HandoffWarning[] {
 
   if (
     state.patient.consciousness === ConsciousnessState.UNRESPONSIVE &&
+    state.patient.breathing === BreathingState.ABSENT
+  ) {
+    items.push({
+      severity: WarningSeverity.CRITICAL,
+      message: 'Patient is unresponsive and not breathing',
+    });
+  } else if (
+    state.patient.consciousness === ConsciousnessState.UNRESPONSIVE &&
     state.patient.breathing === BreathingState.UNKNOWN
   ) {
     items.push({
       severity: WarningSeverity.CRITICAL,
       message: 'Person is unresponsive and breathing was never established',
     });
+  }
+
+  const emsCall = state.actions.find(
+    (action) => action.stepId?.includes('call-ems') || /call emergency|907/i.test(action.instruction),
+  );
+  if (!emsCall) {
+    items.push({ severity: WarningSeverity.CRITICAL, message: '907 call has not been started' });
+  } else if (emsCall.status !== ActionStatus.CONFIRMED) {
+    items.push({ severity: WarningSeverity.CRITICAL, message: '907 call has not been confirmed' });
   }
 
   const outstanding = state.actions.filter((action) => action.status === ActionStatus.GIVEN);

@@ -725,6 +725,10 @@
 
 /* ---------- Google Translate ---------- */
 
+.d-responder {
+  color-scheme: light;
+}
+
 .d-translate-slot {
   display: flex;
   align-items: center;
@@ -741,13 +745,14 @@
 
 .d-translate-slot .goog-te-combo {
   min-height: 2.35rem;
+  min-width: 8.5rem;
   margin: 0;
   padding: 0 0.85rem;
-  border: 1px solid var(--d-border-strong);
+  border: 1px solid #9eb0bc;
   border-radius: var(--d-radius-pill);
-  background: var(--d-surface-soft);
-  color: var(--d-ink);
-  font: 600 var(--d-text-sm) var(--d-font);
+  background: #ffffff;
+  color: #12202d;
+  font: 700 var(--d-text-sm) var(--d-font);
 }
 
 .goog-te-banner-frame,

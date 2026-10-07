@@ -77,6 +77,8 @@ export interface EmergencyCopy {
   repeatInstruction: string;
   stayedWithThem: string;
   handoffHint: string;
+  sceneCodeLabel: string;
+  sceneCodeTell: string;
   viewHandoff: string;
   sessionAside: string;
   live: string;
@@ -182,7 +184,9 @@ const en: EmergencyCopy = {
   offlineLive: 'Offline — guidance still works. Responders cannot see updates yet.',
   repeatInstruction: 'Repeat instruction',
   stayedWithThem: 'You stayed with them.',
-  handoffHint: 'Show this phone. Responders see known facts, unknowns, and steps already done.',
+  handoffHint: 'Show this phone and this code. The crew types the code to open only your scene.',
+  sceneCodeLabel: 'Scene code',
+  sceneCodeTell: 'Tell 907 this code',
   viewHandoff: 'View handoff summary',
   sessionAside: 'Emergency session',
   live: 'Live',
@@ -317,7 +321,9 @@ const am: EmergencyCopy = {
   offlineLive: 'ከመስመር ውጭ — መመሪያው ይቀጥላል። አዳኞች ገና አይመለከቱም።',
   repeatInstruction: 'መመሪያውን ድገም',
   stayedWithThem: 'ከአጠገባቸው ቆይተዋል።',
-  handoffHint: 'ይህን ስልክ ያሳዩ። አዳኞች የታወቀውን፣ ያልታወቀውን እና የተከናወነውን ያያሉ።',
+  handoffHint: 'ይህን ስልክ እና ይህን ኮድ ያሳዩ። አዳኙ ኮዱን በማስገባት የእርስዎን ቦታ ብቻ ይከፍታል።',
+  sceneCodeLabel: 'የቦታ ኮድ',
+  sceneCodeTell: 'ይህን ኮድ ለ 907 ይንገሩ',
   viewHandoff: 'ማጠቃለያ ይመልከቱ',
   sessionAside: 'የድንገተኛ ክፍለ ጊዜ',
   live: 'ቀጥታ',
@@ -452,7 +458,9 @@ const om: EmergencyCopy = {
   offlineLive: 'Sarara ala — qajeelfamni hojjeta. Gargaartonni ammallee hin argatan.',
   repeatInstruction: "Qajeelfama irra deebi'i",
   stayedWithThem: 'Isaan bira turte.',
-  handoffHint: 'Bilbila kana agarsiisi. Gargaartonni dhugaa beekaman, hin beekamne, fi tarkaanfiiwwan xumuraman argu.',
+  handoffHint: 'Bilbila fi koodii kana agarsiisi. Gargaaraan koodii galchee bakka kee qofa bana.',
+  sceneCodeLabel: 'Koodii bakka',
+  sceneCodeTell: 'Koodii kana 907 tti himi',
   viewHandoff: 'Cuunfaa harkaa fuudhu ilaali',
   sessionAside: 'Walgahii balaa tasaa',
   live: 'Kallattii',

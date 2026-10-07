@@ -20,6 +20,7 @@ describe('responder tokens', () => {
 
   it('compares invites in constant time and rejects a miss', () => {
     expect(invitesMatch('secret-invite', 'secret-invite')).toBe(true);
+    expect(invitesMatch(' secret-invite ', 'secret-invite')).toBe(true);
     expect(invitesMatch('secret-invite', 'other-invite')).toBe(false);
     expect(invitesMatch('secret-invite', null)).toBe(false);
   });

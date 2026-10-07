@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ActionStatus,
+  AgeGroup,
   BreathingState,
   Certainty,
   ConnectionStatus,
@@ -15,36 +16,34 @@ import {
 } from '@voicesos/shared';
 import { IncidentMap } from '@/components/maps/IncidentMap';
 import { Icon } from '@/components/ui';
+import { emergencyCallHref, EMERGENCY_NUMBERS } from '@/config/emergency';
 import { useResponderRealtime, useUpdateIncidentMutation } from '@/hooks';
 import { incidentsApi, queryKeys } from '@/services/api';
 import { routes } from '@/routes/paths';
 import { useResponderUi } from '@/state';
-import { EMERGENCY_LABEL, signOutIfUnauthorized } from './format';
+import {
+  AGE_LABEL,
+  BREATHING_LABEL,
+  caseId,
+  CONSCIOUSNESS_LABEL,
+  drivingDirectionsUrl,
+  elapsedClock,
+  EMERGENCY_LABEL,
+  emsCallStatus,
+  EMS_LABEL,
+  LANGUAGE_LABEL,
+  signOutIfUnauthorized,
+  useNow,
+} from './format';
 import { ResponderGate } from './ResponderGate';
 import { ResponderShell } from './ResponderShell';
-
-const CONSCIOUSNESS: Record<ConsciousnessState, string> = {
-  [ConsciousnessState.RESPONSIVE]: 'Yes',
-  [ConsciousnessState.UNRESPONSIVE]: 'No',
-  [ConsciousnessState.UNKNOWN]: 'Unknown',
-};
-
-const BREATHING: Record<BreathingState, string> = {
-  [BreathingState.NORMAL]: 'Yes',
-  [BreathingState.ABNORMAL]: 'Abnormal',
-  [BreathingState.ABSENT]: 'No',
-  [BreathingState.UNKNOWN]: 'Unknown',
-};
 
 function time(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
-function elapsed(iso: string): string {
-  const total = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${minutes} min ${String(seconds).padStart(2, '0')} sec ago`;
+function elapsed(iso: string, now: number): string {
+  return `${elapsedClock(iso, now)} on scene clock`;
 }
 
 function locationLine(handoff: Handoff): { title: string; detail: string; shared: boolean; maps: string | null } {
@@ -58,7 +57,7 @@ function locationLine(handoff: Handoff): { title: string; detail: string; shared
   const accuracy = location.accuracyMeters ? `Accuracy ±${Math.round(location.accuracyMeters)} m` : null;
   const maps =
     location.latitude !== null && location.longitude !== null
-      ? `https://maps.google.com/?q=${location.latitude},${location.longitude}`
+      ? drivingDirectionsUrl(location.latitude, location.longitude)
       : null;
   return {
     title,
@@ -86,23 +85,28 @@ function Fact({ fact }: { fact: HandoffFact }) {
 }
 
 function actionDetail(status: ActionStatus): string {
-  if (status === ActionStatus.CONFIRMED) return 'Bystander confirmed';
+  if (status === ActionStatus.CONFIRMED) return 'Bystander confirmed this was done';
   if (status === ActionStatus.UNABLE) return 'Bystander could not do this';
   if (status === ActionStatus.SKIPPED) return 'Skipped';
-  return 'Awaiting confirmation';
+  return 'Told to the bystander — not yet confirmed';
 }
 
 function IncidentDetail({ incidentId }: { incidentId: string }) {
   const queryClient = useQueryClient();
   const { connection } = useResponderUi();
+  const now = useNow();
   useResponderRealtime(incidentId);
   const update = useUpdateIncidentMutation(incidentId);
+  const incident = useQuery({
+    queryKey: queryKeys.incidents.detail(incidentId),
+    queryFn: ({ signal }) => incidentsApi.getForResponder(incidentId, { signal }),
+  });
   const handoff = useQuery({
     queryKey: queryKeys.incidents.handoff(incidentId),
     queryFn: ({ signal }) => incidentsApi.getHandoff(incidentId, { signal }),
   });
 
-  useEffect(() => signOutIfUnauthorized(handoff.error), [handoff.error]);
+  useEffect(() => signOutIfUnauthorized(handoff.error ?? incident.error), [handoff.error, incident.error]);
 
   if (handoff.isPending) {
     return (
@@ -116,7 +120,7 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
       <ResponderShell>
         <div className="px-5 py-10">
           <p className="text-sm font-bold text-[#aa281f]">Could not load this incident.</p>
-          <button type="button" onClick={() => void handoff.refetch()} className="mt-3 text-sm font-extrabold text-[#087a65]">
+          <button type="button" onClick={() => void handoff.refetch()} className="mt-3 text-sm font-extrabold text-[#0a5c4e] underline underline-offset-4">
             Try again
           </button>
         </div>
@@ -127,25 +131,39 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
   const data = handoff.data;
   const timeline = [...data.timeline].sort((a, b) => b.sequence - a.sequence);
   const actions = [...data.actionsTaken].sort((a, b) => b.givenAt.localeCompare(a.givenAt));
+  const log = [
+    ...actions.map((entry) => ({ at: entry.givenAt, action: entry })),
+    ...timeline.map((entry) => ({ at: entry.occurredAt, event: entry })),
+  ].sort((a, b) => b.at.localeCompare(a.at));
   const place = locationLine(data);
   const escalated = data.status === IncidentStatus.ESCALATED || data.escalationStatus === EscalationState.ESCALATED;
   const arrived = data.status === IncidentStatus.HANDED_OFF || data.status === IncidentStatus.CLOSED;
   const live = connection === ConnectionStatus.CONNECTED;
+  const ems = emsCallStatus(data.actionsTaken);
+  const spokenLanguage = incident.data?.language;
 
   const stateFacts: HandoffFact[] = [
     {
-      label: 'Responding',
-      value: CONSCIOUSNESS[data.patient.consciousness],
+      label: 'Patient responding',
+      value: CONSCIOUSNESS_LABEL[data.patient.consciousness],
       certainty: data.patient.consciousness === ConsciousnessState.UNKNOWN ? Certainty.UNKNOWN : Certainty.KNOWN,
       establishedAt: null,
     },
     {
-      label: 'Normal breathing',
-      value: BREATHING[data.patient.breathing],
+      label: 'Breathing',
+      value: BREATHING_LABEL[data.patient.breathing],
       certainty: data.patient.breathing === BreathingState.UNKNOWN ? Certainty.UNKNOWN : Certainty.KNOWN,
       establishedAt: null,
     },
-    ...data.criticalInformation,
+    {
+      label: 'Age',
+      value: AGE_LABEL[data.patient.ageGroup],
+      certainty: data.patient.ageGroup === AgeGroup.UNKNOWN ? Certainty.UNKNOWN : Certainty.KNOWN,
+      establishedAt: null,
+    },
+    ...data.criticalInformation.filter(
+      (fact) => fact.label !== 'Consciousness' && fact.label !== 'Breathing' && fact.label !== 'Emergency type' && fact.label !== 'Age group',
+    ),
   ];
 
   const markArrived = () => {
@@ -163,47 +181,57 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
     <ResponderShell>
       <div className="mx-auto w-full max-w-[1680px] px-6 py-6 md:px-10 xl:px-16">
         <Link to={routes.responder.list} className="flex items-center gap-2 text-sm font-bold text-[#536672]">
-          <Icon name="chevron" className="size-4 rotate-180" /> All live incidents
+          <Icon name="chevron" className="size-4 rotate-180" /> Look up another scene
         </Link>
         <div className="mt-5 flex flex-wrap items-start justify-between gap-4 border-b border-[#ccd5dc] pb-6">
           <div>
             <div className="flex items-center gap-3">
               <span className={`size-3 rounded-full ${escalated ? 'animate-pulse bg-[#cf382f]' : 'bg-[#15836d]'}`} />
               <p className={`text-xs font-extrabold uppercase tracking-[0.14em] ${escalated ? 'text-[#b32f28]' : 'text-[#087a65]'}`}>
-                {escalated ? 'Escalated · Live' : arrived ? 'Responder arrived' : 'Active · Live'}
+                {escalated ? 'Escalated · Live' : arrived ? 'Crew on scene' : 'Active · Live'}
               </p>
             </div>
             <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">{EMERGENCY_LABEL[data.emergencyType]}</h1>
             <p className="mt-2 text-sm font-semibold text-[#687985]">
-              {incidentId.slice(0, 8).toUpperCase()} · Started {elapsed(data.startedAt)}
+              Scene {incident.data?.accessCode ?? caseId(incidentId)} · {elapsed(data.startedAt, now)}
             </p>
           </div>
-          <button
-            type="button"
-            disabled={arrived || update.isPending}
-            onClick={markArrived}
-            className="min-h-11 rounded-lg border border-[#aebbc4] bg-white px-4 text-sm font-extrabold disabled:opacity-50"
-          >
-            {arrived ? 'Responder arrived' : update.isPending ? 'Updating…' : 'Mark responder arrived'}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {ems !== 'confirmed' ? (
+              <a
+                href={emergencyCallHref}
+                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#b3261e] px-4 text-sm font-extrabold text-white"
+              >
+                Call {EMERGENCY_NUMBERS.ambulance}
+              </a>
+            ) : null}
+            <button
+              type="button"
+              disabled={arrived || update.isPending}
+              onClick={markArrived}
+              className="min-h-11 rounded-lg border border-[#8a9aa6] bg-white px-4 text-sm font-extrabold text-[#12202d] disabled:opacity-50"
+            >
+              {arrived ? 'On scene' : update.isPending ? 'Updating…' : 'On scene'}
+            </button>
+          </div>
         </div>
 
         <section className="mt-6 rounded-xl border border-[#cbd5dc] bg-[#f4f7f6] p-5">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#5a7268]">Shared picture</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#5a7268]">What the crew needs first</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Scene</p>
-              <p className="mt-1 text-base font-extrabold">{EMERGENCY_LABEL[data.emergencyType]}</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Breathing</p>
-              <p className="mt-1 text-base font-extrabold">{BREATHING[data.patient.breathing]}</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Still unknown</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Patient</p>
               <p className="mt-1 text-base font-extrabold">
-                {data.uncertainty.length === 0 ? 'None listed' : `${data.uncertainty.length} field${data.uncertainty.length === 1 ? '' : 's'}`}
+                {CONSCIOUSNESS_LABEL[data.patient.consciousness]} · {BREATHING_LABEL[data.patient.breathing]}
               </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">907</p>
+              <p className="mt-1 text-base font-extrabold">{EMS_LABEL[ems]}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Bystander language</p>
+              <p className="mt-1 text-base font-extrabold">{spokenLanguage ? LANGUAGE_LABEL[spokenLanguage] : 'Unknown'}</p>
             </div>
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#71818c]">Last confirmed action</p>
@@ -252,31 +280,33 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
 
             <section className="rounded-xl border border-[#cbd5dc] bg-white">
               <div className="border-b border-[#dbe1e5] px-5 py-4">
-                <h2 className="text-lg font-extrabold">Actions and timeline</h2>
+                <h2 className="text-lg font-extrabold">What has already happened</h2>
               </div>
-              {actions.length === 0 && timeline.length === 0 ? (
+              {log.length === 0 ? (
                 <p className="px-5 py-4 text-sm font-semibold text-[#75858f]">Nothing recorded yet</p>
               ) : (
-                (actions.length > 0 ? actions : timeline).map((entry, index) => {
-                  if ('instruction' in entry) {
+                log.map((entry, index) => {
+                  if ('action' in entry) {
+                    const item = entry.action;
                     return (
-                      <div key={entry.id} className="grid grid-cols-[72px_1fr] gap-4 border-b border-[#e2e7ea] px-5 py-4 last:border-0">
-                        <span className="text-xs font-extrabold tabular-nums text-[#71818c]">{index === 0 ? 'Now' : time(entry.givenAt)}</span>
+                      <div key={item.id} className="grid grid-cols-[72px_1fr] gap-4 border-b border-[#e2e7ea] px-5 py-4 last:border-0">
+                        <span className="text-xs font-extrabold tabular-nums text-[#71818c]">{index === 0 ? 'Now' : time(item.givenAt)}</span>
                         <div>
                           <p className="text-sm font-extrabold notranslate" translate="no">
-                            {entry.instruction}
+                            {item.instruction}
                           </p>
-                          <p className={`mt-1 text-xs font-semibold ${entry.status === ActionStatus.GIVEN ? 'text-[#9a6810]' : 'text-[#72828d]'}`}>
-                            {actionDetail(entry.status)}
+                          <p className={`mt-1 text-xs font-semibold ${item.status === ActionStatus.GIVEN ? 'text-[#9a6810]' : 'text-[#72828d]'}`}>
+                            {actionDetail(item.status)}
                           </p>
                         </div>
                       </div>
                     );
                   }
+                  const item = entry.event;
                   return (
-                    <div key={entry.id} className="grid grid-cols-[72px_1fr] gap-4 border-b border-[#e2e7ea] px-5 py-4 last:border-0">
-                      <span className="text-xs font-extrabold tabular-nums text-[#71818c]">{time(entry.occurredAt)}</span>
-                      <p className="text-sm font-extrabold">{entry.summary}</p>
+                    <div key={item.id} className="grid grid-cols-[72px_1fr] gap-4 border-b border-[#e2e7ea] px-5 py-4 last:border-0">
+                      <span className="text-xs font-extrabold tabular-nums text-[#71818c]">{time(item.occurredAt)}</span>
+                      <p className="text-sm font-extrabold">{item.summary}</p>
                     </div>
                   );
                 })
@@ -313,19 +343,23 @@ function IncidentDetail({ incidentId }: { incidentId: string }) {
                   rel="noreferrer"
                   className="mt-4 flex min-h-11 w-full items-center justify-center rounded-lg bg-[#142737] text-sm font-extrabold text-white"
                 >
-                  Open directions
+                  Drive to scene
                 </a>
               ) : null}
             </section>
             <section className="rounded-xl border border-[#cbd5dc] bg-white p-5">
-              <h2 className="font-extrabold">Connection</h2>
+              <h2 className="font-extrabold">On the line</h2>
               <div className="mt-4 flex items-center justify-between text-sm">
                 <span className="text-[#647681]">Bystander phone</span>
-                <span className={`font-extrabold ${live ? 'text-[#087a65]' : 'text-[#835f14]'}`}>{live ? 'Online' : 'Unknown'}</span>
+                <span className={`font-extrabold ${live ? 'text-[#087a65]' : 'text-[#835f14]'}`}>{live ? 'On the line' : 'Unknown'}</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-sm">
-                <span className="text-[#647681]">Voice guidance</span>
-                <span className="font-extrabold">{data.currentStepLabel ? 'Active' : 'Not started'}</span>
+                <span className="text-[#647681]">Language</span>
+                <span className="font-extrabold">{spokenLanguage ? LANGUAGE_LABEL[spokenLanguage] : 'Unknown'}</span>
+              </div>
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span className="text-[#647681]">Guidance now</span>
+                <span className="font-extrabold">{data.currentStepLabel ?? 'Not started'}</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-sm">
                 <span className="text-[#647681]">Protocol</span>

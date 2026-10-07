@@ -93,6 +93,11 @@ export interface Incident {
   /** Ties an incident to a browser/voice session for reconnection. */
   sessionId: Id;
   language: Language;
+  /**
+   * Short code the bystander reads to the arriving crew. The responder types
+   * this to open only that scene — not a list of every live incident.
+   */
+  accessCode: string;
   status: IncidentStatus;
   state: EmergencyState;
   startedAt: IsoDateTime;

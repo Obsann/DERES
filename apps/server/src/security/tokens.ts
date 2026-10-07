@@ -62,8 +62,8 @@ export function verifyResponderToken(token: string): AuthTokenPayload {
 
 export function invitesMatch(provided: string, expected: string | null): boolean {
   if (expected === null || expected === '') return false;
-  const left = Buffer.from(provided);
-  const right = Buffer.from(expected);
-  if (left.length !== right.length) return false;
+  const left = Buffer.from(provided.trim());
+  const right = Buffer.from(expected.trim());
+  if (left.length === 0 || left.length !== right.length) return false;
   return timingSafeEqual(left, right);
 }

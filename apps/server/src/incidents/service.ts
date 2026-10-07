@@ -15,6 +15,8 @@ import {
   type Language,
   type RecordActionRequest,
   type UpdateIncidentRequest,
+  ACCESS_CODE_LENGTH,
+  normalizeAccessCode,
 } from '@voicesos/shared';
 import { interpretTurn } from '../ai/orchestrate.js';
 import type { LlmProvider } from '../ai/provider.js';
@@ -24,6 +26,7 @@ import { createId, nowIso } from '../database/ids.js';
 import {
   appendIncidentEvent,
   createIncident,
+  getIncidentByAccessCode,
   getIncidentById,
   getSessionById,
   insertConversationMessage,
@@ -144,6 +147,16 @@ export async function openIncident(
 
 export async function readIncident(id: Id): Promise<Incident> {
   return getIncidentById(id);
+}
+
+export async function lookupIncidentByAccessCode(code: string): Promise<Incident> {
+  const normalized = normalizeAccessCode(code);
+  if (normalized.length !== ACCESS_CODE_LENGTH) {
+    throw new ValidationError('code is required', [
+      { path: 'code', message: `must be ${ACCESS_CODE_LENGTH} characters` },
+    ]);
+  }
+  return getIncidentByAccessCode(normalized);
 }
 
 export async function updateIncident(id: Id, input: UpdateIncidentRequest): Promise<Incident> {

@@ -58,6 +58,7 @@ describe('database schema v1', () => {
     expect(loaded.id).toBe(incident.id);
     expect(loaded.sessionId).toBe(session.id);
     expect(loaded.userId).toBeNull();
+    expect(loaded.accessCode).toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
     expect(loaded.state.emergencyType).toBe('unknown');
     expect(createdEvent.sequence).toBe(1);
     expect(createdEvent.incidentId).toBe(incident.id);

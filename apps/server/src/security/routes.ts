@@ -48,10 +48,16 @@ export function createAuthRouter(): Router {
 
     let user = await findUserByEmail(email);
     if (!user) {
+      const local = email.split('@')[0] ?? 'Responder';
+      const displayName = local
+        .split(/[._-]+/)
+        .filter(Boolean)
+        .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
       user = await insertUser({
         id: createId(),
         role: UserRole.RESPONDER,
-        displayName: null,
+        displayName,
         email,
         preferredLanguage: Language.ENGLISH,
         createdAt: nowIso(),
