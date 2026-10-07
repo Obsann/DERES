@@ -100,6 +100,7 @@ RESPONDER_INVITE=your-invite-phrase
 VITE_API_URL=http://localhost:4000
 VITE_VOXIDE_PUBLIC_KEY=vox_pub_...
 VITE_EMERGENCY_NUMBER=907
+VITE_MAPS_API_KEY=your_google_maps_key
 ```
 
 Whitelist `localhost` (automatic) and any deployed host in the Voxide dashboard. Paste the agent prompt from `docs/voice/voxide-setup.md`. Leave the dashboard greeting empty.
