@@ -2,7 +2,7 @@
   "name": "voicesos",
   "version": "0.1.0",
   "private": true,
-  "description": "VoiceSOS - multilingual voice-first AI first-responder system. Team COD1, STARK Hackathon 2026.",
+  "description": "DERES (ድረስ) — multilingual, protocol-locked voice-first emergency first-aid guidance for bystanders in Ethiopia, with live responder handoff. Team COD1, STARK Hackathon 2026.",
   "workspaces": [
     "apps/*",
     "packages/*"

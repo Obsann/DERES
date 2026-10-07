@@ -36,6 +36,17 @@ describe('voice turn classification', () => {
     expect(classifyVoiceTurn({ transcript: "Irra deebi'i", language: Language.AFAAN_OROMO }).action).toBe('repeat');
   });
 
+  it('answers failures in Amharic and Afaan Oromoo, not English', () => {
+    for (const language of [Language.AMHARIC, Language.AFAAN_OROMO]) {
+      const phrases = VOICE_PHRASES_BY_LANGUAGE[language];
+      expect(phrases.silence).not.toBe(VOICE_PHRASES.silence);
+      expect(phrases.timeout).not.toBe(VOICE_PHRASES.timeout);
+      expect(phrases.lowConfidence).not.toBe(VOICE_PHRASES.lowConfidence);
+      expect(phrases.silence.trim().length).toBeGreaterThan(8);
+      expect(phrases.timeout.trim().length).toBeGreaterThan(8);
+    }
+  });
+
   it('answers failures in the incident language', () => {
     expect(classifyVoiceTurn({ silence: true, language: Language.AMHARIC })).toMatchObject({
       reply: VOICE_PHRASES_BY_LANGUAGE[Language.AMHARIC].silence,

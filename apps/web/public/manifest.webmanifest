@@ -1,7 +1,7 @@
 {
-  "name": "DERES — Emergency first-response guide",
+  "name": "DERES — Emergency first-aid guidance",
   "short_name": "DERES",
-  "description": "Voice-first, step-by-step first-response guidance in English, Amharic and Afaan Oromoo.",
+  "description": "Protocol-locked, voice-guided first aid for bystanders in Ethiopia, in English, Amharic, and Afaan Oromoo, with live handoff to 907 responders.",
   "lang": "en",
   "start_url": "/",
   "scope": "/",

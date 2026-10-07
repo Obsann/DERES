@@ -10,7 +10,7 @@ import { incidentsApi } from '@/services/api';
 import { voiceLoopCopy } from '@/services/voice/loopCopy';
 import { canRecord, record, RecorderError } from '@/services/voice/recorder';
 import { getSpeechStatus, prefetchSpokenLines, speak, stopSpeaking, type SpeechStatus } from '@/services/voice/speech';
-import { bindDeresSession, getVoxideClient, voxidePhase } from '@/services/voice/voxide';
+import { bindDeresSession, getVoxideClient, VOXIDE_OPENING_CUE, voxidePhase } from '@/services/voice/voxide';
 import { isLocalIncidentId } from '@/services/protocol/localIncident';
 import { listenCapability, CapabilityStatus } from '@/services/capability';
 
@@ -67,18 +67,16 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
 
   const voiceIncidentId = isLocalIncidentId(incidentId) ? null : incidentId;
   const hasMic = typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices);
+  const voxideReady = Boolean(voiceIncidentId && voxide && hasMic);
+  const serverReady = Boolean(voiceIncidentId && speechStatus?.transcribe && canRecord());
   const listen = listenCapability({
     hasMediaDevices: hasMic,
-    engineReady: Boolean(
-      voiceIncidentId &&
-        speechStatus &&
-        chooseEngine(voxide !== null && hasMic, speechStatus.transcribe && canRecord()),
-    ),
+    engineReady: voxideReady || serverReady,
     denied: serverError === 'permission',
   });
   const engine =
-    voiceIncidentId && listen.status === CapabilityStatus.AVAILABLE && speechStatus
-      ? chooseEngine(voxide !== null && hasMic, speechStatus.transcribe && canRecord())
+    voiceIncidentId && listen.status === CapabilityStatus.AVAILABLE
+      ? chooseEngine(voxideReady, serverReady)
       : null;
 
   useEffect(() => {
@@ -119,8 +117,6 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
     const lines = voiceLoopCopy(language);
     const greeted = await speak(lines.greeting, language);
     if (!greeted) setShownText(lines.greeting);
-    const permitted = await speak(lines.permission, language);
-    if (!permitted && greeted) setShownText(lines.permission);
   }, [language, setShownText]);
 
   /** Listen → server STT and protocol → speak, until the person goes quiet or taps off. */
@@ -165,7 +161,6 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
 
       setShownText(null);
       setServerPhase(VoiceSessionPhase.PROCESSING);
-      const thinking = speak(lines.thinking, language);
       let turn: VoiceTurnResponse;
       try {
         // Not retried: a retry would bill a second transcription and could apply the turn twice.
@@ -177,14 +172,12 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
           { skipRetry: true },
         );
       } catch {
-        await thinking;
         if (!live()) return;
         setServerError('network');
         setServerPhase(VoiceSessionPhase.ERROR);
         sessionRef.current = null;
         return;
       }
-      await thinking;
       if (!live()) return;
 
       setLastTurn(turn);
@@ -213,25 +206,36 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
       return;
     }
     if (!voxide) return;
+    const live = voxide.getSnapshot().status;
+    if (live !== 'idle' && live !== 'error' && live !== 'armed') return;
     const lines = voiceLoopCopy(language);
-    await greet();
+    // Voxide is the mouth: show the greeting, open the mic, then have Gemini
+    // speak it in the chosen language and listen. Browser TTS is English-only
+    // on most phones and must not run first.
+    setShownText(lines.greeting);
     try {
       await voxide.init();
       await voxide.connect();
+      await voxide.sendText(VOXIDE_OPENING_CUE);
     } catch {
       const said = await speak(lines.micDenied, language);
       if (!said) setShownText(lines.micDenied);
-      return;
     }
-    // Shown, not spoken. The microphone is already open, and speaking this
-    // aloud would be heard as the person's first answer.
-    setShownText(lines.hearingYou);
-  }, [engine, voxide, language, greet, runServerSession, setShownText]);
+  }, [engine, voxide, language, runServerSession, setShownText]);
 
   const disconnect = useCallback(() => {
     if (engine === 'server') stopServerSession();
     else voxide?.disconnect();
   }, [engine, voxide, stopServerSession]);
+
+  const connectRef = useRef(connect);
+  connectRef.current = connect;
+
+  // Greet in the incident language and listen as soon as Voxide can run.
+  useEffect(() => {
+    if (engine !== 'voxide' || !voiceIncidentId) return;
+    void connectRef.current();
+  }, [engine, voiceIncidentId, language]);
 
   const [voxideLevel, setVoxideLevel] = useState(0);
   const voxideListening = engine === 'voxide' && snapshot?.status === 'listening';
@@ -277,7 +281,8 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
           : VoiceSessionPhase.IDLE;
 
   /**
-   * The mic button. Tap while it speaks to interrupt and answer. Server
+   * The mic button. Tap while Voxide speaks (or while it is thinking) to
+   * interrupt and answer. Tap while listening to end the session. Server
    * engine: tap again to send early, or to stop if nothing was said yet.
    */
   const press = useCallback(() => {
@@ -288,7 +293,7 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
       return;
     }
     if (phase === VoiceSessionPhase.IDLE || phase === VoiceSessionPhase.ERROR) void connect();
-    else if (phase === VoiceSessionPhase.SPEAKING) voxide?.interrupt();
+    else if (phase === VoiceSessionPhase.SPEAKING || phase === VoiceSessionPhase.PROCESSING) voxide?.interrupt();
     else disconnect();
   }, [engine, serverPhase, phase, connect, disconnect, voxide]);
 
