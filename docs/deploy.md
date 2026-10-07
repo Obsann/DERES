@@ -18,6 +18,7 @@ The API is a normal Render **Web Service**. The UI is Vercel. MongoDB is Atlas. 
 | Field | Value |
 |---|---|
 | Branch | `main` |
+| Root Directory | *leave blank* (repository root). Do **not** set `apps/server` |
 | Runtime | Node |
 | Build command | `npm install --include=dev && npm run build:server` |
 | Start command | `npm run start:server` |
