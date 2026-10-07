@@ -1,5 +1,6 @@
 import {
   EventSource,
+  generateAccessCode,
   IncidentEventType,
   type AuthUser,
   type ConversationMessage,
@@ -67,19 +68,7 @@ export async function createIncident(input: {
     occurredAt: at,
   };
 
-  await IncidentModel.create({
-    _id: incident.id,
-    userId: incident.userId,
-    sessionId: incident.sessionId,
-    language: incident.language,
-    status: incident.status,
-    state: incident.state,
-    eventSequence: 1,
-    startedAt: incident.startedAt,
-    closedAt: incident.closedAt,
-    createdAt: incident.createdAt,
-    updatedAt: incident.updatedAt,
-  } satisfies IncidentDocument);
+  await insertIncidentDocument(incident);
 
   await IncidentEventModel.create({
     _id: createdEvent.id,
@@ -96,8 +85,41 @@ export async function createIncident(input: {
   return { incident, createdEvent };
 }
 
+async function insertIncidentDocument(incident: Incident): Promise<void> {
+  let current = incident;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    try {
+      await IncidentModel.create({
+        _id: current.id,
+        userId: current.userId,
+        sessionId: current.sessionId,
+        language: current.language,
+        accessCode: current.accessCode,
+        status: current.status,
+        state: current.state,
+        eventSequence: 1,
+        startedAt: current.startedAt,
+        closedAt: current.closedAt,
+        createdAt: current.createdAt,
+        updatedAt: current.updatedAt,
+      } satisfies IncidentDocument);
+      incident.accessCode = current.accessCode;
+      return;
+    } catch (error) {
+      const duplicate = typeof error === 'object' && error !== null && (error as { code?: number }).code === 11000;
+      if (!duplicate || attempt === 5) throw error;
+      current = { ...current, accessCode: generateAccessCode() };
+    }
+  }
+}
+
 export async function getIncidentById(id: Id): Promise<Incident> {
   const doc = await IncidentModel.findById(id).lean<IncidentDocument>().exec();
+  return toIncident(requireLean(doc, 'Incident'));
+}
+
+export async function getIncidentByAccessCode(code: string): Promise<Incident> {
+  const doc = await IncidentModel.findOne({ accessCode: code }).lean<IncidentDocument>().exec();
   return toIncident(requireLean(doc, 'Incident'));
 }
 

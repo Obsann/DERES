@@ -201,6 +201,13 @@ export type GetProtocolResponse = Protocol;
 export type ListIncidentsResponse = Paginated<Incident>;
 export type GetResponderIncidentResponse = Incident;
 
+/** `POST /api/responder/lookup` — open one scene by the bystander's short code. */
+export interface LookupIncidentRequest {
+  code: string;
+}
+
+export type LookupIncidentResponse = Incident;
+
 /** `POST /api/sessions` — anonymous bystander session (Task 12). */
 export interface CreateSessionRequest {
   language: Language;

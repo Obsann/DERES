@@ -172,7 +172,7 @@ describe('handoff generation', () => {
     );
     expect(handoff.actionsTaken[0]?.status).toBe(ActionStatus.GIVEN);
     expect(handoff.warnings.some((item) => item.message.includes('not confirmed'))).toBe(true);
-    expect(handoff.warnings.some((item) => item.message.includes('Professional help'))).toBe(true);
+    expect(handoff.warnings.some((item) => item.message.includes('907'))).toBe(true);
     expect(handoff.observedSymptoms).toEqual([]);
   });
 });

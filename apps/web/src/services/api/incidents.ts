@@ -6,6 +6,8 @@ import type {
   CreateIncidentResponse,
   GetHandoffResponse,
   GetIncidentResponse,
+  LookupIncidentRequest,
+  LookupIncidentResponse,
   GetTimelineResponse,
   Id,
   ListIncidentsQuery,
@@ -65,6 +67,10 @@ export const incidentsApi = {
       `/api/responder/incidents${toQuery(query)}`,
       options,
     );
+  },
+
+  lookupByCode(body: LookupIncidentRequest, options?: ApiRequestOptions): Promise<LookupIncidentResponse> {
+    return apiPost<LookupIncidentResponse>('/api/responder/lookup', body, { skipRetry: true, ...options });
   },
 
   getForResponder(

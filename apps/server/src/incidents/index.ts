@@ -7,6 +7,7 @@ export { applyCommand } from './stateEngine.js';
 export type { EngineEvent, TransitionResult } from './stateEngine.js';
 export {
   addIncidentMessage,
+  lookupIncidentByAccessCode,
   openIncident,
   readIncident,
   readIncidentTimeline,

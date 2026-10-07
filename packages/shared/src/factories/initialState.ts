@@ -9,6 +9,7 @@ import {
 } from '../enums/index.js';
 import type { Id, IsoDateTime } from '../types/common.js';
 import type { EmergencyState, Incident, PatientState } from '../types/incident.js';
+import { generateAccessCode } from './accessCode.js';
 
 /** Empty patient picture — nothing established yet. */
 export function initialPatientState(): PatientState {
@@ -59,6 +60,7 @@ export function initialIncident(input: {
     userId: input.userId ?? null,
     sessionId: input.sessionId,
     language: input.language,
+    accessCode: generateAccessCode(),
     status: IncidentStatus.ACTIVE,
     state: initialEmergencyState(input.at),
     startedAt: input.at,

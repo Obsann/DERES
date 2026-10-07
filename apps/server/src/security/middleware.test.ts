@@ -11,6 +11,8 @@ describe('security middleware', () => {
   it('rejects responder routes without a bearer token', async () => {
     const list = await request(app).get('/api/responder/incidents');
     expect(list.status).toBe(401);
+    const lookup = await request(app).post('/api/responder/lookup').send({ code: 'K7M2' });
+    expect(lookup.status).toBe(401);
     expect(list.body.ok).toBe(false);
     expect(list.body.error.code).toBe('UNAUTHORIZED');
     expect(JSON.stringify(list.body)).not.toContain('dev-only-session-secret');

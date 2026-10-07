@@ -7,6 +7,7 @@ export interface IncidentDocument {
   userId: string | null;
   sessionId: string;
   language: Incident['language'];
+  accessCode: string;
   status: Incident['status'];
   state: Incident['state'];
   /** Internal monotonic counter used to assign `IncidentEvent.sequence`. */
@@ -23,6 +24,7 @@ const incidentSchema = new Schema<IncidentDocument>(
     userId: { type: String, default: null, index: true },
     sessionId: { type: String, required: true, index: true },
     language: { type: String, required: true, enum: languageEnum },
+    accessCode: { type: String, default: null },
     status: { type: String, required: true, enum: incidentStatusEnum, index: true },
     state: { type: emergencyStateSchema, required: true },
     eventSequence: { type: Number, required: true, default: 0, min: 0 },
@@ -37,6 +39,7 @@ const incidentSchema = new Schema<IncidentDocument>(
 incidentSchema.index({ status: 1, updatedAt: -1 });
 incidentSchema.index({ sessionId: 1, createdAt: -1 });
 incidentSchema.index({ 'state.emergencyType': 1, status: 1 });
+incidentSchema.index({ accessCode: 1 }, { unique: true, sparse: true });
 
 export const IncidentModel = model<IncidentDocument>('Incident', incidentSchema);
 
@@ -46,6 +49,7 @@ export function toIncident(doc: IncidentDocument): Incident {
     userId: doc.userId,
     sessionId: doc.sessionId,
     language: doc.language,
+    accessCode: doc.accessCode ?? doc._id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase(),
     status: doc.status,
     state: doc.state,
     startedAt: doc.startedAt,

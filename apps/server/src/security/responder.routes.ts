@@ -2,12 +2,18 @@ import { Router } from 'express';
 import { sendSuccess } from '../common/http.js';
 import { listIncidents } from '../database/persist.js';
 import { createIncidentHandoff } from '../handoff/service.js';
-import { readIncident } from '../incidents/service.js';
+import { lookupIncidentByAccessCode, readIncident } from '../incidents/service.js';
 import { requireResponder } from './middleware.js';
 
 export function createResponderRouter(): Router {
   const router = Router();
   router.use(requireResponder);
+
+  router.post('/responder/lookup', async (req, res) => {
+    const code = typeof req.body?.code === 'string' ? req.body.code : '';
+    const incident = await lookupIncidentByAccessCode(code);
+    sendSuccess(res, incident);
+  });
 
   router.get('/responder/incidents', async (req, res) => {
     const limit = req.query.limit ? Number(req.query.limit) : 20;
