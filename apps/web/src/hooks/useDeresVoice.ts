@@ -5,14 +5,21 @@ import {
   type Id,
   type VoiceTurnResponse,
 } from '@voicesos/shared';
+import type { VoxideClient } from '@voxide/react/core';
 import { emergencyCallHref } from '@/config/emergency';
 import { incidentsApi } from '@/services/api';
+import { listenCapability, CapabilityStatus } from '@/services/capability';
+import { isLocalIncidentId } from '@/services/protocol/localIncident';
 import { voiceLoopCopy } from '@/services/voice/loopCopy';
 import { canRecord, record, RecorderError } from '@/services/voice/recorder';
 import { getSpeechStatus, prefetchSpokenLines, speak, stopSpeaking, type SpeechStatus } from '@/services/voice/speech';
-import { bindDeresSession, getVoxideClient, VOXIDE_OPENING_CUE, voxidePhase } from '@/services/voice/voxide';
-import { isLocalIncidentId } from '@/services/protocol/localIncident';
-import { listenCapability, CapabilityStatus } from '@/services/capability';
+import {
+  appSpeaksLanguage,
+  bindDeresSession,
+  getVoxideClient,
+  VOXIDE_OPENING_CUE,
+  voxidePhase,
+} from '@/services/voice/voxide';
 
 const noop = () => () => undefined;
 
@@ -22,9 +29,9 @@ const MAX_QUIET_TURNS = 2;
 export type VoiceEngine = 'voxide' | 'server';
 
 /**
- * Voxide in the browser is the voice. `server` is push-to-talk: the browser
- * records and the server transcribes through `VOXIDE_API_KEY`. With
- * `VITE_VOICE_ENGINE=auto` (default) it only stands in when Voxide cannot run.
+ * Voxide in the browser is the duplex voice. `server` is push-to-talk when the
+ * API can both hear and speak. With `VITE_VOICE_ENGINE=auto` (default), Voxide
+ * wins when it can run.
  */
 function chooseEngine(voxideReady: boolean, serverReady: boolean): VoiceEngine | null {
   const preference = import.meta.env.VITE_VOICE_ENGINE ?? 'auto';
@@ -32,6 +39,24 @@ function chooseEngine(voxideReady: boolean, serverReady: boolean): VoiceEngine |
   if (preference === 'server') return serverReady ? 'server' : null;
   if (voxideReady) return 'voxide';
   return serverReady ? 'server' : null;
+}
+
+/** Shows the browser permission prompt, then releases the stream so Voxide can take it. */
+async function requestMicrophone(): Promise<boolean> {
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return false;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((track) => track.stop());
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function openLiveSession(voxide: VoxideClient): Promise<void> {
+  await voxide.init();
+  await voxide.connect();
+  await voxide.sendText(VOXIDE_OPENING_CUE);
 }
 
 /**
@@ -48,12 +73,18 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
   const [serverPhase, setServerPhase] = useState<VoiceSessionPhase>(VoiceSessionPhase.IDLE);
   const [serverError, setServerError] = useState<string | null>(null);
   const [micLevel, setMicLevel] = useState(0);
+  const [hostSpeaking, setHostSpeaking] = useState(false);
+  const [sessionTick, setSessionTick] = useState(0);
+
   const instructionRef = useRef<string | null>(null);
   const dialedRef = useRef(false);
   const heardSpeechRef = useRef(false);
   const greetedRef = useRef(false);
   const sessionRef = useRef<AbortController | null>(null);
   const recordingRef = useRef<AbortController | null>(null);
+  const runIdRef = useRef(0);
+  const languageRef = useRef(language);
+  languageRef.current = language;
 
   useEffect(() => {
     let live = true;
@@ -72,7 +103,9 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
   const listen = listenCapability({
     hasMediaDevices: hasMic,
     engineReady: voxideReady || serverReady,
-    denied: serverError === 'permission',
+    // Voxide keeps the engine so a mic tap can ask again. Server recorder
+    // denial is the only hard stop.
+    denied: serverError === 'permission' && !voxideReady,
   });
   const engine =
     voiceIncidentId && listen.status === CapabilityStatus.AVAILABLE
@@ -92,32 +125,116 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
     () => (voxide && engine === 'voxide' ? voxide.getSnapshot() : null),
   );
 
-  useEffect(() => {
-    if (engine !== 'voxide' || !voxide || !voiceIncidentId) return;
-    bindDeresSession(voxide, {
-      incidentId: voiceIncidentId,
-      language,
-      onTurn: setLastTurn,
-      getCurrentInstruction: () => instructionRef.current,
-    });
-    return () => voxide.disconnect();
-  }, [engine, voxide, voiceIncidentId, language]);
-
   const stopServerSession = useCallback(() => {
     sessionRef.current?.abort();
     sessionRef.current = null;
     recordingRef.current?.abort();
     stopSpeaking();
+    setHostSpeaking(false);
     setServerPhase(VoiceSessionPhase.IDLE);
-  }, [setServerPhase]);
+  }, []);
 
-  useEffect(() => stopServerSession, [stopServerSession, voiceIncidentId, language]);
+  const failMic = useCallback(
+    async (lines = voiceLoopCopy(languageRef.current)) => {
+      setShownText(lines.micDenied);
+      const said = await speak(lines.micDenied, languageRef.current);
+      if (!said) setShownText(lines.micDenied);
+    },
+    [],
+  );
+
+  /**
+   * One owner for the live session. A new runId cancels anything still
+   * starting after a language or incident change.
+   */
+  useEffect(() => {
+    if (engine !== 'voxide' || !voxide || !voiceIncidentId) return;
+
+    const runId = ++runIdRef.current;
+    const alive = () => runIdRef.current === runId;
+    const lines = voiceLoopCopy(language);
+    const hostVoice = appSpeaksLanguage(language);
+
+    dialedRef.current = false;
+    heardSpeechRef.current = false;
+    setLastTurn(null);
+    setServerError(null);
+    setHostSpeaking(false);
+    setShownText(lines.greeting);
+    stopSpeaking();
+    voxide.disconnect();
+
+    bindDeresSession(voxide, {
+      incidentId: voiceIncidentId,
+      language,
+      onTurn: (turn) => {
+        if (alive()) setLastTurn(turn);
+      },
+      getCurrentInstruction: () => instructionRef.current,
+      onHostSpeech: (speaking, text) => {
+        if (!alive()) return;
+        setHostSpeaking(speaking);
+        if (speaking && text) setShownText(text);
+      },
+    });
+
+    void (async () => {
+      const allowed = await requestMicrophone();
+      if (!alive()) return;
+      if (!allowed) {
+        setServerError('permission');
+        await failMic(lines);
+        return;
+      }
+
+      // Amharic: speak before the mic opens so the agent does not hear our
+      // own greeting as the first "user" turn. Afaan Oromoo is spoken by Voxide.
+      if (hostVoice) {
+        const said = await speak(lines.greeting, language);
+        if (!alive()) return;
+        if (!said) setShownText(lines.greeting);
+      }
+
+      try {
+        await openLiveSession(voxide);
+        if (!alive()) {
+          voxide.disconnect();
+          return;
+        }
+        if (!hostVoice) setShownText(null);
+      } catch {
+        if (!alive()) return;
+        try {
+          voxide.disconnect();
+          await openLiveSession(voxide);
+          if (!alive()) {
+            voxide.disconnect();
+            return;
+          }
+        } catch {
+          if (alive()) await failMic(lines);
+        }
+      }
+    })();
+
+    return () => {
+      runIdRef.current += 1;
+      stopSpeaking();
+      setHostSpeaking(false);
+      voxide.disconnect();
+    };
+  }, [engine, voxide, voiceIncidentId, language, sessionTick, failMic]);
+
+  useEffect(() => {
+    if (engine === 'server') return;
+    stopServerSession();
+  }, [engine, voiceIncidentId, language, stopServerSession]);
 
   const greet = useCallback(async () => {
     const lines = voiceLoopCopy(language);
     const greeted = await speak(lines.greeting, language);
     if (!greeted) setShownText(lines.greeting);
-  }, [language, setShownText]);
+  }, [language]);
 
   /** Listen → server STT and protocol → speak, until the person goes quiet or taps off. */
   const runServerSession = useCallback(async () => {
@@ -145,8 +262,7 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
         clip = await record({ stopSignal: tap.signal, onLevel: setMicLevel });
       } catch (error) {
         if (!live()) return;
-        const said = await speak(lines.micDenied, language);
-        if (!said) setShownText(lines.micDenied);
+        await failMic(lines);
         setServerError(error instanceof RecorderError ? error.reason : 'device');
         setServerPhase(VoiceSessionPhase.ERROR);
         sessionRef.current = null;
@@ -156,14 +272,12 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
       }
       if (!live()) return;
 
-      // A tap before any speech means "stop listening", not "send nothing".
       if (tap.signal.aborted && !clip.heardSpeech) break;
 
       setShownText(null);
       setServerPhase(VoiceSessionPhase.PROCESSING);
       let turn: VoiceTurnResponse;
       try {
-        // Not retried: a retry would bill a second transcription and could apply the turn twice.
         turn = await incidentsApi.voiceTurn(
           voiceIncidentId,
           clip.heardSpeech
@@ -182,7 +296,9 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
 
       setLastTurn(turn);
       setServerPhase(VoiceSessionPhase.SPEAKING);
+      setHostSpeaking(true);
       const said = await speak(turn.reply, language);
+      setHostSpeaking(false);
       if (!live()) return;
       if (!said) setShownText(turn.reply);
 
@@ -198,9 +314,15 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
 
     if (sessionRef.current === session) sessionRef.current = null;
     setServerPhase(VoiceSessionPhase.IDLE);
-  }, [voiceIncidentId, language, greet, setServerError, setServerPhase, setMicLevel, setShownText, setLastTurn]);
+  }, [voiceIncidentId, language, greet, failMic]);
+
+  // Reset the one-shot server greeting when the incident or language changes.
+  useEffect(() => {
+    greetedRef.current = false;
+  }, [voiceIncidentId, language]);
 
   const connect = useCallback(async () => {
+    setServerError(null);
     if (engine === 'server') {
       void runServerSession();
       return;
@@ -208,39 +330,22 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
     if (!voxide) return;
     const live = voxide.getSnapshot().status;
     if (live !== 'idle' && live !== 'error' && live !== 'armed') return;
-    const lines = voiceLoopCopy(language);
-    // Voxide is the mouth: show the greeting, open the mic, then have Gemini
-    // speak it in the chosen language and listen. Browser TTS is English-only
-    // on most phones and must not run first.
-    setShownText(lines.greeting);
-    try {
-      await voxide.init();
-      await voxide.connect();
-      await voxide.sendText(VOXIDE_OPENING_CUE);
-    } catch {
-      const said = await speak(lines.micDenied, language);
-      if (!said) setShownText(lines.micDenied);
-    }
-  }, [engine, voxide, language, runServerSession, setShownText]);
+    // Re-run the single session owner (permission → greet → listen).
+    setSessionTick((value) => value + 1);
+  }, [engine, voxide, runServerSession]);
 
   const disconnect = useCallback(() => {
     if (engine === 'server') stopServerSession();
-    else voxide?.disconnect();
+    else {
+      stopSpeaking();
+      setHostSpeaking(false);
+      voxide?.disconnect();
+    }
   }, [engine, voxide, stopServerSession]);
 
-  const connectRef = useRef(connect);
-  connectRef.current = connect;
-
-  // Greet in the incident language and listen as soon as Voxide can run.
-  useEffect(() => {
-    if (engine !== 'voxide' || !voiceIncidentId) return;
-    void connectRef.current();
-  }, [engine, voiceIncidentId, language]);
-
   const [voxideLevel, setVoxideLevel] = useState(0);
-  const voxideListening = engine === 'voxide' && snapshot?.status === 'listening';
+  const voxideListening = engine === 'voxide' && snapshot?.status === 'listening' && !hostSpeaking;
 
-  // The SDK's input level is not reactive; it has to be polled to draw a meter.
   useEffect(() => {
     if (!voxideListening || !voxide) return;
     let frame = 0;
@@ -253,17 +358,17 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
       cancelAnimationFrame(frame);
       setVoxideLevel(0);
     };
-  }, [voxideListening, voxide, setVoxideLevel]);
+  }, [voxideListening, voxide]);
 
   useEffect(() => {
     if (engine !== 'voxide') return;
     if (lastTurn?.capability !== 'place_call' || dialedRef.current) return;
-    if (snapshot?.status === 'speaking') heardSpeechRef.current = true;
-    if (heardSpeechRef.current && snapshot?.status === 'listening') {
+    if (snapshot?.status === 'speaking' || hostSpeaking) heardSpeechRef.current = true;
+    if (heardSpeechRef.current && snapshot?.status === 'listening' && !hostSpeaking) {
       dialedRef.current = true;
       window.location.href = emergencyCallHref;
     }
-  }, [engine, lastTurn, snapshot?.status]);
+  }, [engine, lastTurn, snapshot?.status, hostSpeaking]);
 
   const phase =
     engine === 'server'
@@ -272,18 +377,19 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
         : serverPhase === VoiceSessionPhase.LISTENING && lastTurn?.phase === VoiceSessionPhase.AWAITING_CONFIRMATION
           ? VoiceSessionPhase.AWAITING_CONFIRMATION
           : serverPhase
-      : lastTurn?.failure != null
-        ? VoiceSessionPhase.ERROR
-        : snapshot
-          ? snapshot.status === 'listening' && lastTurn?.phase === VoiceSessionPhase.AWAITING_CONFIRMATION
-            ? VoiceSessionPhase.AWAITING_CONFIRMATION
-            : voxidePhase(snapshot.status)
-          : VoiceSessionPhase.IDLE;
+      : hostSpeaking
+        ? VoiceSessionPhase.SPEAKING
+        : lastTurn?.failure != null
+          ? VoiceSessionPhase.ERROR
+          : snapshot
+            ? snapshot.status === 'listening' && lastTurn?.phase === VoiceSessionPhase.AWAITING_CONFIRMATION
+              ? VoiceSessionPhase.AWAITING_CONFIRMATION
+              : voxidePhase(snapshot.status)
+            : VoiceSessionPhase.IDLE;
 
   /**
-   * The mic button. Tap while Voxide speaks (or while it is thinking) to
-   * interrupt and answer. Tap while listening to end the session. Server
-   * engine: tap again to send early, or to stop if nothing was said yet.
+   * Mic button. Tap while speaking / thinking to interrupt. Tap while listening
+   * to end. Tap while idle / error to start again.
    */
   const press = useCallback(() => {
     if (engine === 'server') {
@@ -293,8 +399,11 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
       return;
     }
     if (phase === VoiceSessionPhase.IDLE || phase === VoiceSessionPhase.ERROR) void connect();
-    else if (phase === VoiceSessionPhase.SPEAKING || phase === VoiceSessionPhase.PROCESSING) voxide?.interrupt();
-    else disconnect();
+    else if (phase === VoiceSessionPhase.SPEAKING || phase === VoiceSessionPhase.PROCESSING) {
+      stopSpeaking();
+      setHostSpeaking(false);
+      voxide?.interrupt();
+    } else disconnect();
   }, [engine, serverPhase, phase, connect, disconnect, voxide]);
 
   return {

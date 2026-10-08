@@ -4,10 +4,11 @@ import { voiceLoopCopy } from '@/services/voice/loopCopy';
 import { speakLocally } from '@/services/voice/speakLocally';
 
 /**
- * Speech out for the lines the app says itself. English uses the browser
- * voice first: it is instant and offline. Amharic and Afaan Oromo use the
- * server's voice first when it has one, because most phones have no
- * on-device voice for either.
+ * Speech out for the lines the app says itself.
+ *
+ * English uses the browser voice first (instant, offline). Amharic and Afaan
+ * Oromoo use the server's voice first — those lines are the mouth for the
+ * live emergency when Voxide only listens.
  *
  * Server clips are kept in memory and, where the browser allows, in Cache
  * Storage, so the fixed lines still play with no connection.

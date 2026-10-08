@@ -57,8 +57,13 @@ connect so Voxide greets in English, Amharic, or Afaan Oromoo.
 | DERES | Voxide / Gemini Live tag |
 |---|---|
 | English | `en-US` |
-| Amharic | `am-ET` |
-| Afaan Oromoo | `om-ET` |
+| Amharic | `am` |
+| Afaan Oromoo | `om` |
+
+English and Afaan Oromoo are spoken by Voxide (Gemini Live has native `om`).
+Amharic is spoken by the app with a real Amharic neural voice — there is no
+honest Edge/device Oromo voice, and faking one with English multilingual TTS
+misreads the words. Voxide listens in all three languages.
 
 `bindDeresSession` locks the agent to the incident language
 (`enableMultilingual({ mode: 'strict' })`). The protocol and all fixed phrases
