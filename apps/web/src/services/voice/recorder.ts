@@ -53,7 +53,7 @@ export async function record(options: RecordOptions = {}): Promise<Recording> {
   if (!canRecord()) throw new RecorderError('unsupported');
 
   const maxDurationMs = options.maxDurationMs ?? 10_000;
-  const trailingSilenceMs = options.trailingSilenceMs ?? 1_200;
+  const trailingSilenceMs = options.trailingSilenceMs ?? 700;
   const noSpeechTimeoutMs = options.noSpeechTimeoutMs ?? 6_000;
 
   let stream: MediaStream;

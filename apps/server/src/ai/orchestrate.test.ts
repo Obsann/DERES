@@ -63,10 +63,37 @@ describe('LLM orchestration', () => {
     expect(result.incident.state.actions[0]?.instruction).toBe(result.reply);
   });
 
+  it('recognises an obvious emergency without calling the model', async () => {
+    const result = await interpretTurn({
+      incident: openIncident(),
+      transcript: 'She is not breathing',
+      protocols: [unconsciousAdultProtocol],
+      provider: new ScriptedLlmProvider([]),
+      at: AT,
+    });
+
+    expect(result.reply).toBe('Call emergency services now. Put the phone on speaker if you can.');
+    expect(result.incident.state.patient.consciousness).toBe(ConsciousnessState.UNRESPONSIVE);
+    expect(result.source).toBe('protocol');
+  });
+
+  it('answers a greeting without calling the model', async () => {
+    const result = await interpretTurn({
+      incident: openIncident(),
+      transcript: 'Hello',
+      protocols: [unconsciousAdultProtocol],
+      provider: new ScriptedLlmProvider([]),
+      at: AT,
+    });
+
+    expect(result.reply).toBe(safePhrases(Language.ENGLISH).heardYou);
+    expect(result.incident.state.currentProtocolId).toBeNull();
+  });
+
   it('retries once when the model replies in prose, then applies the second JSON', async () => {
     const result = await interpretTurn({
       incident: openIncident(),
-      transcript: 'He is not responding',
+      transcript: 'He looks very sick',
       protocols: [unconsciousAdultProtocol],
       provider: new ScriptedLlmProvider([
         'He needs CPR right now.',
@@ -92,7 +119,7 @@ describe('LLM orchestration', () => {
     await expect(
       interpretTurn({
         incident,
-        transcript: 'He collapsed',
+        transcript: 'He looks very sick',
         protocols: [unconsciousAdultProtocol],
         provider,
         at: AT,

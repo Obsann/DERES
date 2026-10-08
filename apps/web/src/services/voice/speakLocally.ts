@@ -10,19 +10,19 @@
 
 export function pickVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
   const wanted = lang.toLowerCase().replace('_', '-');
-  const prefix = wanted.split('-')[0] ?? wanted;
+  const prefix = wanted.split('-')[0] ?? '';
+  if (prefix === '') return null;
   const normalised = (value: string) => value.toLowerCase().replace('_', '-');
 
   return (
-    voices.find((voice) => normalised(voice.lang) === wanted) ??
-    voices.find((voice) => normalised(voice.lang).startsWith(`${prefix}-`)) ??
-    voices.find((voice) => normalised(voice.lang) === prefix) ??
-    voices.find((voice) => normalised(voice.name).includes(prefix === 'am' ? 'amharic' : prefix === 'om' ? 'oromo' : '')) ??
-    null
+    voices.find((voice) => {
+      const code = normalised(voice.lang);
+      return code === wanted || code === prefix || code.startsWith(`${prefix}-`);
+    }) ?? null
   );
 }
 
-function loadVoices(): Promise<SpeechSynthesisVoice[]> {
+function loadVoices(waitMs: number): Promise<SpeechSynthesisVoice[]> {
   const current = window.speechSynthesis.getVoices();
   if (current.length > 0) return Promise.resolve(current);
 
@@ -32,21 +32,29 @@ function loadVoices(): Promise<SpeechSynthesisVoice[]> {
       window.clearTimeout(timer);
       resolve(window.speechSynthesis.getVoices());
     };
-    const timer = window.setTimeout(finish, 1500);
+    const timer = window.setTimeout(finish, waitMs);
     window.speechSynthesis.addEventListener('voiceschanged', finish);
   });
 }
 
-export async function speakLocally(text: string, lang: string): Promise<boolean> {
+/** True when the device has a voice for this language. Never matches a different language. */
+export async function hasLocalVoice(lang: string, voiceWaitMs = 250): Promise<boolean> {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return false;
+  const voices = await loadVoices(voiceWaitMs);
+  return pickVoice(voices, lang) !== null;
+}
+
+export async function speakLocally(text: string, lang: string, voiceWaitMs = 250): Promise<boolean> {
   if (typeof window === 'undefined' || !window.speechSynthesis || text.trim() === '') {
     return false;
   }
 
-  const voices = await loadVoices();
+  const voices = await loadVoices(voiceWaitMs);
   const prefix = lang.toLowerCase().split('-')[0] ?? lang;
   const voice = pickVoice(voices, lang);
-  // Without a matching voice, Chrome will invent an English reading. Refuse.
-  if (!voice && prefix !== 'en') return false;
+  // No matching voice: stay silent. A missing English voice must not fall
+  // through to the device default, which on these phones is Amharic.
+  if (!voice) return false;
 
   return new Promise((resolve) => {
     let settled = false;
