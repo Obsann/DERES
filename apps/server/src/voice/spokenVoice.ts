@@ -6,11 +6,11 @@ import type { VoxideSynthesizeResult } from './provider.js';
 /**
  * Voices that can say a DERES line out loud on the server.
  *
- * Amharic has a neural Geʽez voice. Afaan Oromoo has none here — do not fake
- * it with an English multilingual voice (it misreads the words). English and
- * Afaan Oromoo are spoken by Voxide in the browser instead.
+ * English and Amharic each have their own neural voice. Afaan Oromoo has
+ * none here — do not substitute the Amharic or English voice for it.
  */
 const VOICE: Partial<Record<Language, string>> = {
+  [Language.ENGLISH]: 'en-US-AriaNeural',
   [Language.AMHARIC]: 'am-ET-MekdesNeural',
 };
 

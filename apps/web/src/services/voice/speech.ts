@@ -1,14 +1,15 @@
 import { Language, isApiSuccess, type ApiResponse } from '@voicesos/shared';
 import { getApiBaseUrl } from '@/services/api/config';
 import { voiceLoopCopy } from '@/services/voice/loopCopy';
-import { speakLocally } from '@/services/voice/speakLocally';
+import { hasLocalVoice, speakLocally } from '@/services/voice/speakLocally';
 
 /**
  * Speech out for the lines the app says itself.
  *
- * English uses the browser voice first (instant, offline). Amharic and Afaan
- * Oromoo use the server's voice first — those lines are the mouth for the
- * live emergency when Voxide only listens.
+ * A line is spoken only in the language it was requested in. English uses an
+ * English voice, Amharic an Amharic voice. Afaan Oromoo is not spoken here —
+ * there is no Afaan Oromoo voice to substitute, and the Amharic voice must
+ * not read it.
  *
  * Server clips are kept in memory and, where the browser allows, in Cache
  * Storage, so the fixed lines still play with no connection.
@@ -128,6 +129,16 @@ export function stopSpeaking(): void {
 }
 
 /**
+ * True when this language can be spoken here: a matching device voice, or
+ * the server clip. Afaan Oromoo is never claimed — nothing may substitute.
+ */
+export async function canSpeak(language: Language): Promise<boolean> {
+  if (language === Language.AFAAN_OROMO) return false;
+  if (await hasLocalVoice(BCP47[language])) return true;
+  return (await getSpeechStatus()).synthesize;
+}
+
+/**
  * Speaks one line. Returns false only when no voice could say it, so the
  * caller shows the text instead of apologising through a dead channel.
  */
@@ -135,12 +146,16 @@ export async function speak(text: string, language: Language): Promise<boolean> 
   const line = text.trim();
   if (line === '') return false;
 
-  if (language === Language.ENGLISH && (await speakLocally(line, BCP47[language]))) return true;
+  const locale = BCP47[language];
+  // The device voice and the server clip start together. Whichever can speak
+  // in this language goes first; the other is not allowed to fill in.
+  const clipPromise = clipFor(line, language);
+  if (await speakLocally(line, locale)) return true;
 
-  const clip = await clipFor(line, language);
+  const clip = await clipPromise;
   if (clip && (await playBlob(clip))) return true;
 
-  return language === Language.ENGLISH ? false : speakLocally(line, BCP47[language]);
+  return false;
 }
 
 /**
@@ -148,7 +163,9 @@ export async function speak(text: string, language: Language): Promise<boolean> 
  * providers rate-limit a burst, and a parallel prefetch loses the tail.
  */
 export async function prefetchSpokenLines(language: Language, extra: readonly string[] = []): Promise<void> {
-  if (language === Language.ENGLISH || !(await getSpeechStatus()).synthesize) return;
+  // Afaan Oromoo has no server voice. Do not prefetch it — a miss must not
+  // be filled with the Amharic clip.
+  if (language === Language.AFAAN_OROMO || !(await getSpeechStatus()).synthesize) return;
   const lines = voiceLoopCopy(language);
   for (const line of [lines.greeting, lines.permission, lines.thinking, lines.micDenied, lines.hearingYou, ...extra]) {
     await clipFor(line, language);

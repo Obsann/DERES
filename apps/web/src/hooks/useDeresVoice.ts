@@ -7,12 +7,13 @@ import {
 } from '@voicesos/shared';
 import type { VoxideClient } from '@voxide/react/core';
 import { emergencyCallHref } from '@/config/emergency';
+import { publishedProtocols } from '@voicesos/protocols';
 import { incidentsApi } from '@/services/api';
 import { listenCapability, CapabilityStatus } from '@/services/capability';
 import { isLocalIncidentId } from '@/services/protocol/localIncident';
 import { voiceLoopCopy } from '@/services/voice/loopCopy';
 import { canRecord, record, RecorderError } from '@/services/voice/recorder';
-import { getSpeechStatus, prefetchSpokenLines, speak, stopSpeaking, type SpeechStatus } from '@/services/voice/speech';
+import { canSpeak, getSpeechStatus, prefetchSpokenLines, speak, stopSpeaking, type SpeechStatus } from '@/services/voice/speech';
 import {
   appSpeaksLanguage,
   bindDeresSession,
@@ -53,10 +54,16 @@ async function requestMicrophone(): Promise<boolean> {
   }
 }
 
-async function openLiveSession(voxide: VoxideClient): Promise<void> {
-  await voxide.init();
+async function openLiveSession(
+  voxide: VoxideClient,
+  ready?: Promise<unknown>,
+  greetThroughAgent = true,
+): Promise<void> {
+  await (ready ?? voxide.init());
   await voxide.connect();
-  await voxide.sendText(VOXIDE_OPENING_CUE);
+  // English and Amharic are already being spoken by the phone. Asking the
+  // agent to greet as well costs a full model turn before it will listen.
+  if (greetThroughAgent) await voxide.sendText(VOXIDE_OPENING_CUE);
 }
 
 /**
@@ -117,7 +124,13 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
   }, [lastTurn]);
 
   useEffect(() => {
-    if (engine) void prefetchSpokenLines(language);
+    if (!engine) return;
+    const lines = publishedProtocols.flatMap((protocol) =>
+      protocol.steps
+        .map((step) => step.prompt[language] ?? '')
+        .filter((line) => line.trim() !== ''),
+    );
+    void prefetchSpokenLines(language, lines);
   }, [engine, language]);
 
   const snapshot = useSyncExternalStore(
@@ -164,13 +177,21 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
     stopSpeaking();
     voxide.disconnect();
 
-    bindDeresSession(voxide, {
+    const boot = voxide.init();
+    // Speak on the phone only when a real voice for this language exists.
+    // Otherwise the agent greets, so a missing Amharic pack does not go silent.
+    const hostSpeaks = hostVoice ? canSpeak(language) : Promise.resolve(false);
+    const greetingSpoken = hostSpeaks.then((ok) => (ok ? speak(lines.greeting, language) : false));
+
+    const release = bindDeresSession(voxide, {
       incidentId: voiceIncidentId,
       language,
       onTurn: (turn) => {
         if (alive()) setLastTurn(turn);
       },
       getCurrentInstruction: () => instructionRef.current,
+      greetingSpoken,
+      hostSpeaks,
       onHostSpeech: (speaking, text) => {
         if (!alive()) return;
         setHostSpeaking(speaking);
@@ -179,34 +200,26 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
     });
 
     void (async () => {
-      const allowed = await requestMicrophone();
+      const [allowed, host] = await Promise.all([requestMicrophone(), hostSpeaks]);
       if (!alive()) return;
       if (!allowed) {
+        stopSpeaking();
         setServerError('permission');
         await failMic(lines);
         return;
       }
 
-      // Amharic: speak before the mic opens so the agent does not hear our
-      // own greeting as the first "user" turn. Afaan Oromoo is spoken by Voxide.
-      if (hostVoice) {
-        const said = await speak(lines.greeting, language);
-        if (!alive()) return;
-        if (!said) setShownText(lines.greeting);
-      }
-
       try {
-        await openLiveSession(voxide);
+        await openLiveSession(voxide, boot, !host);
         if (!alive()) {
           voxide.disconnect();
           return;
         }
-        if (!hostVoice) setShownText(null);
       } catch {
         if (!alive()) return;
         try {
           voxide.disconnect();
-          await openLiveSession(voxide);
+          await openLiveSession(voxide, undefined, !host);
           if (!alive()) {
             voxide.disconnect();
             return;
@@ -218,6 +231,7 @@ export function useDeresVoice(incidentId: Id | null, language: Language) {
     })();
 
     return () => {
+      release();
       runIdRef.current += 1;
       stopSpeaking();
       setHostSpeaking(false);

@@ -30,6 +30,7 @@ import { buildSystemPrompt, buildUserPrompt, PROMPT_VERSION } from './prompt.js'
 import type { LlmProvider } from './provider.js';
 import { runSafetyPipeline } from './pipeline.js';
 import { LlmIntent, type LlmExtraction } from './schema.js';
+import { emptyExtraction } from './validate.js';
 
 export interface InterpretTurnInput {
   incident: Incident;
@@ -64,7 +65,11 @@ class ResultBuilder {
 }
 
 const UNRESPONSIVE_REPORT =
-  /collapsed|unconscious|not responding|unresponsive|fainted|passed out|ወድቋ|ወደቀ|አይመልስም|ምላሽ አይሰጥ|kufe|deebii hin kenn|hin deebine/iu;
+  /collapsed|unconscious|not responding|unresponsive|fainted|passed out|not breathing|isn'?t breathing|no pulse|not waking|no response|won'?t wake|ወድቋ|ወደቀ|አይመልስም|ምላሽ አይሰጥ|kufe|deebii hin kenn|hin deebine/iu;
+
+/** A hello before any emergency is described. The model is not asked. */
+const GREETING =
+  /^(hi|hello|hey|hi there|help|i need help|someone needs help|good (morning|afternoon|evening)|selam|salem|ሰላም|akkam|akkam jirta|akkam jirtu|nagaa|እርዳታ|እርዱኝ|na gargaari)[.!?]?$/iu;
 
 /**
  * A collapsed, unresponsive person is the one emergency this build can guide.
@@ -88,6 +93,44 @@ function withTranscriptHints(transcript: string, extraction: LlmExtraction): Llm
     intent: modelWasUnsure ? LlmIntent.ANSWER : extraction.intent,
     unsupportedRequest: modelWasUnsure ? null : extraction.unsupportedRequest,
   };
+}
+
+const SHORT_CONFIRM =
+  /^(yes|yeah|yep|ok|okay|done|called|i called( them)?|yes i called( them)?|i did( it)?|አዎ|ጨርሻለሁ|ደውያለሁ|eyyee|eeyyee|xumureera|bilbileera)[.!?]?$/iu;
+
+/**
+ * Obvious collapse reports and short "I did it" confirmations skip the model.
+ * Anything ambiguous still goes through the LLM.
+ */
+function fastExtraction(input: InterpretTurnInput): LlmExtraction | null {
+  const transcript = input.transcript.trim();
+  if (!input.incident.state.currentProtocolId && UNRESPONSIVE_REPORT.test(transcript)) {
+    return emptyExtraction({
+      emergencyType: EmergencyType.UNCONSCIOUS,
+      emergencyTypeConfidence: 0.9,
+      consciousness: ConsciousnessState.UNRESPONSIVE,
+      questionAnswer: ConsciousnessState.UNRESPONSIVE,
+      certainty: Certainty.KNOWN,
+      intent: LlmIntent.ANSWER,
+    });
+  }
+
+  const protocol = input.incident.state.currentProtocolId
+    ? (input.protocols.find((item) => item.id === input.incident.state.currentProtocolId) ?? null)
+    : null;
+  const step = protocol ? currentStep(protocol, input.incident.state) : null;
+  if (
+    step &&
+    (step.kind === ProtocolStepKind.ACTION || step.kind === ProtocolStepKind.ESCALATION) &&
+    SHORT_CONFIRM.test(transcript)
+  ) {
+    return emptyExtraction({
+      certainty: Certainty.KNOWN,
+      intent: LlmIntent.CONFIRM_ACTION,
+      actionStatus: 'confirmed',
+    });
+  }
+  return null;
 }
 
 function activeProtocol(incident: Incident, protocols: Protocol[]): Protocol | null {
@@ -316,6 +359,21 @@ async function readExtraction(input: InterpretTurnInput, protocolForPrompt: Prot
 
 export async function interpretTurn(input: InterpretTurnInput): Promise<InterpretTurnResult> {
   const at = input.at ?? nowIso();
+  const fast = fastExtraction(input);
+  if (fast) {
+    logger.info('interpret turn fast path', { incidentId: input.incident.id });
+    return applyExtraction(input.incident, fast, input.protocols, at);
+  }
+  const transcript = input.transcript.trim();
+  if (!input.incident.state.currentProtocolId && GREETING.test(transcript)) {
+    logger.info('interpret turn greeting', { incidentId: input.incident.id });
+    return {
+      incident: input.incident,
+      events: [],
+      reply: safePhrases(input.incident.language).heardYou,
+      source: 'safe_fallback',
+    };
+  }
   const protocolForPrompt = activeProtocol(input.incident, input.protocols);
   logger.info('interpret turn', { promptVersion: PROMPT_VERSION, incidentId: input.incident.id });
   const extraction = withTranscriptHints(input.transcript, await readExtraction(input, protocolForPrompt));

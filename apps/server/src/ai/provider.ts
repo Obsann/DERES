@@ -53,7 +53,8 @@ export class OpenAiCompatibleProvider implements LlmProvider {
           ],
         }),
       },
-      timeoutMs: 20_000,
+      timeoutMs: 8_000,
+      maxAttempts: 1,
     });
 
     if (!response.ok) {
