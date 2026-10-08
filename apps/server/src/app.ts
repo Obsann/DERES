@@ -14,7 +14,7 @@ import { createAuthRouter } from './security/routes.js';
 import { createResponderRouter } from './security/responder.routes.js';
 import { createVoiceRouter } from './voice/routes.js';
 import type { VoxideProvider } from './voice/provider.js';
-import { createSpeechRouter } from './voice/speech.routes.js';
+import { createSpeechRouter, type SpeechRouterOptions } from './voice/speech.routes.js';
 
 /**
  * Builds the Express application.
@@ -25,6 +25,7 @@ import { createSpeechRouter } from './voice/speech.routes.js';
 export interface CreateAppOptions {
   llmProvider?: LlmProvider | null;
   voxideProvider?: VoxideProvider | null;
+  synthesizer?: SpeechRouterOptions['synthesizer'];
 }
 
 export function createApp(options: CreateAppOptions = {}): Express {
@@ -58,7 +59,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
   api.use(createProtocolRouter());
   api.use(createIncidentRouter({ llmProvider: options.llmProvider, voxideProvider: options.voxideProvider }));
   api.use(createVoiceRouter({ llmProvider: options.llmProvider, voxideProvider: options.voxideProvider }));
-  api.use(createSpeechRouter({ speechProvider: options.voxideProvider }));
+  api.use(createSpeechRouter({ speechProvider: options.voxideProvider, synthesizer: options.synthesizer }));
   api.use(createResponderRouter());
   app.use('/api', api);
 

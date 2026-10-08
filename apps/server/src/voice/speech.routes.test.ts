@@ -66,6 +66,20 @@ describe('speech API', () => {
     expect(tooLong.status).toBe(400);
   });
 
+  it('speaks through an injected synthesizer when the voice provider has none', async () => {
+    const app = createApp({
+      synthesizer: async (text) => ({
+        audioBase64: Buffer.from(`clip:${text}`).toString('base64'),
+        contentType: 'audio/mpeg',
+      }),
+    });
+    const status = await request(app).get('/api/speech/status');
+    expect(status.body.data).toEqual({ transcribe: false, synthesize: true });
+    const audio = await request(app).post('/api/speech/synthesize').send({ text: 'ሰላም', language: Language.AMHARIC });
+    expect(audio.status).toBe(200);
+    expect(audio.headers['content-type']).toContain('audio/mpeg');
+  });
+
   it('is unavailable without a voice, so the browser falls back to its own', async () => {
     const response = await request(createApp()).post('/api/speech/synthesize').send({ text: 'hi', language: 'en' });
     expect(response.status).toBe(503);

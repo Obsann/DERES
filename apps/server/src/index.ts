@@ -6,6 +6,7 @@ import { logger } from './common/logger.js';
 import { connectDatabase, disconnectDatabase } from './database/connection.js';
 import { attachRealtime, closeRealtime, type IncidentIo } from './realtime/index.js';
 import { createVoxideProvider } from './voice/provider.js';
+import { synthesizeSpokenLine } from './voice/spokenVoice.js';
 
 let server: Server | undefined;
 let io: IncidentIo | undefined;
@@ -27,6 +28,7 @@ async function start(): Promise<void> {
   const app = createApp({
     llmProvider: createLlmProvider(),
     voxideProvider: createVoxideProvider(),
+    synthesizer: synthesizeSpokenLine,
   });
   const httpServer = createServer(app);
   io = attachRealtime(httpServer);

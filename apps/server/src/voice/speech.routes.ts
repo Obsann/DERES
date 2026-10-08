@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { AppError, UpstreamUnavailableError, ValidationError } from '../common/errors.js';
 import { sendSuccess } from '../common/http.js';
 import { isSupportedVoiceLanguage } from './classify.js';
-import type { VoxideProvider } from './provider.js';
+import type { VoxideProvider, VoxideSynthesizeResult } from './provider.js';
 import { prepareSpokenLine } from './spoken.js';
 
 /** Protocol lines are a sentence or two. A cap keeps this from being a free TTS service. */
@@ -25,6 +25,11 @@ interface Clip {
 
 export interface SpeechRouterOptions {
   speechProvider?: VoxideProvider | null;
+  /**
+   * Speaks a line when the voice provider has no synthesizer.
+   * Amharic and Afaan Oromoo use this; English stays on the device voice.
+   */
+  synthesizer?: (text: string, language: Language) => Promise<VoxideSynthesizeResult>;
   now?: () => number;
 }
 
@@ -32,6 +37,10 @@ export function createSpeechRouter(options: SpeechRouterOptions = {}): Router {
   const router = Router();
   const provider = options.speechProvider ?? null;
   const now = options.now ?? Date.now;
+  const synthesize =
+    typeof provider?.synthesize === 'function'
+      ? provider.synthesize.bind(provider)
+      : (options.synthesizer ?? null);
   const clips = new Map<string, Clip>();
   const inFlight = new Map<string, Promise<Clip>>();
   const budget = new Map<string, { windowStart: number; used: number }>();
@@ -70,7 +79,6 @@ export function createSpeechRouter(options: SpeechRouterOptions = {}): Router {
     const pending = inFlight.get(key);
     if (pending) return pending;
 
-    const synthesize = provider?.synthesize?.bind(provider);
     if (!synthesize) throw new UpstreamUnavailableError('Speech synthesis');
     spend(client);
 
@@ -89,7 +97,7 @@ export function createSpeechRouter(options: SpeechRouterOptions = {}): Router {
   router.get('/speech/status', (_req, res) => {
     sendSuccess(res, {
       transcribe: provider !== null,
-      synthesize: typeof provider?.synthesize === 'function',
+      synthesize: synthesize !== null,
     });
   });
 

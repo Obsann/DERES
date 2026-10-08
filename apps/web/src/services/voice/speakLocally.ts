@@ -3,9 +3,9 @@
  * the greeting, the permission reason, and "I'm thinking".
  *
  * English almost always has a device voice. Amharic sometimes does (Android
- * Chrome / Edge language packs). Afaan Oromoo almost never does — then this
- * returns false and the screen text is the authority. Do not fall back to an
- * English voice for Ge'ez or Oromo; that sounds like garbage, not Amharic.
+ * Chrome / Edge language packs). Afaan Oromoo almost never does — do not fall
+ * back to an English voice for it here; Voxide speaks Oromo instead. Geʽez
+ * must never be read by an English voice.
  */
 
 export function pickVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
@@ -45,7 +45,7 @@ export async function speakLocally(text: string, lang: string): Promise<boolean>
   const voices = await loadVoices();
   const prefix = lang.toLowerCase().split('-')[0] ?? lang;
   const voice = pickVoice(voices, lang);
-  // Without a matching voice, Chrome will "speak" Amharic with English. Refuse.
+  // Without a matching voice, Chrome will invent an English reading. Refuse.
   if (!voice && prefix !== 'en') return false;
 
   return new Promise((resolve) => {

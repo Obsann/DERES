@@ -17,6 +17,7 @@
     "@voicesos/shared": "*",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "edge-tts-universal": "^1.4.0",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "mongoose": "^9.10.1",
