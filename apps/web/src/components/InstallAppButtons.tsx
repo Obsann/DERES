@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { LandingCopy } from '@/pages/emergency/landingCopy';
 import { useAppInstall } from '@/hooks/useAppInstall';
 
@@ -7,9 +8,13 @@ interface InstallAppButtonsProps {
   tone?: 'light' | 'dark';
 }
 
-/** Store-style controls to put DERES on an iPhone or Android home screen. */
+type InstallGuide = 'ios' | 'android';
+
+/** Store-style controls that walk through the browser's own install. */
 export function InstallAppButtons({ copy, tone = 'light' }: InstallAppButtonsProps) {
   const install = useAppInstall();
+  const [guide, setGuide] = useState<InstallGuide | null>(null);
+
   if (install.installed) {
     return (
       <p className={`text-sm font-semibold ${tone === 'dark' ? 'text-[#86c9b4]' : 'text-[#407a68]'}`}>
@@ -26,20 +31,33 @@ export function InstallAppButtons({ copy, tone = 'light' }: InstallAppButtonsPro
     ? 'border-[#cfd6d0] bg-white text-[#122d25] hover:border-[#1e5e4b]'
     : 'border-white/25 bg-transparent text-white hover:bg-white/10';
 
+  async function onAndroid() {
+    if (install.canInstall) {
+      setGuide(null);
+      await install.installAndroid();
+      return;
+    }
+    setGuide('android');
+  }
+
+  const steps = guide === 'ios' ? copy.installIosSteps : copy.installAndroidSteps;
+  const title = guide === 'ios' ? copy.installIosTitle : copy.installAndroidTitle;
+  const body = guide === 'ios' ? copy.installIosBody : copy.installAndroidBody;
+
   return (
     <div className="w-full">
       <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${light ? 'text-[#6c7974]' : 'text-[#9bb3ab]'}`}>
         {copy.installEyebrow}
       </p>
       <div className="mt-3 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
-        <button type="button" onClick={() => void install.installAndroid()} className={storeButton(shell)}>
+        <button type="button" onClick={() => void onAndroid()} className={storeButton(shell)} aria-expanded={guide === 'android'}>
           <AndroidMark />
           <span className="text-left">
             <span className="block text-[10px] font-medium uppercase tracking-[0.08em] opacity-70">{copy.installAndroidLabel}</span>
             <span className="block text-sm font-extrabold leading-tight tracking-[-0.02em]">{copy.installAndroidName}</span>
           </span>
         </button>
-        <button type="button" onClick={install.installIos} className={storeButton(ghost)}>
+        <button type="button" onClick={() => setGuide('ios')} className={storeButton(ghost)} aria-expanded={guide === 'ios'}>
           <AppleMark />
           <span className="text-left">
             <span className="block text-[10px] font-medium uppercase tracking-[0.08em] opacity-70">{copy.installIosLabel}</span>
@@ -47,6 +65,37 @@ export function InstallAppButtons({ copy, tone = 'light' }: InstallAppButtonsPro
           </span>
         </button>
       </div>
+      {guide ? (
+        <div
+          className={`mt-4 rounded-2xl border p-4 ${light ? 'border-[#cfd6d0] bg-white text-[#122d25]' : 'border-white/20 bg-white/10 text-white'}`}
+          role="region"
+          aria-label={title}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-extrabold tracking-[-0.02em]">{title}</p>
+              <p className={`mt-1 text-sm leading-relaxed ${light ? 'text-[#6c7974]' : 'text-white/75'}`}>{body}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setGuide(null)}
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${light ? 'bg-[#f4f1e9] text-[#122d25]' : 'bg-white/15 text-white'}`}
+            >
+              {copy.installClose}
+            </button>
+          </div>
+          <ol className="mt-4 space-y-2.5">
+            {steps.map((step, index) => (
+              <li key={step} className="flex items-start gap-3 text-sm font-medium leading-snug">
+                <span className={`grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold ${light ? 'bg-[#122d25] text-white' : 'bg-white text-[#122d25]'}`}>
+                  {index + 1}
+                </span>
+                <span className="pt-0.5">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
     </div>
   );
 }
