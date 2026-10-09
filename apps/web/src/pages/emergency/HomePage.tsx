@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Language } from '@voicesos/shared';
 import { siteFrame } from '@/components/AppShell';
+import { InstallAppButtons } from '@/components/InstallAppButtons';
 import { MoleculeField } from '@/components/marketing/MoleculeField';
 import { Brand, Icon, type IconName } from '@/components/ui';
 import { EMERGENCY_NUMBERS, emergencyCallHref } from '@/config/emergency';
@@ -73,7 +74,7 @@ export function HomePage() {
         </div>
       </header>
 
-      <section className={`relative z-10 ${siteFrame} grid items-center gap-14 py-16 md:grid-cols-2 md:gap-16 md:py-24 xl:gap-24`}>
+      <section className={`relative z-10 ${siteFrame} grid items-center gap-14 pt-16 pb-8 md:grid-cols-2 md:gap-16 md:pt-24 md:pb-10 xl:gap-24`}>
         <div className="reveal max-w-2xl">
           <p className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-[#ba3b2a]">{copy.eyebrow}</p>
           <h1 className="text-[clamp(2.6rem,4vw,4.6rem)] font-extrabold leading-[1.02] tracking-[-0.05em]">
@@ -120,6 +121,12 @@ export function HomePage() {
           <ProductFrame landing={landing} liveLabel={copy.live} guidanceValue={copy.stepNames['step-open-airway'] ?? landing.previewGuidance} />
         </div>
       </section>
+
+      <div className={`relative z-10 ${siteFrame} pb-14 md:pb-16`}>
+        <div className="max-w-2xl">
+          <InstallAppButtons copy={landing} />
+        </div>
+      </div>
 
       <section className="relative z-10 border-y border-[#e4e6df] bg-white/80 backdrop-blur-sm">
         <div className={`${siteFrame} py-12 md:py-14`}>

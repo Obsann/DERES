@@ -18,5 +18,6 @@ export {
 } from './useApiMutations';
 export { useResponderRealtime } from './useResponderRealtime';
 export { useConnectionStatus } from './useConnectionStatus';
+export { useAppInstall } from './useAppInstall';
 export { useDeresVoice } from './useDeresVoice';
 export { useIncidentLocation, type LocationShareStatus } from './useIncidentLocation';
