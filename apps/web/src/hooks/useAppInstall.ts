@@ -1,4 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 export type InstallPlatform = 'ios' | 'android' | 'desktop';
 
@@ -18,111 +23,46 @@ function isStandaloneDisplay(): boolean {
   return media || ios;
 }
 
-function downloadBlob(filename: string, mime: string, body: string): void {
-  const blob = new Blob([body], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.rel = 'noopener';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
-}
-
-function xml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-/** Apple web clip. Opening the file is the install; the page does not list steps. */
-function iosWebClip(origin: string): string {
-  const id = () => crypto.randomUUID().toUpperCase();
-  const url = xml(origin);
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>PayloadContent</key>
-  <array>
-    <dict>
-      <key>FullScreen</key>
-      <true/>
-      <key>IsRemovable</key>
-      <true/>
-      <key>Label</key>
-      <string>DERES</string>
-      <key>PayloadDisplayName</key>
-      <string>DERES</string>
-      <key>PayloadIdentifier</key>
-      <string>et.deres.webclip</string>
-      <key>PayloadType</key>
-      <string>com.apple.webClip.managed</string>
-      <key>PayloadUUID</key>
-      <string>${id()}</string>
-      <key>PayloadVersion</key>
-      <integer>1</integer>
-      <key>URL</key>
-      <string>${url}</string>
-    </dict>
-  </array>
-  <key>PayloadDisplayName</key>
-  <string>DERES</string>
-  <key>PayloadIdentifier</key>
-  <string>et.deres.profile</string>
-  <key>PayloadType</key>
-  <string>Configuration</string>
-  <key>PayloadUUID</key>
-  <string>${id()}</string>
-  <key>PayloadVersion</key>
-  <integer>1</integer>
-</dict>
-</plist>
-`;
-}
-
-function androidLauncher(origin: string): string {
-  const url = xml(origin);
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="refresh" content="0; url=${url}/" />
-  <title>DERES</title>
-</head>
-<body>
-  <p><a href="${url}/">DERES</a></p>
-</body>
-</html>
-`;
-}
-
 /**
- * The landing buttons download DERES directly.
- * Android saves a launcher file. iPhone saves the Apple web-clip profile.
- * Neither button opens an instruction sheet.
+ * Installs the DERES site as an app when the browser can do that.
+ * There is no APK or signed iPhone build in this project, so the buttons
+ * must not save an HTML page or a shortcut and call it an app.
  */
 export function useAppInstall() {
   const [platform] = useState(detectPlatform);
-  const [installed] = useState(isStandaloneDisplay);
+  const [installed, setInstalled] = useState(isStandaloneDisplay);
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
 
-  const installAndroid = useCallback(() => {
-    downloadBlob('DERES-Android.html', 'text/html;charset=utf-8', androidLauncher(window.location.origin));
+  useEffect(() => {
+    const onPrompt = (event: Event) => {
+      event.preventDefault();
+      setDeferred(event as BeforeInstallPromptEvent);
+    };
+    const onInstalled = () => {
+      setDeferred(null);
+      setInstalled(true);
+    };
+    window.addEventListener('beforeinstallprompt', onPrompt);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onPrompt);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
   }, []);
 
-  const installIos = useCallback(() => {
-    downloadBlob('DERES.mobileconfig', 'application/x-apple-aspen-config', iosWebClip(window.location.origin));
-  }, []);
+  const install = useCallback(async () => {
+    if (!deferred) return;
+    await deferred.prompt();
+    const choice = await deferred.userChoice;
+    if (choice.outcome === 'accepted') setInstalled(true);
+    setDeferred(null);
+  }, [deferred]);
 
   return {
     platform,
     installed,
-    installAndroid,
-    installIos,
+    canInstall: deferred !== null,
+    installAndroid: install,
+    installIos: install,
   };
 }
