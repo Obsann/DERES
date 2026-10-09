@@ -10,6 +10,19 @@ export interface LandingCopy {
   navResponders: string;
   heroLead: string;
   secondaryCta: string;
+  installEyebrow: string;
+  installAndroidLabel: string;
+  installAndroidName: string;
+  installIosLabel: string;
+  installIosName: string;
+  installReady: string;
+  installClose: string;
+  installIosTitle: string;
+  installIosBody: string;
+  installIosSteps: string[];
+  installAndroidTitle: string;
+  installAndroidBody: string;
+  installAndroidSteps: string[];
   trustLabel: string;
   trust: { label: string; value: string }[];
   evidenceEyebrow: string;
@@ -75,6 +88,29 @@ const en: LandingCopy = {
   heroLead:
     'DERES provides protocol-locked spoken first-aid guidance during the first minutes of an emergency, in English, Amharic, and Afaan Oromoo, together with a live incident record for 907 responders.',
   secondaryCta: 'Responder access',
+  installEyebrow: 'Get DERES on your phone',
+  installAndroidLabel: 'Get it on',
+  installAndroidName: 'Android',
+  installIosLabel: 'Download for',
+  installIosName: 'iPhone',
+  installReady: 'DERES is already on this phone.',
+  installClose: 'Got it',
+  installIosTitle: 'Add DERES to your iPhone',
+  installIosBody: 'Safari can put DERES on your Home Screen so it opens like an app — no App Store needed.',
+  installIosSteps: [
+    'Open this page in Safari',
+    'Tap the Share button',
+    'Scroll and tap Add to Home Screen',
+    'Tap Add — DERES appears on your Home Screen',
+  ],
+  installAndroidTitle: 'Install DERES on Android',
+  installAndroidBody: 'Chrome can install DERES so it opens from your app drawer — no Play Store listing required.',
+  installAndroidSteps: [
+    'Open this page in Chrome',
+    'Tap Install when the browser offers it, or open the menu (⋮)',
+    'Tap Install app or Add to Home screen',
+    'Open DERES from your home screen or app list',
+  ],
   trustLabel: 'Built for the first minutes on scene',
   trust: [
     { label: 'Languages', value: 'English · አማርኛ · Afaan Oromoo' },
@@ -221,6 +257,29 @@ const am: LandingCopy = {
   heroLead:
     'ድረስ በድንገተኛ አደጋ የመጀመሪያ ደቂቃዎች በታተመ ፕሮቶኮል የተዘጋ የድምጽ የመጀመሪያ እርዳታ መመሪያ ይሰጣል — በእንግሊዘኛ፣ በአማርኛ እና በአፋን ኦሮሞ — ለ 907 አዳኞችም የቀጥታ የአደጋ መዝገብ ያቀርባል።',
   secondaryCta: 'የአዳኝ መግቢያ',
+  installEyebrow: 'ድረስን በስልክዎ ላይ ያግኙ',
+  installAndroidLabel: 'ያውርዱ በ',
+  installAndroidName: 'Android',
+  installIosLabel: 'ያውርዱ ለ',
+  installIosName: 'iPhone',
+  installReady: 'ድረስ አስቀድሞ በዚህ ስልክ ላይ ነው።',
+  installClose: 'ገባኝ',
+  installIosTitle: 'ድረስን ወደ iPhone ያክሉ',
+  installIosBody: 'Safari ድረስን በመነሻ ስክሪን ላይ ማስቀመጥ ይችላል — እንደ መተግበሪያ ይከፈታል፣ App Store አያስፈልግም።',
+  installIosSteps: [
+    'ይህን ገጽ በ Safari ይክፈቱ',
+    'Share ቁልፉን ይንኩ',
+    'ዝቅ ብለው Add to Home Screen ይንኩ',
+    'Add ይንኩ — ድረስ በመነሻ ስክሪን ላይ ይታያል',
+  ],
+  installAndroidTitle: 'ድረስን በ Android ላይ ይጫኑ',
+  installAndroidBody: 'Chrome ድረስን መጫን ይችላል — ከመተግበሪያ ዝርዝር ይከፈታል፣ Play Store አያስፈልግም።',
+  installAndroidSteps: [
+    'ይህን ገጽ በ Chrome ይክፈቱ',
+    'Install ሲታይ ይንኩ፣ ወይም ምናሌውን (⋮) ይክፈቱ',
+    'Install app ወይም Add to Home screen ይንኩ',
+    'ድረስን ከመነሻ ስክሪን ወይም ከመተግበሪያ ዝርዝር ይክፈቱ',
+  ],
   trustLabel: 'ለመጀመሪያዎቹ ደቂቃዎች የተሰራ',
   trust: [
     { label: 'ቋንቋዎች', value: 'English · አማርኛ · Afaan Oromoo' },
@@ -367,6 +426,29 @@ const om: LandingCopy = {
   heroLead:
     'DERES daqiiqaa jalqabaa balaa tasaa keessatti qajeelfama gargaarsa jalqabaa sagaleedhaan, pirotokoolii maxxanfame irratti cufame, kenna — Afaan Ingilizii, Amaaraa fi Afaan Oromootiin — akkasumas galmee balaa kallattii gargaartota 907 tiif dhiheessa.',
   secondaryCta: 'Seensa gargaaraa',
+  installEyebrow: 'DERES bilbila kee irratti argadhu',
+  installAndroidLabel: 'Argadhu irratti',
+  installAndroidName: 'Android',
+  installIosLabel: 'Buufadhuuf',
+  installIosName: 'iPhone',
+  installReady: 'DERES bilbila kana irratti duraan jira.',
+  installClose: 'Hubadhe',
+  installIosTitle: 'DERES iPhone kee irratti dabali',
+  installIosBody: 'Safari DERES fuula mana kee irratti kaa\'uu danda\'a — akka appitti banama, App Store hin barbaachisu.',
+  installIosSteps: [
+    'Fuula kana Safari keessatti bani',
+    'Qabduu Share tuqi',
+    'Gadi bu\'ii Add to Home Screen tuqi',
+    'Add tuqi — DERES fuula mana kee irratti mul\'ata',
+  ],
+  installAndroidTitle: 'DERES Android irratti install godhi',
+  installAndroidBody: 'Chrome DERES install gochuu danda\'a — tarree app irraa banama, Play Store hin barbaachisu.',
+  installAndroidSteps: [
+    'Fuula kana Chrome keessatti bani',
+    'Install yoo dhiyaate tuqi, yookiin menu (⋮) bani',
+    'Install app yookiin Add to Home screen tuqi',
+    'DERES fuula mana yookiin tarree app irraa bani',
+  ],
   trustLabel: 'Daqiiqaa jalqabaa irratti hojjetame',
   trust: [
     { label: 'Afaanota', value: 'English · አማርኛ · Afaan Oromoo' },
